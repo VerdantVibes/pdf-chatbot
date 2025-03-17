@@ -1,0 +1,15 @@
+# Rules
+Apply the following rules to the codebase
+
+## Shadcn Rule
+1. You must use `npx shadcn@latest add <component-name>` to add new shadcn components. Never use `npx shadcn-ui@latest add <component-name>` because it is deprecated.
+
+## EsLint Rule
+1. Make sure you fix all the linting errors and warnings.
+
+## Vite + React + Tailwind CSS + TypeScript Rule
+
+1. Style with Tailwind CSS utility classes for responsive design
+2. Do not export pages as default, instead export them as named exports and import them with the page name.
+3. Import components using absolute paths. Never use relative paths.
+4. Remove all the unused imports, variables, and components.

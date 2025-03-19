@@ -26,6 +26,7 @@ import {
 import { FileText, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -79,6 +80,28 @@ export function SignIn() {
     },
   });
 
+  // Clear error when form values change
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      if (loginMutation.isError) {
+        loginMutation.reset();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, loginMutation]);
+
+  // Clear error after 5 seconds
+  useEffect(() => {
+    if (loginMutation.isError) {
+      const timer = setTimeout(() => {
+        loginMutation.reset();
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loginMutation.isError, loginMutation]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     loginMutation.mutate(values);
   }
@@ -127,7 +150,7 @@ export function SignIn() {
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Email
                         </FormLabel>
                         <FormControl>
@@ -152,7 +175,7 @@ export function SignIn() {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Password
                         </FormLabel>
                         <FormControl>
@@ -176,12 +199,14 @@ export function SignIn() {
                     !form.formState.errors.email &&
                     !form.formState.errors.password && (
                       <Alert variant="destructive" className="py-2">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-sm ml-2">
-                          {loginMutation.error instanceof Error
-                            ? loginMutation.error.message
-                            : "An error occurred. Please try again."}
-                        </AlertDescription>
+                        <div className="flex items-center">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription className="text-sm ml-2 mx-auto">
+                            {loginMutation.error instanceof Error
+                              ? loginMutation.error.message
+                              : "An error occurred. Please try again."}
+                          </AlertDescription>
+                        </div>
                       </Alert>
                     )}
 

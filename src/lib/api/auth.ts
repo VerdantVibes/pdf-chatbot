@@ -26,9 +26,7 @@ const handleApiError = async (error: any, defaultMessage: string) => {
   console.error("API Error:", error);
 
   if (error instanceof TypeError && error.message === "Failed to fetch") {
-    throw new Error(
-      "Unable to connect to the server. Please check if the backend is running."
-    );
+    throw new Error("Unable to connect to the server.");
   }
 
   try {

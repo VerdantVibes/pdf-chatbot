@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -67,6 +67,30 @@ export function SignUp() {
       confirmPassword: "",
     },
   });
+
+  // Clear error when user starts typing or after 5 seconds
+  useEffect(() => {
+    if (error) {
+      // Set a timeout to clear the error after 5 seconds
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);
+
+      // Return cleanup function to clear the timeout if component unmounts
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Clear error when user starts typing in any field
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      if (error) {
+        setError(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, error]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -142,7 +166,7 @@ export function SignUp() {
                     name="name"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Name
                         </FormLabel>
                         <FormControl>
@@ -166,7 +190,7 @@ export function SignUp() {
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Email
                         </FormLabel>
                         <FormControl>
@@ -190,7 +214,7 @@ export function SignUp() {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Password
                         </FormLabel>
                         <FormControl>
@@ -215,7 +239,7 @@ export function SignUp() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem className="space-y-2 text-left">
-                        <FormLabel className="text-sm font-medium text-left block">
+                        <FormLabel className="text-sm font-medium text-left block text-muted-foreground">
                           Confirm Password
                         </FormLabel>
                         <FormControl>
@@ -237,10 +261,12 @@ export function SignUp() {
 
                   {error && (
                     <Alert variant="destructive" className="py-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-sm ml-2">
-                        {error}
-                      </AlertDescription>
+                      <div className="flex items-center">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-sm ml-2 mx-auto">
+                          {error}
+                        </AlertDescription>
+                      </div>
                     </Alert>
                   )}
 

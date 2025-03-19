@@ -19,7 +19,7 @@ export function TeamSwitcher({
     description: string;
   }[];
 }) {
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const [activeTeam, _setActiveTeam] = React.useState(teams[0]);
 
   if (!activeTeam) {
     return null;

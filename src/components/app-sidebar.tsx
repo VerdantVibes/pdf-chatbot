@@ -3,7 +3,6 @@ import {
   BookOpen,
   Bot,
   Files,
-  HelpCircle,
   Home,
   LifeBuoy,
   MessageSquare,

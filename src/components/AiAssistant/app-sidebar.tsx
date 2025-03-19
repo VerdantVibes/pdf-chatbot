@@ -1,16 +1,11 @@
 // components/app-sidebar.tsx
-import React from "react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
+  SidebarMenu
 } from "@/components/ui/sidebar";
-import { Home, Inbox, Calendar, Search, Settings } from "lucide-react";
 import { IoAddCircleOutline } from "react-icons/io5";
 
 export function AppSidebar() {

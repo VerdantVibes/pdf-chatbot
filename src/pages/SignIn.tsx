@@ -37,7 +37,7 @@ const formSchema = z.object({
   }),
 });
 
-export function SignIn() {
+export default function SignIn() {
   const { login } = useAuth();
   const navigate = useNavigate();
 

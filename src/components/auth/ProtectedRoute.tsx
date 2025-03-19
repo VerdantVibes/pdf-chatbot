@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/context/AuthContext";
+import Layout from "@/layout";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -14,5 +15,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
-  return <>{children}</>;
+  return <Layout>{children}</Layout>;
 }

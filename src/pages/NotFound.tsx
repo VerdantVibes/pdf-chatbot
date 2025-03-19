@@ -11,17 +11,17 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
-export function NotFound() {
+export default function NotFound() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 bg-background">
+    <div className="flex flex-col items-center justify-center py-12 px-4 bg-background min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
-        className="w-full max-w-md"
+        className="w-full max-w-lg"
       >
         <Card className="border shadow-sm bg-card overflow-hidden">
           <CardContent className="flex flex-col items-center justify-center pt-10 pb-6">

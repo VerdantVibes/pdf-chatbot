@@ -2,11 +2,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./lib/context/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
-import { SignIn } from "./pages/SignIn";
-import { SignUp } from "./pages/SignUp";
-import { NotFound } from "./pages/NotFound";
-import "./App.css";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -34,6 +34,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/knowledge-base"
+          element={
+            <ProtectedRoute>
+              <KnowledgeBase />
             </ProtectedRoute>
           }
         />

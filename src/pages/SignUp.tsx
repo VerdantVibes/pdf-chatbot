@@ -53,7 +53,7 @@ const formSchema = z
     path: ["confirmPassword"],
   });
 
-export function SignUp() {
+export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { register } = useAuth();

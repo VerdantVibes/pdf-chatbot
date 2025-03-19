@@ -7,6 +7,8 @@ import { SignUp } from "./pages/SignUp";
 import { NotFound } from "./pages/NotFound";
 import "./App.css";
 import Home from "./pages/Home";
+import Main from "./layout/Main";
+import AiAssistant from "./pages/AiAssistant";
 
 function App() {
   return (
@@ -37,6 +39,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route element={<Main />}>
+          <Route path="/ai-assistant" element={<AiAssistant />} />
+        </Route>
 
         <Route path="/" element={<Navigate to="/home" replace />} />
 

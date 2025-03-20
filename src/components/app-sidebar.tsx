@@ -62,8 +62,8 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Knowledge Base",
-          url: "/knowledge-base",
+          title: "Private Assets",
+          url: "/private-assets",
         },
       ],
     },

@@ -16,7 +16,7 @@ import {
 import { useAuth } from "@/lib/context/AuthContext";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 type BreadcrumbItem = {
   label: string;
@@ -112,8 +112,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       {item.isCurrentPage ? (
                         <BreadcrumbPage>{item.label}</BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink href={item.path}>
-                          {item.label}
+                        <BreadcrumbLink>
+                          <Link to={item.path}>{item.label}</Link>
                         </BreadcrumbLink>
                       )}
                       {index < displayBreadcrumbs.length - 1 && (
@@ -125,7 +125,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Breadcrumb>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 relative">
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </BreadcrumbContext.Provider>

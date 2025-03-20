@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import KnowledgeBase from "./pages/KnowledgeBase";
+import PrivateAssets from "./pages/PrivateAssets";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 
@@ -39,10 +39,10 @@ function App() {
         />
 
         <Route
-          path="/knowledge-base"
+          path="/private-assets"
           element={
             <ProtectedRoute>
-              <KnowledgeBase />
+              <PrivateAssets />
             </ProtectedRoute>
           }
         />

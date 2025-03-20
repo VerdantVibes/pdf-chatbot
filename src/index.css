@@ -102,3 +102,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+  background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+}
+
+.rpv-core__inner-pages::-webkit-scrollbar {
+  width: 0;
+}
+
+.pdf_preview .rpv-core__page-layer,
+.pdf_preview .rpv-core__canvas-layer,
+.pdf_preview .rpv-core__text-layer {
+  width: 100% !important;
+}

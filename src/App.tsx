@@ -7,6 +7,9 @@ import SignUp from "./pages/SignUp";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import Chat from "./pages/Chat";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 
 function App() {
   return (
@@ -34,6 +37,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
             </ProtectedRoute>
           }
         />

@@ -34,7 +34,7 @@ const data = {
   },
   teams: [
     {
-      name: "Jebsen Group",
+      name: "Delphis",
       description: "by Delhis",
     },
   ],

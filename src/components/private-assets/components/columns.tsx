@@ -1,11 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table";
-
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { Pdf } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { AtSign, File } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { SummaryColumnCell } from "./summary-column-cell";
 
 export const columns: ColumnDef<Pdf>[] = [
   {
@@ -99,20 +98,7 @@ export const columns: ColumnDef<Pdf>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Summary" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div
-          className="flex items-center max-w-sm overflow-hidden text-ellipsis"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {row.original?.analysis?.ai_summary}
-        </div>
-      );
-    },
+    cell: (table) => <SummaryColumnCell table={table} />,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-// We're keeping a simple non-relational schema here.
-// IRL, you will have a schema for your data models.
 export const pdfSchema = z.object({
   id: z.string(),
   filename: z.string(),
@@ -13,6 +11,9 @@ export const pdfSchema = z.object({
   drive_web_link: z.string(),
   email_received_date: z.string(),
   file_size: z.number(),
+  analysis: z.object({
+    ai_summary: z.string(),
+  }),
 });
 
 export type Pdf = z.infer<typeof pdfSchema>;

@@ -5,12 +5,19 @@ export const getGmailPdfs = async ({
 }: {
   queryKey: [string, { offset: number; limit: number }];
 }) => {
-  const response = await Axios.get("/gmail/pdfs", {
-    params: {
-      offset: params.offset,
-      limit: params.limit,
+  const response = await Axios.post("/gmail/pdfs", 
+    {
+      authors: [""],
+      categories: [""],
+      sectors: [""]
     },
-  });
+    {
+      params: {
+        offset: params.offset,
+        limit: params.limit,
+      },
+    }
+  );
   return response.data;
 };
 

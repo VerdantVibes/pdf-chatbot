@@ -7,11 +7,11 @@ import { LoaderCircle, X } from "lucide-react";
 
 export default function PrivateAssetsPage() {
   const {
-    data: pdfs,
+    data: response,
     isLoading,
     isSuccess,
   } = useQuery({
-    queryKey: ["pdfs", { offset: 0, limit: Number.MAX_SAFE_INTEGER }],
+    queryKey: ["pdfs", { offset: 1, limit: 100 }],
     queryFn: getGmailPdfs,
   });
 
@@ -38,9 +38,12 @@ export default function PrivateAssetsPage() {
         <div className="flex items-center justify-between space-y">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Files</h2>
+            <p className="text-muted-foreground">
+              Total: {response.pagination.total} files
+            </p>
           </div>
         </div>
-        <DataTable data={pdfs?.pdfs} columns={columns} />
+        <DataTable data={response.items} columns={columns} />
       </div>
     </>
   );

@@ -115,8 +115,11 @@
   width: 0;
 }
 
-.pdf_preview .rpv-core__page-layer,
+/* .pdf_preview .rpv-core__page-layer,
 .pdf_preview .rpv-core__canvas-layer,
 .pdf_preview .rpv-core__text-layer {
   width: 100% !important;
+} */
+.rpv-core__tooltip-body {
+  display: none !important;
 }

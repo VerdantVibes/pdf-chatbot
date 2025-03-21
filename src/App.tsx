@@ -9,7 +9,6 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
 import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 
 function App() {
   return (

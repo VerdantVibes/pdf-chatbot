@@ -48,9 +48,9 @@ export default function PdfViewer({ pdfUrl }) {
 
         {/* Zoom controls with tooltips */}
         <div className="flex items-center gap-1">
-          <Tippy content="Zoom In">
+          <Tippy content="Zoom Out">
             <div>
-              <ZoomInButton />
+              <ZoomOutButton />
             </div>
           </Tippy>
           <Tippy content="Reset Zoom">
@@ -61,9 +61,9 @@ export default function PdfViewer({ pdfUrl }) {
               <RotateCw width={16} height={16} color="#707070" />
             </button>
           </Tippy>
-          <Tippy content="Zoom Out">
+          <Tippy content="Zoom In">
             <div>
-              <ZoomOutButton />
+              <ZoomInButton />
             </div>
           </Tippy>
         </div>

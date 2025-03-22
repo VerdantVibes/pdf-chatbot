@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { authApi } from "../api/auth";
 import { toast } from "sonner";
-import { AUTH_ERROR_EVENT } from "../axiosInterceptor";
+import { AUTH_ERROR_EVENT, storeAuthToken } from "../axiosInterceptor";
 
 const COOKIE_TOKEN_NAME = "auth_token";
 const COOKIE_OPTIONS = {
@@ -39,22 +39,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
+  // Initialize authentication state
   useEffect(() => {
-    const token = Cookies.get(COOKIE_TOKEN_NAME);
-    const storedUser = localStorage.getItem("user");
-
-    if (token && storedUser) {
+    const initAuth = () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse user data:", error);
-        Cookies.remove(COOKIE_TOKEN_NAME, { path: "/" });
-        localStorage.removeItem("user");
-      }
-    }
+        // Check for token in both cookie and localStorage
+        const token = Cookies.get(COOKIE_TOKEN_NAME) || localStorage.getItem(COOKIE_TOKEN_NAME);
+        const storedUser = localStorage.getItem("user");
 
-    setIsLoading(false);
+        if (!token) {
+          console.warn("No authentication token found during initialization");
+          setIsLoading(false);
+          return;
+        }
+
+        // If token exists in localStorage but not in cookie, restore it
+        if (localStorage.getItem(COOKIE_TOKEN_NAME) && !Cookies.get(COOKIE_TOKEN_NAME)) {
+          console.log("Restoring token from localStorage to cookie");
+          // Use storeAuthToken to ensure token is in all storage locations
+          storeAuthToken(localStorage.getItem(COOKIE_TOKEN_NAME)!);
+        }
+
+        // Try to restore user from storage
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            if (userData && userData.id && userData.email) {
+              setUser(userData);
+              console.log("User restored from local storage");
+            } else {
+              console.warn("Invalid user data format in storage");
+              clearAuthData();
+            }
+          } catch (error) {
+            console.error("Failed to parse stored user data:", error);
+            clearAuthData();
+          }
+        } else {
+          console.warn("Token found but no user data available");
+          clearAuthData();
+        }
+      } catch (error) {
+        console.error("Error restoring authentication:", error);
+        clearAuthData();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
+
+  // Helper to clear auth data
+  const clearAuthData = () => {
+    Cookies.remove(COOKIE_TOKEN_NAME, { path: "/" });
+    localStorage.removeItem(COOKIE_TOKEN_NAME);
+    localStorage.removeItem("user");
+    setUser(null);
+  };
 
   useEffect(() => {
     const handleAuthError = (event: Event) => {
@@ -66,6 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log("User is authenticated, logging out due to token expiration");
 
         Cookies.remove(COOKIE_TOKEN_NAME, { path: "/" });
+        localStorage.removeItem(COOKIE_TOKEN_NAME);
         localStorage.removeItem("user");
         setUser(null);
 
@@ -90,7 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await authApi.login({ email, password });
 
-      Cookies.set(COOKIE_TOKEN_NAME, response.access_token, COOKIE_OPTIONS);
+      storeAuthToken(response.access_token);
 
       localStorage.setItem("user", JSON.stringify(response.user));
 
@@ -109,7 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await authApi.register({ email, password, name });
 
-      Cookies.set(COOKIE_TOKEN_NAME, response.access_token, COOKIE_OPTIONS);
+      storeAuthToken(response.access_token);
 
       localStorage.setItem("user", JSON.stringify(response.user));
 
@@ -124,12 +167,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = () => {
-    Cookies.remove(COOKIE_TOKEN_NAME, { path: "/" });
-
-    localStorage.removeItem("user");
-
-    setUser(null);
-
+    clearAuthData();
     navigate("/signin");
   };
 

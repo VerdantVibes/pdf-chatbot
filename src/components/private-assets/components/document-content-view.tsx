@@ -61,8 +61,7 @@ export function DocumentContentView({ document }: { document: any }) {
     analysis,
   } = document;
 
-  const { ai_summary, signals, threads, notes, meta_info, category, sector } =
-    analysis || {};
+  const { ai_summary, signals, threads, notes, meta_info, category, sector } = analysis || {};
 
   const textSizeClasses = {
     small: {
@@ -129,16 +128,9 @@ export function DocumentContentView({ document }: { document: any }) {
         className={`group bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-md 
           border border-gray-100 dark:border-gray-800 overflow-hidden transition-all duration-300 ease-in-out`}
       >
-        <div
-          className="flex items-center justify-between p-6 cursor-pointer"
-          onClick={() => toggleSection(id)}
-        >
+        <div className="flex items-center justify-between p-6 cursor-pointer" onClick={() => toggleSection(id)}>
           <div className="flex items-center">
-            <div
-              className={`p-2 rounded-full ${iconColorClass} mr-3 ${hoverColorClass} transition-colors`}
-            >
-              {icon}
-            </div>
+            <div className={`p-2 rounded-full ${iconColorClass} mr-3 ${hoverColorClass} transition-colors`}>{icon}</div>
             <h2
               className={`font-bold text-gray-900 dark:text-white group-hover:${hoverColorClass
                 .replace("bg-", "text-")
@@ -148,11 +140,7 @@ export function DocumentContentView({ document }: { document: any }) {
             </h2>
           </div>
           <div className="text-gray-500 dark:text-gray-400">
-            {isCollapsed ? (
-              <ChevronDown className="h-5 w-5" />
-            ) : (
-              <ChevronUp className="h-5 w-5" />
-            )}
+            {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
           </div>
         </div>
         {!isCollapsed && <div className="px-6 pb-6">{children}</div>}
@@ -165,98 +153,86 @@ export function DocumentContentView({ document }: { document: any }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-[200px] w-full h-full py-8 max-w-3xl mx-auto px-4 sm:px-6"
+      className="min-h-[200px] w-full h-full py-4 md:py-8 max-w-3xl mx-auto px-3 sm:px-4 md:px-6"
     >
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mb-6 sticky top-0 z-10 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 rounded-2xl p-6 border border-gray-200/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-gray-900/20"
+        className="mb-6 sticky top-0 z-10 backdrop-blur-lg bg-white/90 dark:bg-gray-900/90 rounded-2xl p-4 md:p-6 border border-gray-200/60 dark:border-gray-700/60 shadow-xl shadow-gray-200/20 dark:shadow-gray-900/20"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-start space-x-3">
+            <div className="relative hidden sm:block flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg blur opacity-20"></div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 relative">
-                <FileText className="h-8 w-8 text-gradient from-blue-500 to-indigo-500" />
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-2.5 relative">
+                <FileText className="h-5 w-5 md:h-6 md:w-6 text-gradient from-blue-500 to-indigo-500" />
               </div>
             </div>
-            <div className="flex-1">
-              <h1
-                className={`font-bold tracking-tight ${textClasses.h1} max-w-sm truncate overflow-hidden text-ellipsis`}
-              >
+            <div className="flex-1 min-w-0">
+              <h1 className={`font-bold tracking-tight ${textClasses.h1} truncate overflow-hidden text-ellipsis`}>
                 {filename}
               </h1>
-              <div className="flex flex-wrap items-center mt-1.5 text-sm text-gray-500 dark:text-gray-400 gap-4">
+              <div className="flex flex-wrap items-center mt-1 text-xs text-gray-500 dark:text-gray-400 gap-2">
                 <div className="flex items-center">
-                  <Clock className="h-3.5 w-3.5 mr-1.5" />
-                  <span>Downloaded: {formatDate(downloaded_at)}</span>
+                  <Clock className="h-3 w-3 mr-1" />
+                  <span className="truncate">{formatDate(downloaded_at)}</span>
                 </div>
                 <div className="flex items-center">
-                  <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+                  <BookOpen className="h-3 w-3 mr-1" />
                   <span>{formatFileSize(file_size)}</span>
                 </div>
+                {source && (
+                  <div className="flex items-center">
+                    <Mail className="h-3 w-3 mr-1" />
+                    <span>Source: {source}</span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-        <div className="flex items-center justify-between px-4 mt-4 -mb-2">
-          {source && (
-            <div className="flex items-center">
-              <Mail className="h-3.5 w-3.5 mr-1.5" />
-              <span>Source: {source}</span>
+
+            <div className="flex-shrink-0">
+              <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1">
+                <button
+                  onClick={() => setTextSize("small")}
+                  className={`p-1 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
+                    textSize === "small" ? "bg-white dark:bg-gray-700 shadow-sm" : ""
+                  }`}
+                  aria-label="Small text"
+                  title="Small text"
+                >
+                  <ZoomOut className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                </button>
+                <button
+                  onClick={() => setTextSize("medium")}
+                  className={`p-1 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
+                    textSize === "medium" ? "bg-white dark:bg-gray-700 shadow-sm" : ""
+                  }`}
+                  aria-label="Medium text"
+                  title="Reset to medium text"
+                >
+                  <RotateCcw className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                </button>
+                <button
+                  onClick={() => setTextSize("large")}
+                  className={`p-1 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
+                    textSize === "large" ? "bg-white dark:bg-gray-700 shadow-sm" : ""
+                  }`}
+                  aria-label="Large text"
+                  title="Large text"
+                >
+                  <ZoomIn className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                </button>
+              </div>
             </div>
-          )}
-          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1">
-            <button
-              onClick={() => setTextSize("small")}
-              className={`p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
-                textSize === "small"
-                  ? "bg-white dark:bg-gray-700 shadow-sm"
-                  : ""
-              }`}
-              aria-label="Small text"
-              title="Small text"
-            >
-              <ZoomOut className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-            </button>
-            <button
-              onClick={() => setTextSize("medium")}
-              className={`p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
-                textSize === "medium"
-                  ? "bg-white dark:bg-gray-700 shadow-sm"
-                  : ""
-              }`}
-              aria-label="Medium text"
-              title="Reset to medium text"
-            >
-              <RotateCcw className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-            </button>
-            <button
-              onClick={() => setTextSize("large")}
-              className={`p-1.5 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors ${
-                textSize === "large"
-                  ? "bg-white dark:bg-gray-700 shadow-sm"
-                  : ""
-              }`}
-              aria-label="Large text"
-              title="Large text"
-            >
-              <ZoomIn className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-            </button>
           </div>
         </div>
       </motion.div>
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-5"
-      >
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-5">
         <motion.div
           variants={itemVariants}
-          className="mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 border border-blue-100/80 dark:border-blue-900/30 hover:shadow-md hover:shadow-blue-100/30 dark:hover:shadow-blue-900/10 transition-shadow"
+          className="mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 md:p-6 border border-blue-100/80 dark:border-blue-900/30 hover:shadow-md hover:shadow-blue-100/30 dark:hover:shadow-blue-900/10 transition-shadow"
         >
           <div className="flex items-center mb-4">
             <div className="bg-gradient-to-r from-blue-500 to-indigo-500 h-8 w-8 rounded-full flex items-center justify-center mr-3">
@@ -282,71 +258,84 @@ export function DocumentContentView({ document }: { document: any }) {
               Executive Summary
             </h2>
           </div>
-          <div className="ml-11 text-gray-700 dark:text-gray-200 leading-relaxed">
+          <div className="ml-3 md:ml-11 text-gray-700 dark:text-gray-200 leading-relaxed">
             <p className={`font-medium ${textClasses.summary}`}>{ai_summary}</p>
           </div>
         </motion.div>
 
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3"
-        >
+        <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
           {category && category.length > 0 && (
-            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 sm:p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
               <div className="flex items-center mb-2">
-                <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mr-2" />
-                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-400 mr-2" />
+                <span className="text-2xs sm:text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                   CATEGORIES
                 </span>
               </div>
-              <p className="text-lg font-bold text-emerald-800 dark:text-emerald-200">
-                {category.length}
-              </p>
+              <p className="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-200">{category.length}</p>
             </div>
           )}
 
           {signals && signals.length > 0 && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-xl border border-yellow-100 dark:border-yellow-800/30">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 sm:p-4 rounded-xl border border-yellow-100 dark:border-yellow-800/30">
               <div className="flex items-center mb-2">
-                <Lightbulb className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mr-2" />
-                <span className="text-xs font-semibold text-yellow-700 dark:text-yellow-300">
-                  SIGNALS
-                </span>
+                <Lightbulb className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400 mr-2" />
+                <span className="text-2xs sm:text-xs font-semibold text-yellow-700 dark:text-yellow-300">SIGNALS</span>
               </div>
-              <p className="text-lg font-bold text-yellow-800 dark:text-yellow-200">
-                {signals.length}
-              </p>
+              <p className="text-base sm:text-lg font-bold text-yellow-800 dark:text-yellow-200">{signals.length}</p>
             </div>
           )}
 
           {author && author.length > 0 && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 sm:p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
               <div className="flex items-center mb-2">
-                <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400 mr-2" />
-                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 relative z-5">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600 dark:text-indigo-400 mr-2" />
+                <span className="text-2xs sm:text-xs font-semibold text-indigo-700 dark:text-indigo-300 relative z-5">
                   AUTHORS
                 </span>
               </div>
-              <p className="text-lg font-bold text-indigo-800 dark:text-indigo-200">
-                {author.length}
-              </p>
+              <p className="text-base sm:text-lg font-bold text-indigo-800 dark:text-indigo-200">{author.length}</p>
             </div>
           )}
 
           {threads && threads.length > 0 && (
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 sm:p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
               <div className="flex items-center mb-2">
-                <Layers className="h-4 w-4 text-purple-600 dark:text-purple-400 mr-2" />
-                <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
-                  THREADS
-                </span>
+                <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600 dark:text-purple-400 mr-2" />
+                <span className="text-2xs sm:text-xs font-semibold text-purple-700 dark:text-purple-300">THREADS</span>
               </div>
-              <p className="text-lg font-bold text-purple-800 dark:text-purple-200">
-                {threads.length}
-              </p>
+              <p className="text-base sm:text-lg font-bold text-purple-800 dark:text-purple-200">{threads.length}</p>
             </div>
           )}
         </motion.div>
+
+        {signals && signals.length > 0 && (
+          <SectionCard
+            id="signals"
+            icon={<Lightbulb className="h-5 w-5" />}
+            iconColorClass="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
+            hoverColorClass="group-hover:bg-yellow-100 dark:group-hover:bg-yellow-900/50"
+            title="Key Signals"
+          >
+            <ul className="space-y-4">
+              {signals.map((signal: string, index: number) => (
+                <li
+                  key={index}
+                  className={`flex items-start group/item transition-all duration-300 p-3 rounded-xl hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10 ${textClasses.body}`}
+                >
+                  <div className="relative flex-shrink-0 mr-3">
+                    <div className="flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500 text-white rounded-full min-h-[24px] min-w-[24px] h-6 w-6 text-xs font-bold shadow-sm shadow-yellow-200 dark:shadow-yellow-900/20 group-hover/item:shadow-md group-hover/item:shadow-yellow-200/40 dark:group-hover/item:shadow-yellow-900/30 transition-all">
+                      {index + 1}
+                    </div>
+                  </div>
+                  <span className="text-gray-700 dark:text-gray-300 font-medium group-hover/item:text-gray-900 dark:group-hover/item:text-white transition-colors">
+                    {signal}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
+        )}
 
         {author && author.length > 0 && (
           <SectionCard
@@ -411,32 +400,6 @@ export function DocumentContentView({ document }: { document: any }) {
                 </div>
               ))}
             </div>
-          </SectionCard>
-        )}
-
-        {signals && signals.length > 0 && (
-          <SectionCard
-            id="signals"
-            icon={<Lightbulb className="h-5 w-5" />}
-            iconColorClass="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
-            hoverColorClass="group-hover:bg-yellow-100 dark:group-hover:bg-yellow-900/50"
-            title="Key Signals"
-          >
-            <ul className="space-y-4">
-              {signals.map((signal: string, index: number) => (
-                <li
-                  key={index}
-                  className={`flex items-start group/item transition-all duration-300 p-3 rounded-xl hover:bg-yellow-50/50 dark:hover:bg-yellow-900/10 ${textClasses.body}`}
-                >
-                  <div className="flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500 text-white rounded-full h-6 w-6 text-xs font-bold mr-3 mt-0.5 shadow-sm shadow-yellow-200 dark:shadow-yellow-900/20 group-hover/item:shadow-md group-hover/item:shadow-yellow-200/40 dark:group-hover/item:shadow-yellow-900/30 transition-all">
-                    {index + 1}
-                  </div>
-                  <span className="text-gray-700 dark:text-gray-300 font-medium group-hover/item:text-gray-900 dark:group-hover/item:text-white transition-colors">
-                    {signal}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </SectionCard>
         )}
 
@@ -509,22 +472,16 @@ export function DocumentContentView({ document }: { document: any }) {
                 <div className="w-full sm:w-24 flex-shrink-0 font-semibold text-gray-700 dark:text-gray-300 mb-1 sm:mb-0">
                   Subject:
                 </div>
-                <div className="flex-1 text-gray-700 dark:text-gray-300">
-                  {email_subject}
-                </div>
+                <div className="flex-1 text-gray-700 dark:text-gray-300">{email_subject}</div>
               </div>
             )}
 
             {email_received_date && (
-              <div
-                className={`flex flex-col sm:flex-row sm:items-start p-3 rounded-xl ${textClasses.body}`}
-              >
+              <div className={`flex flex-col sm:flex-row sm:items-start p-3 rounded-xl ${textClasses.body}`}>
                 <div className="w-full sm:w-24 flex-shrink-0 font-semibold text-gray-700 dark:text-gray-300 mb-1 sm:mb-0">
                   Received:
                 </div>
-                <div className="flex-1 text-gray-700 dark:text-gray-300">
-                  {formatDate(email_received_date)}
-                </div>
+                <div className="flex-1 text-gray-700 dark:text-gray-300">{formatDate(email_received_date)}</div>
               </div>
             )}
 

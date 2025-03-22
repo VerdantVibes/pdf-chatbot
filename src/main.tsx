@@ -9,7 +9,13 @@ import { Toaster } from "sonner";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        if (error.response?.status === 401) {
+          return false;
+        }
+
+        return failureCount < 1;
+      },
     },
   },
 });

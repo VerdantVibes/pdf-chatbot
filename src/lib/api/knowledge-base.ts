@@ -5,11 +5,12 @@ export const getGmailPdfs = async ({
 }: {
   queryKey: [string, { offset: number; limit: number }];
 }) => {
-  const response = await Axios.post("/gmail/pdfs", 
+  const response = await Axios.post(
+    "/gmail/pdfs",
     {
       authors: [""],
       categories: [""],
-      sectors: [""]
+      sectors: [""],
     },
     {
       params: {
@@ -21,11 +22,7 @@ export const getGmailPdfs = async ({
   return response.data;
 };
 
-export const getPdfSummary = async ({
-  queryKey: [_, params],
-}: {
-  queryKey: [string, { id: string }];
-}) => {
+export const getPdfSummary = async ({ queryKey: [_, params] }: { queryKey: [string, { id: string }] }) => {
   const response = await Axios.get(`/pdf-analysis/${params.id}/summary`);
   return response.data;
 };

@@ -1,13 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { authApi } from "../api/auth";
+import { toast } from "sonner";
+import { AUTH_ERROR_EVENT } from "../axiosInterceptor";
 
 const COOKIE_TOKEN_NAME = "auth_token";
 const COOKIE_OPTIONS = {
@@ -59,6 +55,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    const handleAuthError = (event: Event) => {
+      console.log("Auth error event received in AuthContext");
+      const customEvent = event as CustomEvent;
+      const message = customEvent.detail?.message || "Your session has expired. Please log in again.";
+
+      if (user) {
+        console.log("User is authenticated, logging out due to token expiration");
+
+        Cookies.remove(COOKIE_TOKEN_NAME, { path: "/" });
+        localStorage.removeItem("user");
+        setUser(null);
+
+        toast.error(message, {
+          id: "session-expired",
+          duration: 4000,
+        });
+
+        navigate("/signin", { replace: true });
+      }
+    };
+
+    window.addEventListener(AUTH_ERROR_EVENT, handleAuthError);
+
+    return () => {
+      window.removeEventListener(AUTH_ERROR_EVENT, handleAuthError);
+    };
+  }, [navigate, user]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);

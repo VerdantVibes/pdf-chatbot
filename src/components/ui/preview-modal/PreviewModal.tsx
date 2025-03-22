@@ -102,9 +102,33 @@ export function PreviewModal({
     return {
       initial: {
         opacity: 0,
-        scale: 0.95,
-        right: effectiveViewMode === "side" ? 0 : "auto",
-        left: effectiveViewMode === "side" ? "auto" : "50%",
+        ...(effectiveViewMode === "side" && {
+          top: 0,
+          right: 0,
+          left: "auto",
+          x: "100%",
+          scale: 1,
+        }),
+        ...(effectiveViewMode === "center" && {
+          top: "50%",
+          bottom: "50%",
+          left: "50%",
+          right: "50%",
+          x: "-50%",
+          y: "-50%",
+          scale: 0.7,
+        }),
+        ...(effectiveViewMode === "full" && {
+          top: "50%",
+          left: "50%",
+          right: "50%",
+          bottom: "50%",
+          width: "40%",
+          height: "40vh",
+          x: "-50%",
+          y: "-50%",
+          scale: 0.9,
+        }),
       },
       side: {
         opacity: 1,
@@ -159,7 +183,24 @@ export function PreviewModal({
       },
       exit: {
         opacity: 0,
-        scale: 0.95,
+        ...(effectiveViewMode === "side" && {
+          x: "100%",
+          scale: 1,
+        }),
+        ...(effectiveViewMode === "center" && {
+          scale: 0.7,
+        }),
+        ...(effectiveViewMode === "full" && {
+          scale: 0.9,
+          width: "40%",
+          height: "40vh",
+          top: "50%",
+          left: "50%",
+          right: "auto",
+          x: "-50%",
+          y: "-50%",
+          borderRadius: "0.5rem",
+        }),
         transition: {
           duration: 0.2,
         },
@@ -186,10 +227,7 @@ export function PreviewModal({
           />
 
           <motion.div
-            className={cn(
-              "fixed z-50 border shadow-lg bg-background flex flex-col overflow-hidden",
-              className
-            )}
+            className={cn("fixed z-50 border shadow-lg bg-background flex flex-col overflow-hidden", className)}
             initial="initial"
             animate={isFullScreen ? "full" : viewMode}
             exit="exit"

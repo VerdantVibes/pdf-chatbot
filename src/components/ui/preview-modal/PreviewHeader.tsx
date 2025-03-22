@@ -17,12 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ViewMode } from "./PreviewModal";
 
 interface PreviewHeaderProps {
@@ -86,12 +81,7 @@ export function PreviewHeader({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-1.5 font-medium"
-                onClick={onClose}
-              >
+              <Button variant="ghost" size="sm" className="h-8 px-1.5 font-medium" onClick={onClose}>
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
@@ -104,17 +94,8 @@ export function PreviewHeader({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-1.5 font-medium"
-                onClick={onToggleFullScreen}
-              >
-                {isFullScreen ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize2 className="h-4 w-4" />
-                )}
+              <Button variant="ghost" size="sm" className="h-8 px-1.5 font-medium" onClick={onToggleFullScreen}>
+                {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -134,16 +115,10 @@ export function PreviewHeader({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-1.5 text-xs font-medium"
-                      >
+                      <Button variant="ghost" size="sm" className="h-8 px-1.5 text-xs font-medium">
                         <div className="flex items-center gap-1">
                           {getModeIcon()}
-                          <span className="hidden sm:inline-block text-xs">
-                            {getModeLabel()}
-                          </span>
+                          <span className="hidden sm:inline-block text-xs">{getModeLabel()}</span>
                         </div>
                       </Button>
                     </DropdownMenuTrigger>
@@ -153,25 +128,32 @@ export function PreviewHeader({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <DropdownMenuContent align="start" className="w-32">
+              <DropdownMenuContent align="start" className="w-40 text-nowrap">
                 <DropdownMenuItem onClick={() => onViewModeChange("side")}>
                   <div className="flex items-center justify-between w-full">
-                    <span>Side peek</span>
-                    {viewMode === "side" && <Check className="h-4 w-4 ml-2" />}
+                    <div className="flex items-center gap-2">
+                      <PanelRight className="h-4 w-4" />
+                      <span>Side peek</span>
+                    </div>
+                    {viewMode === "side" && <Check className="h-4 w-4 ml-2 flex-shrink-0" />}
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onViewModeChange("center")}>
                   <div className="flex items-center justify-between w-full">
-                    <span>Center peek</span>
-                    {viewMode === "center" && (
-                      <Check className="h-4 w-4 ml-2" />
-                    )}
+                    <div className="flex items-center gap-2">
+                      <SquareSquare className="h-4 w-4" />
+                      <span>Center peek</span>
+                    </div>
+                    {viewMode === "center" && <Check className="h-4 w-4 ml-2 flex-shrink-0" />}
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onViewModeChange("full")}>
                   <div className="flex items-center justify-between w-full">
-                    <span>Full page</span>
-                    {viewMode === "full" && <Check className="h-4 w-4 ml-2" />}
+                    <div className="flex items-center gap-2">
+                      <Maximize className="h-4 w-4" />
+                      <span>Full page</span>
+                    </div>
+                    {viewMode === "full" && <Check className="h-4 w-4 ml-2 flex-shrink-0" />}
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>

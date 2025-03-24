@@ -6,12 +6,6 @@ import { toast } from "sonner";
 import { AUTH_ERROR_EVENT, storeAuthToken } from "../axiosInterceptor";
 
 const COOKIE_TOKEN_NAME = "auth_token";
-const COOKIE_OPTIONS = {
-  expires: 7,
-  path: "/",
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-};
 
 export interface User {
   id: string;

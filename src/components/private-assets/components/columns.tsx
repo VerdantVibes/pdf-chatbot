@@ -51,7 +51,14 @@ export const columns: ColumnDef<Pdf>[] = [
             open={previewOpen}
             onOpenChange={setPreviewOpen}
             content={
-              <DocumentContentView document={table.getCoreRowModel().flatRows?.[currentPreviewIndex]?.original} />
+              <DocumentContentView 
+                document={table.getCoreRowModel().flatRows?.[currentPreviewIndex]?.original}
+                selectedPdfs={[{
+                  id: table.getCoreRowModel().flatRows?.[currentPreviewIndex]?.original.id,
+                  filename: table.getCoreRowModel().flatRows?.[currentPreviewIndex]?.original.filename
+                }]}
+                currentPdfId={table.getCoreRowModel().flatRows?.[currentPreviewIndex]?.original.id}
+              />
             }
             currentIndex={currentPreviewIndex}
             totalItems={table.getCoreRowModel().flatRows.length}

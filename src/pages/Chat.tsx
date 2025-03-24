@@ -8,6 +8,7 @@ export default function Chat() {
   const [isFileViewOpen, setIsFileViewOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!location.state?.selectedRows?.length) {
@@ -27,9 +28,12 @@ export default function Chat() {
 
   const [currentPdfUrl, setCurrentPdfUrl] = useState(pdfUrl!);
 
-  const handlePdfChange = (newPdfId: string) => {
+  const handlePdfChange = (newPdfId: string, page?: number) => {
     const newPdfUrl = `${import.meta.env.VITE_API_URL}/pdf/${newPdfId}/content`;
     setCurrentPdfUrl(newPdfUrl);
+    if (page) {
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -65,14 +69,15 @@ export default function Chat() {
             <PdfViewer 
               pdfUrl={currentPdfUrl}
               selectedPdfs={selectedPdfs}
-              onPdfChange={handlePdfChange}
+              onPdfChange={(pdfId) => handlePdfChange(pdfId)}
+              initialPage={currentPage}
             />
           </div>
         )}
 
         {/* Chat Section */}
         <div className={`flex-1 ${isFileViewOpen ? '' : 'lg:max-w-[65%] mx-auto'}`}>
-          <ChatView />
+          <ChatView onPdfChange={handlePdfChange} />
         </div>
       </div>
     </div>

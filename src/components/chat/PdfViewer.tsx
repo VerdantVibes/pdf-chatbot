@@ -2,6 +2,7 @@ import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import { RotateCw } from "lucide-react";
+import { useEffect } from "react";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
@@ -23,18 +24,36 @@ interface PdfViewerProps {
     filename: string;
   }>;
   onPdfChange: (pdfId: string) => void;
+  initialPage?: number;
 }
 
-export const PdfViewer = ({ pdfUrl, selectedPdfs, onPdfChange }: PdfViewerProps) => {
+export const PdfViewer = ({ 
+  pdfUrl, 
+  selectedPdfs, 
+  onPdfChange,
+  initialPage = 1 
+}: PdfViewerProps) => {
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const zoomPluginInstance = zoomPlugin();
+  const { 
+    ZoomInButton, 
+    ZoomOutButton, 
+    zoomTo 
+  } = zoomPluginInstance;
   const {
+    CurrentPageLabel,
     GoToNextPageButton,
     GoToPreviousPageButton,
-    CurrentPageLabel,
     NumberOfPages,
+    jumpToPage,
   } = pageNavigationPluginInstance;
-  const { ZoomInButton, ZoomOutButton, zoomTo } = zoomPluginInstance;
+
+  // Set initial page when component mounts or when initialPage changes
+  useEffect(() => {
+    if (initialPage > 1) {
+      jumpToPage(initialPage - 1);
+    }
+  }, [initialPage, jumpToPage]);
 
   // Get the first PDF's ID as default value
   const defaultPdfId = selectedPdfs[0]?.id;

@@ -102,32 +102,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const handleChatWith = async () => {
     setIsBuildingIndex(true);
     try {
-      if (location.pathname === "/private-assets") {
-        const response = await buildChatIndex(selectedRows);
-        
-        // Get the selected files data from the items array
-        const selectedFiles = items
-          .filter((item: any) => selectedRows.includes(item.id))
-          .map((item: any) => ({
-            id: item.id,
-            filename: item.filename
-          }));
-        
-        if (response.status === "success") {
-          toast.success("Your files are ready for chat!");
-          navigate("/chat", { 
-            state: { 
-              selectedRows,
-              selectedFiles,
-              faissIndexPath: response.index_path,
-              mode: "chat" 
-            },
-            replace: true 
-          });
-        }
+      const response = await buildChatIndex(selectedRows);
+      
+      // Get the selected files data from the items array
+      const selectedFiles = items
+        .filter((item: any) => selectedRows.includes(item.id))
+        .map((item: any) => ({
+          id: item.id,
+          filename: item.filename
+        }));
+      
+      if (response.status === "success") {
+        toast.success("Your files are ready for chat!");
+        navigate("/chat", { 
+          state: { 
+            selectedRows,
+            selectedFiles,
+            faissIndexPath: response.index_path,
+            mode: "chat" 
+          },
+          replace: true 
+        });
       } else {
-        toast.error("Please select files from Private Assets page first");
-        navigate("/private-assets");
+        throw new Error("Failed to build chat index");
       }
     } catch (error) {
       console.error("Error building chat index:", error);

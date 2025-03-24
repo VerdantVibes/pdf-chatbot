@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { sendChatMessage } from "@/lib/api/chat";
-import ReactMarkdown from 'react-markdown';
+import { MessageContent } from './MessageContent';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -13,7 +13,11 @@ interface Message {
   timestamp: Date;
 }
 
-export const ChatView = () => {
+interface ChatViewProps {
+  onPdfChange?: (pdfId: string, page: number) => void;
+}
+
+export const ChatView = ({ onPdfChange }: ChatViewProps) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -88,6 +92,14 @@ export const ChatView = () => {
     }
   };
 
+  const handlePageClick = (pdfId: string, page: number) => {
+    // Update the selected PDF and page in the parent component
+    if (location.state?.selectedRows?.includes(pdfId)) {
+      // We need to lift this state up to the Chat page component
+      onPdfChange?.(pdfId, page);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Top Controls - Fixed */}
@@ -129,7 +141,10 @@ export const ChatView = () => {
                     : "bg-stone-100 text-stone-900"
                 )}
               >
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+                <MessageContent
+                  content={message.content}
+                  onPageClick={handlePageClick}
+                />
               </div>
             </div>
           ))}

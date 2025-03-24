@@ -9,6 +9,7 @@ import { DataTableViewOptions } from "@/components/private-assets/components/dat
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  onStartChat: () => void;
 }
 
 export function DataTableToolbar<TData>({

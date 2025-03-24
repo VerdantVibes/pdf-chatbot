@@ -18,11 +18,14 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { PdfViewer } from "@/components/chat/PdfViewer";
+import { getPdfContent } from "@/lib/api/pdf";
 
-export function DocumentContentView({ document }: { document: any }) {
+export function DocumentContentView({ document, selectedPdfs, currentPdfId }: { document: any, selectedPdfs: Array<{ id: string; filename: string }>, currentPdfId: string }) {
   const [textSize, setTextSize] = useState("small"); // small, medium, large
   const [collapsedSections, setCollapsedSections] = useState({});
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const toggleSection = (sectionId: string) => {
     setCollapsedSections((prev) => ({
@@ -147,6 +150,36 @@ export function DocumentContentView({ document }: { document: any }) {
       </motion.div>
     );
   };
+
+  const fetchPdfContent = async (pdfId: string) => {
+    try {
+      const pdfBlob = await getPdfContent(pdfId);
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfUrl(url);
+      return url;
+    } catch (error) {
+      console.error('Error fetching PDF:', error);
+      return null;
+    }
+  };
+
+  const handlePdfChange = async (newPdfId: string) => {
+    const url = await fetchPdfContent(newPdfId);
+    if (url) setPdfUrl(url);
+  };
+
+  useEffect(() => {
+    if (currentPdfId) {
+      fetchPdfContent(currentPdfId);
+    }
+    
+    return () => {
+      // Cleanup blob URL when component unmounts
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [currentPdfId]);
+
+  if (!pdfUrl) return null;
 
   return (
     <motion.div
@@ -522,6 +555,12 @@ export function DocumentContentView({ document }: { document: any }) {
           </SectionCard>
         )}
       </motion.div>
+
+      <PdfViewer 
+        pdfUrl={pdfUrl}
+        selectedPdfs={selectedPdfs}
+        onPdfChange={handlePdfChange}
+      />
     </motion.div>
   );
 }

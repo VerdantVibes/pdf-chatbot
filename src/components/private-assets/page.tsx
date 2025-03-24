@@ -5,8 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getGmailPdfs } from "@/lib/api/knowledge-base";
 import { LoaderCircle } from "lucide-react";
 import { ErrorDisplay } from "../ui/error-display";
+import { useState, useEffect } from "react";
 
 export default function PrivateAssetsPage() {
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
   const {
     data: response,
     isLoading,
@@ -21,6 +24,17 @@ export default function PrivateAssetsPage() {
     refetchOnWindowFocus: false,
     enabled: true,
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('selectedRowsChanged', { 
+        detail: {
+          selectedRows,
+          items: response?.items || []
+        }
+      }));
+    }
+  }, [selectedRows, response?.items]);
 
   if (isLoading || isFetching) {
     return (
@@ -46,10 +60,14 @@ export default function PrivateAssetsPage() {
   return (
     <>
       <div className="hidden h-full flex-1 flex-col space-y-5 py-2 md:flex">
-        <div className="flex items-center justify-between space-y">
+        <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">Files</h2>
         </div>
-        <DataTable data={items} columns={columns} />
+        <DataTable 
+          data={items} 
+          columns={columns} 
+          onSelectionChange={setSelectedRows}
+        />
       </div>
     </>
   );

@@ -13,6 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useNavigate } from "react-router-dom";
 
 import {
   Table,
@@ -26,15 +27,18 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData> {
   data: TData[];
+  columns: ColumnDef<TData>[];
+  onSelectionChange: (selectedRows: string[]) => void;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
+export function DataTable<TData>({
   data,
-}: DataTableProps<TData, TValue>) {
+  columns,
+  onSelectionChange,
+}: DataTableProps<TData>) {
+  const navigate = useNavigate();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -65,9 +69,32 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  React.useEffect(() => {
+    const selectedRows = table
+      .getFilteredSelectedRowModel()
+      .rows.map((row) => (row.original as any).id);
+    onSelectionChange(selectedRows);
+  }, [rowSelection]);
+
+  const handleStartChat = () => {
+    const selectedRows = table
+      .getFilteredSelectedRowModel()
+      .rows.map((row) => (row.original as any).id);
+    
+    if (selectedRows.length > 0) {
+      navigate("/chat", { 
+        state: { 
+          selectedRows,
+          mode: "chat" 
+        },
+        replace: true 
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} onStartChat={handleStartChat} />
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-gray-100">

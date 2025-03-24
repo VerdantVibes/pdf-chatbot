@@ -1,4 +1,5 @@
 import { axiosInstance } from "../axiosInterceptor";
+import { LoginRequest, RegisterRequest, GoogleLoginRequest } from "../types/auth";
 
 interface User {
   id: string;
@@ -34,23 +35,18 @@ const handleApiError = (error: any, defaultMessage: string) => {
 };
 
 export const authApi = {
-  login: async (credentials: { email: string; password: string }): Promise<LoginResponse> => {
-    try {
-      console.log("Attempting login");
-      const response = await axiosInstance.post("/auth/login", credentials);
-      return response.data as LoginResponse;
-    } catch (error) {
-      throw handleApiError(error, "Login failed");
-    }
+  login: async (data: LoginRequest) => {
+    const response = await axiosInstance.post("/auth/login", data);
+    return response.data;
   },
 
-  register: async (userData: { email: string; password: string; name: string }): Promise<RegisterResponse> => {
-    try {
-      console.log("Attempting registration");
-      const response = await axiosInstance.post("/auth/register", userData);
-      return response.data as RegisterResponse;
-    } catch (error) {
-      throw handleApiError(error, "Registration failed");
-    }
+  register: async (data: RegisterRequest) => {
+    const response = await axiosInstance.post("/auth/register", data);
+    return response.data;
   },
+
+  googleLogin: async (data: GoogleLoginRequest) => {
+    const response = await axiosInstance.post("/auth/google/login", data);
+    return response.data;
+  }
 };

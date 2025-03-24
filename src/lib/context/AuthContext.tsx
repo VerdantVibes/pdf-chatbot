@@ -24,8 +24,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string, mode: "signin" | "signup") => Promise<void>;
+  logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -129,21 +131,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [navigate, user]);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
       const response = await authApi.login({ email, password });
-
       storeAuthToken(response.access_token);
-
       localStorage.setItem("user", JSON.stringify(response.user));
-
       setUser(response.user);
       navigate("/home");
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.msg || error.message;
+      if (errorMessage.includes("Invalid email or password")) {
+        toast.error("Incorrect email or password. Please try again.");
+      } else if (errorMessage.includes("registered with Google")) {
+        toast.error("This account uses Google Sign-In. Please use the 'Sign in with Google' button.");
+      } else {
+        toast.error("Unable to sign in. Please try again later.");
+      }
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -166,9 +169,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     clearAuthData();
     navigate("/signin");
+  };
+
+  const loginWithGoogle = async (credential: string, mode: "signin" | "signup") => {
+    try {
+      const response = await authApi.googleLogin({ credential, mode });
+      storeAuthToken(response.access_token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      setUser(response.user);
+      navigate("/home");
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error;
+    }
   };
 
   const value = {
@@ -176,8 +192,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!user,
     isLoading,
     login,
-    register,
+    loginWithGoogle,
     logout,
+    register,
+    setUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

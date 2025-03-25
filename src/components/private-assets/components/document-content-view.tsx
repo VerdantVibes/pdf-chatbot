@@ -20,7 +20,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-export function DocumentContentView({ document }: { document: any }) {
+interface DocumentContentViewProps {
+  document: any;
+  selectedPdfs: Array<{ id: string; filename: string }>;
+  currentPdfId: string;
+}
+
+export const DocumentContentView = ({ document }: DocumentContentViewProps) => {
   const [textSize, setTextSize] = useState("small"); // small, medium, large
   const [collapsedSections, setCollapsedSections] = useState({});
 

@@ -101,9 +101,9 @@ export const ChatView = ({ onPdfChange }: ChatViewProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Top Controls - Fixed */}
-      <div className="w-full h-12 flex justify-end items-center gap-4 bg-white z-10 border-b px-4">
+      <div className="sticky top-0 w-full h-12 flex justify-end items-center gap-4 bg-white z-10 border-b px-4">
         <button 
           className="text-stone-600 hover:text-stone-900 transition-colors"
           onClick={() => {/* Add share functionality */}}
@@ -119,47 +119,45 @@ export const ChatView = ({ onPdfChange }: ChatViewProps) => {
       </div>
 
       {/* Chat Messages - Scrollable Area */}
-      <ScrollArea 
-        ref={chatContentRef}
-        className="flex-1"
-        style={{ height: 'calc(100vh - 200px)' }}
-      >
-        <div className="px-4 py-6 space-y-4">
-          {messages.map((message, i) => (
-            <div
-              key={i}
-              className={cn(
-                "flex w-full",
-                message.role === "user" ? "justify-end" : "justify-start"
-              )}
-            >
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-[calc(100vh-16rem)]">
+          <div className="px-4 py-6 space-y-4">
+            {messages.map((message, i) => (
               <div
+                key={i}
                 className={cn(
-                  "rounded-lg px-4 py-2 max-w-[85%]",
-                  message.role === "user"
-                    ? "bg-gray-900 text-white"
-                    : "bg-stone-100 text-stone-900"
+                  "flex w-full",
+                  message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
-                <MessageContent
-                  content={message.content}
-                  onPageClick={handlePageClick}
-                />
+                <div
+                  className={cn(
+                    "rounded-lg px-4 py-2 max-w-[85%]",
+                    message.role === "user"
+                      ? "bg-gray-900 text-white"
+                      : "bg-stone-100 text-stone-900"
+                  )}
+                >
+                  <MessageContent
+                    content={message.content}
+                    onPageClick={handlePageClick}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-stone-100 rounded-lg px-4 py-2">
-                <RotateCw className="h-4 w-4 animate-spin" />
+            ))}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-stone-100 rounded-lg px-4 py-2">
+                  <RotateCw className="h-4 w-4 animate-spin" />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
       {/* Chat Input Box - Fixed at Bottom */}
-      <div className="w-full bg-white border-t border-stone-200 py-4 px-4">
+      <div className="sticky bottom-0 w-full bg-white border-t border-stone-200 py-4 px-4">
         <div className="border border-stone-300 rounded-xl px-5 py-3 flex flex-col">
           <input
             type="text"

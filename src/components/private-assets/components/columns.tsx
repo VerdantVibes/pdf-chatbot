@@ -97,14 +97,14 @@ export const columns: ColumnDef<Pdf>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Source" />,
     cell: ({ row }) => {
       return (
-        <div className="w-fit flex flex-col space-y-1">
-          <Badge variant={"outline"}>
+        <div className="flex flex-col space-y-1">
+          <Badge variant={"outline"} className="w-fit">
             <div className="flex items-center space-x-1">
               <AtSign className="h-3 w-3" />
               <span>{row.getValue("source")}</span>
             </div>
           </Badge>
-          <div className="font-medium">{row.original?.author[0]}</div>
+          <div className="font-medium w-fit">{row.original?.author[0]}</div>
         </div>
       );
     },

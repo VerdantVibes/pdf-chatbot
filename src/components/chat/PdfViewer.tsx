@@ -63,8 +63,8 @@ export const PdfViewer = ({
       <div className="sticky top-0 z-10 mb-4 flex justify-end">
         <Select onValueChange={onPdfChange} defaultValue={defaultPdfId}>
           <SelectTrigger className="w-[300px]">
-            <SelectValue>
-              {selectedPdfs[0]?.filename || "Select a PDF"}
+            <SelectValue placeholder="Select a PDF">
+              {selectedPdfs.find(pdf => pdf.id === pdfUrl.split('/').pop())?.filename}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>

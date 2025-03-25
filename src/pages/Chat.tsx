@@ -1,20 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { ChatView } from "@/components/chat/ChatView";
 import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FileUpload } from '@/components/chat/FileUpload';
+import { buildChatIndex } from "@/lib/api/chat";
 
 export default function Chat() {
   const [isFileViewOpen, setIsFileViewOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    if (!location.state?.selectedRows?.length) {
-      navigate("/private-assets", { replace: true });
-    }
-  }, []);
 
   const selectedRows = location.state?.selectedRows || [];
   const selectedFiles = location.state?.selectedFiles || [];
@@ -35,6 +31,33 @@ export default function Chat() {
       setCurrentPage(page);
     }
   };
+
+  const handleUploadComplete = async (fileInfo: any) => {
+    try {
+      const response = await buildChatIndex([fileInfo.id]);
+      if (response.status === "success") {
+        navigate("/chat", { 
+          state: { 
+            selectedRows: [fileInfo.id],
+            selectedFiles: [{
+              id: fileInfo.id,
+              filename: fileInfo.filename
+            }],
+            faissIndexPath: response.index_path,
+            mode: "chat" 
+          },
+          replace: true 
+        });
+      }
+    } catch (error) {
+      console.error("Error building chat index:", error);
+    }
+  };
+
+  // Show upload interface if no files selected
+  if (!selectedRows.length) {
+    return <FileUpload onUploadComplete={handleUploadComplete} />;
+  }
 
   return (
     <div className="hidden h-full flex-1 flex-col md:flex">

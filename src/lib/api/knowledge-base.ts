@@ -1,9 +1,9 @@
 import { axiosInstance as Axios } from "../axiosInterceptor";
 
 export const getGmailPdfs = async ({
-  queryKey: [_, params],
+  queryKey: [_queryName, params],
 }: {
-  queryKey: [string, { offset: number; limit: number }];
+  queryKey: [string, { offset: number; limit: number; sortBy: string; sortOrder: string }];
 }) => {
   try {
     const response = await Axios.post(
@@ -17,6 +17,8 @@ export const getGmailPdfs = async ({
         params: {
           offset: params.offset,
           limit: params.limit,
+          sort_by: params.sortBy,
+          sort_order: params.sortOrder.toLocaleUpperCase(),
         },
       }
     );
@@ -27,7 +29,7 @@ export const getGmailPdfs = async ({
   }
 };
 
-export const getPdfSummary = async ({ queryKey: [_, params] }: { queryKey: [string, { id: string }] }) => {
+export const getPdfSummary = async ({ queryKey: [_queryName, params] }: { queryKey: [string, { id: string }] }) => {
   try {
     const response = await Axios.get(`/pdf-analysis/${params.id}/summary`);
     return response.data;

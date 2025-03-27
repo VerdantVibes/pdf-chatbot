@@ -3,12 +3,16 @@ import { DataTable } from "./components/data-table";
 
 import { useQuery } from "@tanstack/react-query";
 import { getGmailPdfs } from "@/lib/api/knowledge-base";
-import { LoaderCircle } from "lucide-react";
+// import { LoaderCircle } from "lucide-react";
 import { ErrorDisplay } from "../ui/error-display";
 import { useState, useEffect } from "react";
 
-export default function PrivateAssetsPage() {
+export function PrivateAssetsPage() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [sortParams, setSortParams] = useState<{ sortBy: string; sortOrder: string }>({
+    sortBy: "created_at",
+    sortOrder: "desc",
+  });
 
   const {
     data: response,
@@ -18,7 +22,7 @@ export default function PrivateAssetsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["pdfs", { offset: 1, limit: 100 }],
+    queryKey: ["pdfs", { offset: 1, limit: 100, sortBy: sortParams.sortBy, sortOrder: sortParams.sortOrder }],
     queryFn: getGmailPdfs,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -26,23 +30,25 @@ export default function PrivateAssetsPage() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('selectedRowsChanged', { 
-        detail: {
-          selectedRows,
-          items: response?.items || []
-        }
-      }));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("selectedRowsChanged", {
+          detail: {
+            selectedRows,
+            items: response?.items || [],
+          },
+        })
+      );
     }
   }, [selectedRows, response?.items]);
 
-  if (isLoading || isFetching) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <LoaderCircle className="animate-spin size-12" />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="absolute inset-0 flex items-center justify-center">
+  //       <LoaderCircle className="animate-spin size-12" />
+  //     </div>
+  //   );
+  // }
 
   if (isError) {
     return (
@@ -63,10 +69,18 @@ export default function PrivateAssetsPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold tracking-tight">Files</h2>
         </div>
-        <DataTable 
-          data={items} 
-          columns={columns} 
+        <DataTable
+          data={items}
+          columns={columns}
           onSelectionChange={setSelectedRows}
+          onSortingChange={(field: string, direction: string) => {
+            setSortParams({
+              sortBy: field,
+              sortOrder: direction,
+            });
+          }}
+          isFetching={isFetching}
+          isLoading={isLoading}
         />
       </div>
     </>

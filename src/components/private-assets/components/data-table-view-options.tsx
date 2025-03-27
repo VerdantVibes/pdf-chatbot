@@ -11,6 +11,10 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
+type ExtendedColumnDef = {
+  identifier?: string;
+};
+
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
 }
@@ -39,7 +43,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {(column.columnDef as unknown as ExtendedColumnDef).identifier || column.id}
               </DropdownMenuCheckboxItem>
             );
           })}

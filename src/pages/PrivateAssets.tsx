@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useBreadcrumbs } from "../layout";
-import PrivateAssetsPage from "@/components/private-assets/page";
+import { PrivateAssetsPage } from "@/components/private-assets/page";
 
 export default function PrivateAssets() {
   const { setBreadcrumbs } = useBreadcrumbs();

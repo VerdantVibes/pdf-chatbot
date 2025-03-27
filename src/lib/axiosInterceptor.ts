@@ -126,7 +126,7 @@ axiosInstance.interceptors.response.use(
 
     const isCORS = error.message.includes("Network Error") || error.message.includes("CORS");
 
-    if (isUnauthorized || hasInvalidToken || isCORS) {
+    if (isUnauthorized || hasInvalidToken) {
       console.log("Auth error detected:", {
         isUnauthorized,
         hasInvalidToken,

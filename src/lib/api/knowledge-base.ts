@@ -3,15 +3,26 @@ import { axiosInstance as Axios } from "../axiosInterceptor";
 export const getGmailPdfs = async ({
   queryKey: [_queryName, params],
 }: {
-  queryKey: [string, { offset: number; limit: number; sortBy: string; sortOrder: string }];
+  queryKey: [
+    string,
+    {
+      offset: number;
+      limit: number;
+      sortBy: string;
+      sortOrder: string;
+      selectedAuthors: string[];
+      selectedCategories: string[];
+      selectedSectors: string[];
+    }
+  ];
 }) => {
   try {
     const response = await Axios.post(
       "/gmail/pdfs",
       {
-        authors: [""],
-        categories: [""],
-        sectors: [""],
+        authors: params.selectedAuthors || [],
+        categories: params.selectedCategories || [],
+        sectors: params.selectedSectors || [],
       },
       {
         params: {

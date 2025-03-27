@@ -25,6 +25,11 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   onSelectionChange: (selectedRows: string[]) => void;
   onSortingChange?: (field: string, direction: string) => void;
+  onFiltersChange?: (filters: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  }) => void;
   isFetching?: boolean;
   isLoading?: boolean;
 }
@@ -34,6 +39,7 @@ export function DataTable<TData>({
   columns,
   onSelectionChange,
   onSortingChange,
+  onFiltersChange,
   isFetching = false,
   isLoading = false,
 }: DataTableProps<TData>) {
@@ -97,7 +103,7 @@ export function DataTable<TData>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} onStartChat={handleStartChat} />
+      <DataTableToolbar table={table} onStartChat={handleStartChat} onFiltersChange={onFiltersChange} />
       <div className={`rounded-md border ${showSkeleton ? "min-h-[400px]" : ""}`}>
         <Table>
           <TableHeader className="bg-gray-100">

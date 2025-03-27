@@ -3,7 +3,6 @@ import { DataTable } from "./components/data-table";
 
 import { useQuery } from "@tanstack/react-query";
 import { getGmailPdfs } from "@/lib/api/knowledge-base";
-// import { LoaderCircle } from "lucide-react";
 import { ErrorDisplay } from "../ui/error-display";
 import { useState, useEffect } from "react";
 
@@ -12,6 +11,15 @@ export function PrivateAssetsPage() {
   const [sortParams, setSortParams] = useState<{ sortBy: string; sortOrder: string }>({
     sortBy: "created_at",
     sortOrder: "desc",
+  });
+  const [filters, setFilters] = useState<{
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  }>({
+    selectedAuthors: [],
+    selectedCategories: [],
+    selectedSectors: [],
   });
 
   const {
@@ -22,7 +30,18 @@ export function PrivateAssetsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["pdfs", { offset: 1, limit: 100, sortBy: sortParams.sortBy, sortOrder: sortParams.sortOrder }],
+    queryKey: [
+      "pdfs",
+      {
+        offset: 1,
+        limit: 100,
+        sortBy: sortParams.sortBy,
+        sortOrder: sortParams.sortOrder,
+        selectedAuthors: filters.selectedAuthors,
+        selectedCategories: filters.selectedCategories,
+        selectedSectors: filters.selectedSectors,
+      },
+    ],
     queryFn: getGmailPdfs,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -42,13 +61,13 @@ export function PrivateAssetsPage() {
     }
   }, [selectedRows, response?.items]);
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="absolute inset-0 flex items-center justify-center">
-  //       <LoaderCircle className="animate-spin size-12" />
-  //     </div>
-  //   );
-  // }
+  const handleFiltersChange = (newFilters: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  }) => {
+    setFilters(newFilters);
+  };
 
   if (isError) {
     return (
@@ -79,6 +98,7 @@ export function PrivateAssetsPage() {
               sortOrder: direction,
             });
           }}
+          onFiltersChange={handleFiltersChange}
           isFetching={isFetching}
           isLoading={isLoading}
         />

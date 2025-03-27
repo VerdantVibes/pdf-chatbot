@@ -8,7 +8,7 @@ import PrivateAssets from "./pages/PrivateAssets";
 import Chat from "./pages/Chat";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {
   return (
@@ -69,5 +69,3 @@ function App() {
 }
 
 export default App;
-
-

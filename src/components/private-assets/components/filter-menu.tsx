@@ -4,32 +4,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-// import { getPdfAnalysisAuthors, getPdfAnalysisCategories, getPdfAnalysisSectors } from "@/lib/api/pdf-analysis";
-// import { useQuery } from "@tanstack/react-query";
-
-const AUTHORS = [
-  { value: "jared_dilian", label: "Jared Dilian" },
-  { value: "john_doe", label: "John Doe" },
-  { value: "jane_smith", label: "Jane Smith" },
-  { value: "robert_johnson", label: "Robert Johnson" },
-  { value: "emily_brown", label: "Emily Brown" },
-];
-
-const SECTORS = [
-  { value: "china_economy", label: "China Economy" },
-  { value: "industrialized_metals", label: "Industrialized Metals" },
-  { value: "copper", label: "Copper" },
-  { value: "financial", label: "Financial" },
-  { value: "technology", label: "Technology" },
-];
-
-const CATEGORIES = [
-  { value: "china_economy", label: "China Economy" },
-  { value: "industrialized_metals", label: "Industrialized Metals" },
-  { value: "copper", label: "Copper" },
-  { value: "financial", label: "Financial" },
-  { value: "technology", label: "Technology" },
-];
+import { getPdfAnalysisAuthors, getPdfAnalysisCategories, getPdfAnalysisSectors } from "@/lib/api/pdf-analysis";
+import { useQuery } from "@tanstack/react-query";
 
 interface FilterMenuProps {
   onFiltersChange?: (filters: {
@@ -45,31 +21,31 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set());
 
-  // const { data: authorsResponse, isLoading: isAuthorsLoading } = useQuery({
-  //   queryKey: ["authors"],
-  //   queryFn: getPdfAnalysisAuthors,
-  //   retry: 1,
-  //   refetchOnWindowFocus: false,
-  //   enabled: true,
-  // });
+  const { data: authors = [] } = useQuery({
+    queryKey: ["authors"],
+    queryFn: getPdfAnalysisAuthors,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
-  // const { data: categoriesResponse, isLoading: isCategoriesLoading } = useQuery({
-  //   queryKey: ["categories"],
-  //   queryFn: getPdfAnalysisCategories,
-  //   retry: 1,
-  //   refetchOnWindowFocus: false,
-  //   enabled: true,
-  // });
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getPdfAnalysisCategories,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
-  // const { data: sectorsResponse, isLoading: isSectorsLoading } = useQuery({
-  //   queryKey: ["sectors"],
-  //   queryFn: getPdfAnalysisSectors,
-  //   retry: 1,
-  //   refetchOnWindowFocus: false,
-  //   enabled: true,
-  // });
+  const { data: sectors = [] } = useQuery({
+    queryKey: ["sectors"],
+    queryFn: getPdfAnalysisSectors,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
-  // Once the backend is working, simply process all the responses into options and populate the dropdowns. That's it.
+  // Transform the data into the required format
+  const AUTHORS = authors.map((author: string) => ({ value: author, label: author }));
+  const CATEGORIES = categories.map((category: string) => ({ value: category, label: category }));
+  const SECTORS = sectors.map((sector: string) => ({ value: sector, label: sector }));
 
   const getSelectedItemsText = (selectedItems: Set<string>, items: Array<{ value: string; label: string }>) => {
     if (selectedItems.size === 0) return null;
@@ -154,7 +130,7 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
                 <CommandList>
                   <CommandEmpty>No authors found.</CommandEmpty>
                   <CommandGroup>
-                    {AUTHORS.map((author) => {
+                    {AUTHORS.map((author: { value: string; label: string }) => {
                       const isSelected = selectedAuthors.has(author.value);
                       return (
                         <CommandItem
@@ -208,7 +184,7 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
                 <CommandList>
                   <CommandEmpty>No category found.</CommandEmpty>
                   <CommandGroup>
-                    {CATEGORIES.map((category) => {
+                    {CATEGORIES.map((category: { value: string; label: string }) => {
                       const isSelected = selectedCategories.has(category.value);
                       return (
                         <CommandItem
@@ -262,7 +238,7 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
                 <CommandList>
                   <CommandEmpty>No sectors found.</CommandEmpty>
                   <CommandGroup>
-                    {SECTORS.map((sector) => {
+                    {SECTORS.map((sector: { value: string; label: string }) => {
                       const isSelected = selectedSectors.has(sector.value);
                       return (
                         <CommandItem

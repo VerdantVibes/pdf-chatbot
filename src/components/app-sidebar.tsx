@@ -34,7 +34,7 @@ const data = {
   },
   teams: [
     {
-      name: "Jebsen Group",
+      name: "Delphis",
       description: "by Delhis",
     },
   ],
@@ -62,8 +62,8 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Knowledge Base",
-          url: "/knowledge-base",
+          title: "Private Assets",
+          url: "/private-assets",
         },
       ],
     },

@@ -31,6 +31,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Link } from "react-router-dom";
 
 export function NavFavorites({
   favorites,
@@ -58,10 +59,10 @@ export function NavFavorites({
             return (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton asChild>
-                  <a href={item.url}>
+                  <Link to={item.url}>
                     <item.icon />
                     <span>{item.name}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -114,9 +115,9 @@ export function NavFavorites({
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton asChild>
-                          <a href={subItem.url}>
+                          <Link to={subItem.url}>
                             <span>{subItem.title}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}

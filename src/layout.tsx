@@ -20,6 +20,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { buildChatIndex } from "@/lib/api/chat";
 import { LoaderCircle } from "lucide-react";
+import { UploadIcon } from "lucide-react";
+import { ImportDocumentModal } from "@/components/document/ImportDocumentModal";
 
 type BreadcrumbItem = {
   label: string;
@@ -48,6 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isBuildingIndex, setIsBuildingIndex] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [items, setItems] = useState([]);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const generateDefaultBreadcrumbs = () => {
     const pathSegments = location.pathname
@@ -136,6 +139,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleImportDocument = () => {
+    setIsImportModalOpen(true);
+  };
+
+  const handleFileSelected = (files: FileList) => {
+    console.log("Selected files:", files);
+    // Here you would implement the upload logic when ready
+    // This currently just logs the files to the console
+  };
+
   useEffect(() => {
     const handleSelectedRowsChange = (event: CustomEvent) => {
       setSelectedRows(event.detail.selectedRows);
@@ -183,20 +196,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-2 px-4">
               {location.pathname === "/private-assets" && (
-                <Button 
-                  onClick={handleChatWith}
-                  disabled={isBuildingIndex || selectedRows.length === 0}
-                  className="inline-flex h-9 items-center justify-center gap-2 px-4 py-2 rounded-[6px] bg-[#18181B] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10),0px_1px_2px_0px_rgba(0,0,0,0.06)]"
-                >
-                  {isBuildingIndex ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    null
-                  )}
-                  <span className="text-[#FAFAFA] font-sans text-sm font-medium leading-5">
-                    {isBuildingIndex ? "Preparing documents..." : "Chat with..."}
-                  </span>
-                </Button>
+                <>
+                  <Button 
+                    onClick={handleImportDocument}
+                    className="h-9 px-4 py-2 flex items-center justify-center gap-2 rounded-[6px] border border-[#E4E4E7] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]"
+                    variant="outline"
+                  >
+                    <UploadIcon className="h-4 w-4" />
+                    <span className="text-[#18181B] font-sans text-sm font-medium leading-5">
+                      Import Document
+                    </span>
+                  </Button>
+                  <Button 
+                    onClick={handleChatWith}
+                    disabled={isBuildingIndex || selectedRows.length === 0}
+                    className="inline-flex h-9 items-center justify-center gap-2 px-4 py-2 rounded-[6px] bg-[#18181B] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10),0px_1px_2px_0px_rgba(0,0,0,0.06)]"
+                  >
+                    {isBuildingIndex ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      null
+                    )}
+                    <span className="text-[#FAFAFA] font-sans text-sm font-medium leading-5">
+                      {isBuildingIndex ? "Preparing documents..." : "Chat with..."}
+                    </span>
+                  </Button>
+                </>
               )}
             </div>
           </header>
@@ -204,6 +229,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {children}
           </div>
         </SidebarInset>
+        <ImportDocumentModal 
+          open={isImportModalOpen} 
+          onOpenChange={setIsImportModalOpen}
+          onFileSelected={handleFileSelected}
+        />
       </SidebarProvider>
     </BreadcrumbContext.Provider>
   );

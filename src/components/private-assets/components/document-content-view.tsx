@@ -380,7 +380,7 @@ export const DocumentContentView = ({ document }: DocumentContentViewProps) => {
                   className={`group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 py-2 px-5 rounded-xl text-emerald-700 dark:text-emerald-300 transition-all duration-300 hover:shadow-md hover:shadow-emerald-100 dark:hover:shadow-emerald-900/10 ${textClasses.body}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-500 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
-                  <span className="font-medium relative z-10">{cat}</span>
+                  <span className="font-medium relative z-9">{cat}</span>
                 </div>
               ))}
             </div>
@@ -402,7 +402,7 @@ export const DocumentContentView = ({ document }: DocumentContentViewProps) => {
                   className={`group relative overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 py-2 px-5 rounded-xl text-amber-700 dark:text-amber-300 transition-all duration-300 hover:shadow-md hover:shadow-amber-100 dark:hover:shadow-amber-900/10 ${textClasses.body}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-300"></div>
-                  <span className="font-medium relative z-10">{sec}</span>
+                  <span className="font-medium relative z-9">{sec}</span>
                 </div>
               ))}
             </div>
@@ -530,4 +530,4 @@ export const DocumentContentView = ({ document }: DocumentContentViewProps) => {
       </motion.div>
     </motion.div>
   );
-}
+};

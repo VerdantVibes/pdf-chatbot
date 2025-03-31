@@ -14,11 +14,16 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { AnimatePresence } from "framer-motion";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { deleteDocuments } from "@/lib/api/knowledge-base";
+import { buildChatIndex } from "@/lib/api/chat";
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { TableSelectionActions } from "./table-selection-actions";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -32,6 +37,7 @@ interface DataTableProps<TData> {
   }) => void;
   isFetching?: boolean;
   isLoading?: boolean;
+  refetch?: () => void;
 }
 
 export function DataTable<TData>({
@@ -42,12 +48,15 @@ export function DataTable<TData>({
   onFiltersChange,
   isFetching = false,
   isLoading = false,
+  refetch,
 }: DataTableProps<TData>) {
   const navigate = useNavigate();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isBuildingIndex, setIsBuildingIndex] = React.useState(false);
 
   React.useEffect(() => {
     if (sorting.length > 0 && onSortingChange) {
@@ -84,26 +93,80 @@ export function DataTable<TData>({
     onSelectionChange(selectedRows);
   }, [rowSelection, table, onSelectionChange]);
 
-  const handleStartChat = () => {
+  const handleStartChat = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id);
 
-    if (selectedRows.length > 0) {
-      navigate("/chat", {
-        state: {
-          selectedRows,
-          mode: "chat",
-        },
-        replace: true,
+    if (selectedRows.length === 0) return;
+
+    setIsBuildingIndex(true);
+    try {
+      const response = await buildChatIndex(selectedRows);
+
+      // Get the selected files data from the items array
+      const selectedFiles = table.getFilteredSelectedRowModel().rows.map((row) => ({
+        id: (row.original as any).id,
+        filename: (row.original as any).filename,
+      }));
+
+      if (response.status === "success") {
+        toast.success("Your files are ready for chat!");
+        navigate("/chat", {
+          state: {
+            selectedRows,
+            selectedFiles,
+            faissIndexPath: response.index_path,
+            mode: "chat",
+          },
+          replace: true,
+        });
+      } else {
+        throw new Error("Failed to build chat index");
+      }
+    } catch (error) {
+      console.error("Error building chat index:", error);
+      toast.error("Failed to build chat index", {
+        description: error instanceof Error ? error.message : "Please try again",
       });
+    } finally {
+      setIsBuildingIndex(false);
     }
   };
 
+  const handleDelete = async () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id);
+
+    if (selectedRows.length === 0) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteDocuments(selectedRows);
+
+      table.resetRowSelection();
+
+      if (refetch) {
+        refetch();
+      }
+
+      toast.success(`Successfully deleted ${selectedRows.length} document${selectedRows.length > 1 ? "s" : ""}`);
+    } catch (error) {
+      toast.error("Failed to delete documents. Please try again.");
+      console.error("Delete error:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleSelectAll = () => {
+    table.resetRowSelection();
+  };
+
+  const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
   const showSkeleton = isLoading || isFetching;
   const skeletonRowCount = 8;
 
   return (
-    <div className="space-y-4">
-      <DataTableToolbar table={table} onStartChat={handleStartChat} onFiltersChange={onFiltersChange} />
+    <div className="space-y-4 relative">
+      <DataTableToolbar table={table} onFiltersChange={onFiltersChange} />
       <div className={`rounded-md border ${showSkeleton ? "min-h-[400px]" : ""}`}>
         <Table>
           <TableHeader className="bg-gray-100">
@@ -149,6 +212,19 @@ export function DataTable<TData>({
         </Table>
       </div>
       <DataTablePagination table={table} />
+
+      <AnimatePresence>
+        {selectedRowCount > 0 && (
+          <TableSelectionActions
+            selectedCount={selectedRowCount}
+            onStartChat={handleStartChat}
+            onDelete={handleDelete}
+            onSelectAll={handleSelectAll}
+            isDeleting={isDeleting}
+            isBuildingIndex={isBuildingIndex}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

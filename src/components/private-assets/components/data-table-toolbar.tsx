@@ -10,7 +10,6 @@ import { FilterMenu } from "./filter-menu";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  onStartChat: () => void;
   onFiltersChange?: (filters: {
     selectedAuthors: string[];
     selectedCategories: string[];

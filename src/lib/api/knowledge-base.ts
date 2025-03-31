@@ -49,3 +49,15 @@ export const getPdfSummary = async ({ queryKey: [_queryName, params] }: { queryK
     throw error;
   }
 };
+
+export const deleteDocuments = async (documentIds: string[]) => {
+  try {
+    const response = await Axios.delete("/documents", {
+      data: documentIds,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete documents:", error);
+    throw error;
+  }
+};

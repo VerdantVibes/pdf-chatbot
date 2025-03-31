@@ -167,7 +167,7 @@ export const columns: ExtendedColumnDef<Pdf>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"));
       return (
-        <div className="bg-[#D4EBE9] text-black text-xs text-nowrap px-2 py-1 font-medium rounded">
+        <div className="text-center w-fit bg-[#D4EBE9] text-black text-xs text-nowrap px-2 py-1 font-medium rounded">
           {date.getDate()} {date.toLocaleString("default", { month: "short" })} {date.getFullYear()}
         </div>
       );

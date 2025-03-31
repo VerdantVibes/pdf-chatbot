@@ -101,6 +101,7 @@ export function PrivateAssetsPage() {
           onFiltersChange={handleFiltersChange}
           isFetching={isFetching}
           isLoading={isLoading}
+          refetch={refetch}
         />
       </div>
     </>

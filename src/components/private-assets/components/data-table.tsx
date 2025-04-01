@@ -144,7 +144,7 @@ export function DataTable<TData>({
       table.resetRowSelection();
 
       if (refetch) {
-        refetch();
+        await refetch();
       }
 
       toast.success(`Successfully deleted ${selectedRows.length} document${selectedRows.length > 1 ? "s" : ""}`);

@@ -1,4 +1,4 @@
-import { columns } from "./components/columns";
+import { getColumns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 
 import { useQuery } from "@tanstack/react-query";
@@ -90,7 +90,7 @@ export function PrivateAssetsPage() {
         </div>
         <DataTable
           data={items}
-          columns={columns}
+          columns={getColumns()}
           onSelectionChange={setSelectedRows}
           onSortingChange={(field: string, direction: string) => {
             setSortParams({

@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { ChatView } from "@/components/chat/ChatView";
 import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FileUpload } from '@/components/chat/FileUpload';
+import { FileUpload } from "@/components/chat/FileUpload";
 import { buildChatIndex } from "@/lib/api/chat";
 
 export default function Chat() {
@@ -19,7 +19,7 @@ export default function Chat() {
 
   const selectedPdfs = selectedFiles.map((file: { id: string; filename: string }) => ({
     id: file.id,
-    filename: file.filename
+    filename: file.filename,
   }));
 
   const [currentPdfUrl, setCurrentPdfUrl] = useState(pdfUrl!);
@@ -36,17 +36,19 @@ export default function Chat() {
     try {
       const response = await buildChatIndex([fileInfo.id]);
       if (response.status === "success") {
-        navigate("/chat", { 
-          state: { 
+        navigate("/chat", {
+          state: {
             selectedRows: [fileInfo.id],
-            selectedFiles: [{
-              id: fileInfo.id,
-              filename: fileInfo.filename
-            }],
+            selectedFiles: [
+              {
+                id: fileInfo.id,
+                filename: fileInfo.filename,
+              },
+            ],
             faissIndexPath: response.index_path,
-            mode: "chat" 
+            mode: "chat",
           },
-          replace: true 
+          replace: true,
         });
       }
     } catch (error) {
@@ -78,9 +80,7 @@ export default function Chat() {
             <div className="flex items-center justify-between border-b border-stone-200 px-4 h-12">
               <h4 className="text-sm font-semibold flex items-center gap-1 text-stone-900">
                 <FileText width={16} /> PDF View{" "}
-                <span className="text-stone-500 font-normal">
-                  ({selectedPdfs.length} Selected)
-                </span>
+                <span className="text-stone-500 font-normal">({selectedPdfs.length} Selected)</span>
               </h4>
               <button
                 className="flex items-center gap-1 text-sm text-stone-700 font-medium"
@@ -89,7 +89,7 @@ export default function Chat() {
                 <ChevronLeft width={14} /> Hide view
               </button>
             </div>
-            <PdfViewer 
+            <PdfViewer
               pdfUrl={currentPdfUrl}
               selectedPdfs={selectedPdfs}
               onPdfChange={(pdfId) => handlePdfChange(pdfId)}
@@ -99,7 +99,7 @@ export default function Chat() {
         )}
 
         {/* Chat Section */}
-        <div className={`flex-1 ${isFileViewOpen ? '' : 'lg:max-w-[65%] mx-auto'}`}>
+        <div className={`flex-1 ${isFileViewOpen ? "" : "lg:max-w-[65%] mx-auto"}`}>
           <ChatView onPdfChange={handlePdfChange} />
         </div>
       </div>

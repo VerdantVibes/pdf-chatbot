@@ -25,8 +25,8 @@ export function DataTableToolbar<TData>({ table, onFiltersChange }: DataTableToo
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Search files"
-          value={(table.getColumn("filename")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("filename")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("email_subject")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("email_subject")?.setFilterValue(event.target.value)}
           className="h-8 w-[150px] lg:w-[250px]"
         />
         <div>

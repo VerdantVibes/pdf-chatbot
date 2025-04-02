@@ -15,7 +15,8 @@ import {
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Minimize2, Expand } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteDocuments } from "@/lib/api/knowledge-base";
@@ -24,6 +25,8 @@ import { buildChatIndex } from "@/lib/api/chat";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { TableSelectionActions } from "./table-selection-actions";
+import { DocumentSidebar } from "./sidebar/document-sidebar";
+import { getColumns } from "./columns";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -42,7 +45,7 @@ interface DataTableProps<TData> {
 
 export function DataTable<TData>({
   data,
-  columns,
+  columns: initialColumns,
   onSelectionChange,
   onSortingChange,
   onFiltersChange,
@@ -55,8 +58,14 @@ export function DataTable<TData>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  // Track just the expanded row ID
+  const [expandedRowId, setExpandedRowId] = React.useState<string | null>(null);
+
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isBuildingIndex, setIsBuildingIndex] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [selectedDocument, setSelectedDocument] = React.useState<TData | null>(null);
 
   React.useEffect(() => {
     if (sorting.length > 0 && onSortingChange) {
@@ -65,6 +74,16 @@ export function DataTable<TData>({
       onSortingChange(column, direction);
     }
   }, [sorting, onSortingChange]);
+
+  // Custom handler for expanding rows - ensures only one row is expanded at a time
+  const handleToggleExpand = React.useCallback((rowId: string) => {
+    setExpandedRowId((prevId) => (prevId === rowId ? null : rowId));
+  }, []);
+
+  // Get columns with our custom expand handler
+  const columns = React.useMemo(() => {
+    return getColumns(handleToggleExpand) as unknown as ColumnDef<TData>[];
+  }, [handleToggleExpand]);
 
   const table = useReactTable({
     data,
@@ -86,7 +105,32 @@ export function DataTable<TData>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    // Add a cell context updater to expose the expanded state
+    getRowCanExpand: () => true,
+    getIsRowExpanded: (row) => row.id === expandedRowId,
   });
+
+  // Update the selectedDocument whenever expandedRowId changes
+  React.useEffect(() => {
+    if (expandedRowId) {
+      const foundRow = table.getRowModel().rows.find((row) => row.id === expandedRowId);
+      if (foundRow) {
+        setSelectedDocument(foundRow.original as TData);
+        setSidebarOpen(true);
+      }
+    } else {
+      setSidebarOpen(false);
+    }
+  }, [expandedRowId, table]);
+
+  // Update the column visibility when sidebar opens/closes
+  React.useEffect(() => {
+    if (sidebarOpen) {
+      setColumnVisibility((prev) => ({ ...prev, Tags: false }));
+    } else {
+      setColumnVisibility((prev) => ({ ...prev, Tags: true }));
+    }
+  }, [sidebarOpen]);
 
   React.useEffect(() => {
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id);
@@ -160,71 +204,137 @@ export function DataTable<TData>({
     table.resetRowSelection();
   };
 
+  const handleCloseSidebar = () => {
+    setExpandedRowId(null);
+    setSidebarOpen(false);
+  };
+
+  // Handler for row click to expand
+  const handleRowClick = (e: React.MouseEvent, rowId: string) => {
+    // Exclude clicks on checkbox, button, badge, or when user is selecting text
+    const target = e.target as HTMLElement;
+
+    // Check if clicking on or inside these interactive elements
+    const isInteractiveElement =
+      target.closest('input[type="checkbox"]') ||
+      target.closest("button") ||
+      target.closest(".badge") ||
+      window.getSelection()?.toString();
+
+    if (!isInteractiveElement) {
+      handleToggleExpand(rowId);
+    }
+  };
+
   const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
   const showSkeleton = isLoading || isFetching;
   const skeletonRowCount = 8;
 
-  return (
-    <div className="space-y-4 relative">
-      <DataTableToolbar table={table} onFiltersChange={onFiltersChange} />
-      <div className={`rounded-md border ${showSkeleton ? "min-h-[400px]" : ""}`}>
-        <Table>
-          <TableHeader className="bg-gray-100">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {showSkeleton ? (
-              Array.from({ length: skeletonRowCount }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  {Array.from({ length: columns.length }).map((_, cellIndex) => (
-                    <TableCell key={`skeleton-cell-${cellIndex}`}>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <DataTablePagination table={table} />
+  // Use the same transition values as the sidebar for consistency
+  const transitionConfig = {
+    type: "tween",
+    duration: 0.3,
+    ease: "easeInOut",
+  };
 
-      <AnimatePresence>
-        {selectedRowCount > 0 && (
-          <TableSelectionActions
-            selectedCount={selectedRowCount}
-            onStartChat={handleStartChat}
-            onDelete={handleDelete}
-            onSelectAll={handleSelectAll}
-            isDeleting={isDeleting}
-            isBuildingIndex={isBuildingIndex}
-          />
-        )}
-      </AnimatePresence>
+  return (
+    <div className="space-y-4">
+      <DataTableToolbar table={table} onFiltersChange={onFiltersChange} />
+
+      <div className="flex space-x-0">
+        <motion.div
+          className="relative"
+          animate={{
+            width: sidebarOpen ? "60%" : "100%",
+          }}
+          transition={transitionConfig}
+        >
+          <div className="space-y-4">
+            <div className={`rounded-md border ${showSkeleton ? "min-h-[400px]" : "min-h-[500px]"}`}>
+              <Table>
+                <TableHeader className="bg-gray-50">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id} colSpan={header.colSpan}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(header.column.columnDef.header, header.getContext())}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {showSkeleton
+                    ? Array.from({ length: skeletonRowCount }).map((_, i) => (
+                        <TableRow className="animate-pulse" key={i}>
+                          {Array.from({ length: 6 }).map((_, j) => (
+                            <TableCell key={j}>
+                              <div className="h-6 bg-gray-200 rounded"></div>
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    : table.getRowModel().rows?.length
+                    ? table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && "selected"}
+                          className={`${
+                            row.getIsExpanded() ? "bg-gray-100 font-semibold" : ""
+                          } cursor-pointer transition-colors hover:bg-gray-50`}
+                          onClick={(e) => handleRowClick(e, row.id)}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    : !showSkeleton && (
+                        <TableRow>
+                          <TableCell colSpan={columns.length} className="h-24 text-center">
+                            No results.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                </TableBody>
+              </Table>
+            </div>
+            <DataTablePagination table={table} />
+          </div>
+        </motion.div>
+
+        <AnimatePresence>
+          {sidebarOpen && selectedDocument && (
+            <motion.div
+              className="w-[40%] border border-gray-200 z-10"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={transitionConfig}
+            >
+              <DocumentSidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} document={selectedDocument} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Selection toolbar */}
+      {selectedRowCount > 0 && (
+        <TableSelectionActions
+          selectedCount={selectedRowCount}
+          onDelete={handleDelete}
+          onStartChat={handleStartChat}
+          onSelectAll={handleSelectAll}
+          isBuildingIndex={isBuildingIndex}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 }

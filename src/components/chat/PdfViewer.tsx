@@ -9,13 +9,7 @@ import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
 import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import "tippy.js/dist/tippy.css";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PdfViewerProps {
   pdfUrl: string;
@@ -27,26 +21,12 @@ interface PdfViewerProps {
   initialPage?: number;
 }
 
-export const PdfViewer = ({ 
-  pdfUrl, 
-  selectedPdfs, 
-  onPdfChange,
-  initialPage = 1 
-}: PdfViewerProps) => {
+export const PdfViewer = ({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1 }: PdfViewerProps) => {
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const zoomPluginInstance = zoomPlugin();
-  const { 
-    ZoomInButton, 
-    ZoomOutButton, 
-    zoomTo 
-  } = zoomPluginInstance;
-  const {
-    CurrentPageLabel,
-    GoToNextPageButton,
-    GoToPreviousPageButton,
-    NumberOfPages,
-    jumpToPage,
-  } = pageNavigationPluginInstance;
+  const { ZoomInButton, ZoomOutButton, zoomTo } = zoomPluginInstance;
+  const { CurrentPageLabel, GoToNextPageButton, GoToPreviousPageButton, NumberOfPages, jumpToPage } =
+    pageNavigationPluginInstance;
 
   // Set initial page when component mounts or when initialPage changes
   useEffect(() => {
@@ -58,13 +38,19 @@ export const PdfViewer = ({
   // Get the first PDF's ID as default value
   const defaultPdfId = selectedPdfs[0]?.id;
 
+  // Extract the file ID from the URL (second to last segment)
+  const getFileIdFromUrl = (url: string) => {
+    const segments = url.split("/").filter(Boolean);
+    return segments.length >= 2 ? segments[segments.length - 2] : "";
+  };
+
   return (
     <div className="relative h-[calc(100vh-129px)] w-full overflow-auto p-4 bg-[#fcfcfb] custom-scroll flex flex-col">
       <div className="sticky top-0 z-10 mb-4 flex justify-end">
         <Select onValueChange={onPdfChange} defaultValue={defaultPdfId}>
           <SelectTrigger className="w-[300px]">
             <SelectValue placeholder="Select a PDF">
-              {selectedPdfs.find(pdf => pdf.id === pdfUrl.split('/').pop())?.filename}
+              {selectedPdfs.find((pdf) => pdf.id === getFileIdFromUrl(pdfUrl))?.filename}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -79,38 +65,31 @@ export const PdfViewer = ({
 
       <div className="bg-white w-full pdf_preview flex-1 overflow-hidden">
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-          <Viewer
-            fileUrl={pdfUrl}
-            defaultScale={1.3}
-            plugins={[pageNavigationPluginInstance, zoomPluginInstance]}
-          />
+          <Viewer fileUrl={pdfUrl} defaultScale={1.3} plugins={[pageNavigationPluginInstance, zoomPluginInstance]} />
         </Worker>
       </div>
 
       <div className="sticky bottom-0 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-lg flex items-center justify-center gap-3 px-4 pt-2 pb-1 max-w-[300px]">
-          <GoToPreviousPageButton />
+        <GoToPreviousPageButton />
         <span className="text-sm font-medium text-[#707070]">
-            <CurrentPageLabel /> of <NumberOfPages />
+          <CurrentPageLabel /> of <NumberOfPages />
         </span>
-          <GoToNextPageButton />
+        <GoToNextPageButton />
 
         <div className="flex items-center gap-1">
-            <div>
-              <ZoomOutButton />
-            </div>
-            <div>
-              <button
-                onClick={() => zoomTo(1.3)}
-                className="rounded-sm hover:bg-[#0000001a] p-2 mb-[6px]"
-              >
-                <RotateCw width={16} height={16} color="#707070" />
-              </button>
-            </div>
-            <div>
-              <ZoomInButton />
-            </div>
+          <div>
+            <ZoomOutButton />
+          </div>
+          <div>
+            <button onClick={() => zoomTo(1.3)} className="rounded-sm hover:bg-[#0000001a] p-2 mb-[6px]">
+              <RotateCw width={16} height={16} color="#707070" />
+            </button>
+          </div>
+          <div>
+            <ZoomInButton />
+          </div>
         </div>
       </div>
     </div>
   );
-}; 
+};

@@ -16,7 +16,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
-import { Minimize2, Expand } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteDocuments } from "@/lib/api/knowledge-base";
@@ -45,7 +44,6 @@ interface DataTableProps<TData> {
 
 export function DataTable<TData>({
   data,
-  columns: initialColumns,
   onSelectionChange,
   onSortingChange,
   onFiltersChange,
@@ -250,7 +248,7 @@ export function DataTable<TData>({
           transition={transitionConfig}
         >
           <div className="space-y-4">
-            <div className={`rounded-md border ${showSkeleton ? "min-h-[400px]" : "min-h-[500px]"}`}>
+          <div className={`rounded-md border ${showSkeleton ? "min-h-[250px]" : "min-h-[0]"}`}>
               <Table>
                 <TableHeader className="bg-gray-50">
                   {table.getHeaderGroups().map((headerGroup) => (

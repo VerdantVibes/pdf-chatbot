@@ -19,9 +19,16 @@ interface PdfViewerProps {
   }>;
   onPdfChange: (pdfId: string) => void;
   initialPage?: number;
+  simplified?: boolean;
 }
 
-export const PdfViewer = ({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1 }: PdfViewerProps) => {
+export const PdfViewer = ({ 
+  pdfUrl, 
+  selectedPdfs, 
+  onPdfChange, 
+  initialPage = 1,
+  simplified = false 
+}: PdfViewerProps) => {
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const zoomPluginInstance = zoomPlugin();
   const { ZoomInButton, ZoomOutButton, zoomTo } = zoomPluginInstance;
@@ -46,50 +53,57 @@ export const PdfViewer = ({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1 }
 
   return (
     <div className="relative h-[calc(100vh-129px)] w-full overflow-auto p-4 bg-[#fcfcfb] custom-scroll flex flex-col">
-      <div className="sticky top-0 z-10 mb-4 flex justify-end">
-        <Select onValueChange={onPdfChange} defaultValue={defaultPdfId}>
-          <SelectTrigger className="w-[300px]">
-            <SelectValue placeholder="Select a PDF">
-              {selectedPdfs.find((pdf) => pdf.id === getFileIdFromUrl(pdfUrl))?.filename}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {selectedPdfs.map((pdf) => (
-              <SelectItem key={pdf.id} value={pdf.id}>
-                {pdf.filename}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Only show dropdown if not simplified */}
+      {!simplified && (
+        <div className="sticky top-0 z-10 mb-4 flex justify-end">
+          <Select onValueChange={onPdfChange} defaultValue={defaultPdfId}>
+            <SelectTrigger className="w-[300px]">
+              <SelectValue placeholder="Select a PDF">
+                {selectedPdfs.find((pdf) => pdf.id === getFileIdFromUrl(pdfUrl))?.filename}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {selectedPdfs.map((pdf) => (
+                <SelectItem key={pdf.id} value={pdf.id}>
+                  {pdf.filename}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-      <div className="bg-white w-full pdf_preview flex-1 overflow-hidden">
+      {/* PDF Content */}
+      <div className="flex-1">
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-          <Viewer fileUrl={pdfUrl} defaultScale={1.3} plugins={[pageNavigationPluginInstance, zoomPluginInstance]} />
+          <Viewer fileUrl={pdfUrl} defaultScale={1} plugins={[pageNavigationPluginInstance, zoomPluginInstance]} />
         </Worker>
       </div>
 
-      <div className="sticky bottom-0 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-lg flex items-center justify-center gap-3 px-4 pt-2 pb-1 max-w-[300px]">
-        <GoToPreviousPageButton />
-        <span className="text-sm font-medium text-[#707070]">
-          <CurrentPageLabel /> of <NumberOfPages />
-        </span>
-        <GoToNextPageButton />
+      {/* Only show controls if not simplified */}
+      {!simplified && (
+        <div className="sticky bottom-0 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-lg flex items-center justify-center gap-3 px-4 pt-2 pb-1 max-w-[300px]">
+          <GoToPreviousPageButton />
+          <span className="text-sm font-medium text-[#707070]">
+            <CurrentPageLabel /> of <NumberOfPages />
+          </span>
+          <GoToNextPageButton />
 
-        <div className="flex items-center gap-1">
-          <div>
-            <ZoomOutButton />
-          </div>
-          <div>
-            <button onClick={() => zoomTo(1.3)} className="rounded-sm hover:bg-[#0000001a] p-2 mb-[6px]">
-              <RotateCw width={16} height={16} color="#707070" />
-            </button>
-          </div>
-          <div>
-            <ZoomInButton />
+          <div className="flex items-center gap-1">
+            <div>
+              <ZoomOutButton />
+            </div>
+            <div>
+              <button onClick={() => zoomTo(1.3)} className="rounded-sm hover:bg-[#0000001a] p-2 mb-[6px]">
+                <RotateCw width={16} height={16} color="#707070" />
+              </button>
+            </div>
+            <div>
+              <ZoomInButton />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

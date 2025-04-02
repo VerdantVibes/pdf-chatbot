@@ -2,9 +2,9 @@ import { X, CheckCircle, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PdfViewer } from "@/components/chat/PdfViewer";
+import { SimplePdfViewer } from "@/components/private-assets/components/pdf-viewer";
 import pdfIcon from "@/assets/pdficon.svg";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface DocumentSidebarProps {
   isOpen: boolean;
@@ -67,8 +67,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
 
   const { ai_summary, signals = [], threads = [] } = analysis;
 
-  const [currentPdfId, setCurrentPdfId] = useState<string>(id || "");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [, setCurrentPdfId] = useState<string>(id || "");
+  const [currentPage,] = useState(1);
 
   const selectedPdfs = [
     {
@@ -282,7 +282,7 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
               <TabsContent value="doc" className="mt-0 h-full p-0">
                 {hasValidPdfUrl ? (
                   <div className="h-full">
-                    <PdfViewer
+                    <SimplePdfViewer
                       pdfUrl={documentUrl}
                       selectedPdfs={selectedPdfs}
                       onPdfChange={handlePdfChange}

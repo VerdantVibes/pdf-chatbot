@@ -35,8 +35,8 @@ export const getColumns = (onRowExpand?: (rowId: string) => void): ExtendedColum
     accessorKey: "email_subject",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Document" />,
     cell: ({ row }) => (
-      <div className="w-fit space-y-2 group relative text-sm max-w-48">
-        <div>{row.original?.email_subject}</div>
+      <div className="w-fit space-y-2 group relative text-sm max-w-60">
+        <div className="truncate">{row.original?.email_subject}</div>
       </div>
     ),
     enableSorting: false,

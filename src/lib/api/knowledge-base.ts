@@ -55,8 +55,8 @@ export const deleteDocuments = async (documentIds: string[]) => {
     const response = await Axios.delete("/pdf/delete", {
       data: {
         pdf_ids: documentIds,
-        delete_from_drive: false
-      }
+        delete_from_drive: false,
+      },
     });
     return response.data;
   } catch (error) {

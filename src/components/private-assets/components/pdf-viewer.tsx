@@ -10,15 +10,10 @@ interface SimplePdfViewerProps {
   initialPage?: number;
 }
 
-export function SimplePdfViewer({
-  pdfUrl,
-  selectedPdfs,
-  onPdfChange,
-  initialPage = 1
-}: SimplePdfViewerProps) {
+export function SimplePdfViewer({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1 }: SimplePdfViewerProps) {
   return (
     <div className="h-full relative">
-      <PdfViewer 
+      <PdfViewer
         pdfUrl={pdfUrl}
         selectedPdfs={selectedPdfs}
         onPdfChange={onPdfChange}

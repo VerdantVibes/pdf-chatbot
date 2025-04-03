@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SimplePdfViewer } from "@/components/private-assets/components/pdf-viewer";
 import pdfIcon from "@/assets/pdficon.svg";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 interface DocumentSidebarProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
   const { ai_summary, signals = [], threads = [] } = analysis;
 
   const [, setCurrentPdfId] = useState<string>(id || "");
-  const [currentPage,] = useState(1);
+  const [currentPage] = useState(1);
 
   const selectedPdfs = [
     {
@@ -151,42 +152,30 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 <div className="space-y-4">
                   <div className="pb-4">
                     <h3 className="text-sm font-semibold mb-2">Document</h3>
-                    {drive_web_link ? (
-                      <a href={drive_web_link} target="_blank" rel="noopener noreferrer" className="block group">
-                        <div
-                          className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 
-                          transition-all duration-300 ease-in-out 
-                          transform group-hover:translate-y-[-2px] group-hover:border-blue-300 group-hover:shadow-md
-                          group-hover:bg-white group-active:translate-y-[0px] group-active:shadow-sm"
-                        >
-                          <div className="p-2 rounded transition-all duration-300">
-                            <img
-                              src={pdfIcon}
-                              alt="PDF Icon"
-                              className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
-                            />
-                          </div>
-                          <div>
-                            <p className="text-sm text-black font-semibold transition-colors duration-300 group-hover:text-blue-600">
-                              {email_subject || "Untitled Document"}
-                            </p>
-                            <p className="text-xs text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
-                              {filename || "document.pdf"}
-                            </p>
-                          </div>
-                        </div>
-                      </a>
-                    ) : (
-                      <div className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50">
-                        <div className="p-2 rounded">
-                          <img src={pdfIcon} alt="PDF Icon" className="w-6 h-6" />
+                    <Link to={`/document/${id}`} state={{ document }} className="block group">
+                      <div
+                        className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 
+                        transition-all duration-300 ease-in-out 
+                        transform group-hover:translate-y-[-2px] group-hover:border-blue-300 group-hover:shadow-md
+                        group-hover:bg-white group-active:translate-y-[0px] group-active:shadow-sm"
+                      >
+                        <div className="p-2 rounded transition-all duration-300">
+                          <img
+                            src={pdfIcon}
+                            alt="PDF Icon"
+                            className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
+                          />
                         </div>
                         <div>
-                          <p className="text-sm text-black font-semibold">{email_subject || "Untitled Document"}</p>
-                          <p className="text-xs text-gray-500">{filename || "document.pdf"}</p>
+                          <p className="text-sm text-black font-semibold transition-colors duration-300 group-hover:text-blue-600">
+                            {email_subject || "Untitled Document"}
+                          </p>
+                          <p className="text-xs text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
+                            {filename || "document.pdf"}
+                          </p>
                         </div>
                       </div>
-                    )}
+                    </Link>
                   </div>
 
                   <div>

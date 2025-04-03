@@ -26,7 +26,7 @@ export function TableSelectionActions({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 80, opacity: 0 }}
       transition={{ type: "spring", damping: 20, stiffness: 400 }}
-      className="sticky left-0 right-0 bottom-8 mx-auto w-fit z-49 flex items-center gap-2 bg-white dark:bg-gray-800 px-6 py-2.5 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+      className="sticky left-0 right-0 bottom-8 mx-auto w-fit z-50 flex items-center gap-2 bg-white dark:bg-gray-800 px-6 py-2.5 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
     >
       <div className="flex items-center gap-2">
         <Checkbox

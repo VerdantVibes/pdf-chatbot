@@ -1,0 +1,42 @@
+.pdf-container .rpv-core__canvas-layer {
+  padding: 5px 10px 5px 4px !important;
+}
+
+.pdf-container ::-webkit-scrollbar {
+  display: none;
+}
+
+.pdf-container .rpv-core__viewer {
+  width: 100% !important;
+}
+
+.pdf-container .rpv-core__inner-container {
+  width: 100% !important;
+}
+
+.pdf-container .rpv-core__page-layer {
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-container .rpv-core__page-layer-inner {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+}
+
+.pdf-container .rpv-core__page {
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+.pdf-container .rpv-core__text-layer {
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.pdf-container .rpv-core__viewer-content {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+}

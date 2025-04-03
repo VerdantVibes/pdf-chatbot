@@ -9,6 +9,7 @@ import Chat from "./pages/Chat";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import DocumentViewer from "./pages/DocumentViewerPage";
 
 function App() {
   return (
@@ -55,6 +56,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/document/:id"
+            element={
+              <ProtectedRoute>
+                <DocumentViewer />
               </ProtectedRoute>
             }
           />

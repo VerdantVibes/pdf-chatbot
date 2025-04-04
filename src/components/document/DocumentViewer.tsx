@@ -193,6 +193,22 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
     handleUpdateNote(noteId, { note_content: editNoteContent }, originalNote);
   };
 
+  // Add a function to handle clicking on a note to navigate to its highlight
+  const navigateToHighlight = (note: NoteResponse) => {
+    if (!note.page_number || !note.position_data || !note.position_data.rects || note.position_data.rects.length === 0) {
+      return;
+    }
+
+    // Dispatch an event that the PDF viewer is listening for
+    const event = new CustomEvent("scrollToHighlight", {
+      detail: {
+        pageNumber: note.page_number,
+        rects: note.position_data.rects
+      }
+    });
+    window.document.dispatchEvent(event);
+  };
+
   return (
     <div className={`flex h-[calc(100vh-80px)] space-x-4 ${!sidebarOpen ? "mt-4" : ""}`}>
       <div className="w-1/2 h-[calc(100vh-65px)] relative">
@@ -278,7 +294,8 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                 : note.isOptimistic && note.isError
                                 ? "opacity-70 border-red-200 bg-red-50 border-l-4 border-l-red-500"
                                 : "opacity-100"
-                            }`}
+                            } ${note.page_number ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                            onClick={() => note.page_number && navigateToHighlight(note)}
                           >
                             <div className="flex items-start">
                               {isMultiSelectActive && !note.isDeleting && (
@@ -291,10 +308,15 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                 </div>
                               )}
                               <div
-                                className="w-4 h-4 rounded mt-0.5 mr-2"
+                                className="w-4 h-4 rounded mt-0.5 mr-2 flex-shrink-0"
                                 style={{ backgroundColor: note.highlight_color || "" }}
                               />
                               <div className="flex-1">
+                                {note.highlighted_text && (
+                                  <div className="text-sm text-gray-700 font-medium mb-1">
+                                    {note.highlighted_text}
+                                  </div>
+                                )}
                                 {editingNoteId === note.id ? (
                                   <div className="flex flex-col gap-2 mt-2">
                                     <Textarea

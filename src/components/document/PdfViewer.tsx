@@ -10,8 +10,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-// import { useCreateNote } from "@/lib/api/pdf-notes";
-// import { toast } from "sonner";
+import { useCreateNote } from "@/lib/api/pdf-notes";
+import { toast } from "sonner";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
@@ -66,7 +66,7 @@ export function PdfViewer({ pdfUrl, initialPage = 1 }: PdfViewerProps) {
   const { zoomTo } = zoomPluginInstance;
   const { jumpToPage } = pageNavigationPluginInstance;
 
-  // const createNoteMutation = useCreateNote();
+  const createNoteMutation = useCreateNote();
 
   useEffect(() => {
     if (initialPage > 1 && isDocumentLoaded) {
@@ -176,124 +176,152 @@ export function PdfViewer({ pdfUrl, initialPage = 1 }: PdfViewerProps) {
     zoomTo(defaultZoomRef.current);
   };
 
-  // const handlePlusButtonClick = () => {
-  //   if (!selectedText) return;
+  const handleHighlightSelection = async () => {
+    if (!selectedText || !selectionRange || !viewerRef.current) {
+      return;
+    }
 
-  //   const urlParts = pdfUrl.split("/");
-  //   const pdfId = urlParts.length >= 2 ? urlParts[urlParts.length - 2] : "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+    try {
+      const pageNumber = currentPage;
+      
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      
+      const range = selection.getRangeAt(0);
+      const textLayer = viewerRef.current.querySelector(".rpv-core__text-layer");
+      if (!textLayer) return;
+      
+      const rects = [];
+      const domRects = range.getClientRects();
+      
+      for (let i = 0; i < domRects.length; i++) {
+        const rect = domRects[i];
+        const viewerRect = viewerRef.current.getBoundingClientRect();
+        
+        const relativeRect = [
+          rect.left - viewerRect.left,
+          rect.top - viewerRect.top,
+          rect.right - viewerRect.left,
+          rect.bottom - viewerRect.top
+        ];
+        
+        rects.push(relativeRect);
+      }
+      
+      const positionData = {
+        rects: rects,
+        page_width: textLayer.clientWidth,
+        page_height: textLayer.clientHeight,
+        text_node_indices: [],
+        text_context: "",
+        character_start_index: 0,
+        character_end_index: 0
+      };
+      
+      const documentId = window.location.pathname.split('/').pop();
+      
+      await createNoteMutation.mutateAsync({
+        pdf_id: documentId,
+        page_number: pageNumber,
+        highlighted_text: selectedText,
+        note_content: "",
+        position_data: positionData,
+        highlight_color: highlightColor
+      });
+      
+      const highlightedSpan = document.createElement('span');
+      highlightedSpan.style.backgroundColor = highlightColor;
+      highlightedSpan.style.position = 'absolute';
+      
+      for (let i = 0; i < domRects.length; i++) {
+        const rect = domRects[i];
+        const viewerRect = viewerRef.current.getBoundingClientRect();
+        
+        const highlightDiv = document.createElement('div');
+        highlightDiv.style.position = 'absolute';
+        highlightDiv.style.left = `${rect.left - viewerRect.left}px`;
+        highlightDiv.style.top = `${rect.top - viewerRect.top}px`;
+        highlightDiv.style.width = `${rect.width}px`;
+        highlightDiv.style.height = `${rect.height}px`;
+        highlightDiv.style.backgroundColor = highlightColor;
+        highlightDiv.style.opacity = '0.4';
+        highlightDiv.style.pointerEvents = 'none';
+        
+        textLayer.appendChild(highlightDiv);
+      }
+      
+      window.getSelection()?.removeAllRanges();
+      setSelectedText("");
+      setSelectionRange(null);
+      
+      const event = new CustomEvent("highlightCreated");
+      window.document.dispatchEvent(event);
+      
+      toast.success("Text highlighted successfully");
+    } catch (error) {
+      console.error("Failed to highlight text:", error);
+      toast.error("Failed to highlight text");
+    }
+  };
 
-  //   const textLayer = document.querySelector(".rpv-core__text-layer");
-  //   const pageContainer = document.querySelector(".rpv-core__viewer-current");
-  //   const pageCanvas = pageContainer?.querySelector(".rpv-core__page-layer-canvas");
+  const scrollToHighlight = (pageNumber: number, rects: number[][]) => {
+    if (!pageNumber || !rects || rects.length === 0) return;
+    
+    jumpToPage(pageNumber - 1);
+    
+    setTimeout(() => {
+      const textLayer = viewerRef.current?.querySelector(".rpv-core__text-layer");
+      if (!textLayer) return;
+      
+      const rect = rects[0];
+      
+      const scrollTop = rect[1] - 100;
+      viewerRef.current.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth'
+      });
+      
+      const highlightIndicator = document.createElement('div');
+      highlightIndicator.style.position = 'absolute';
+      highlightIndicator.style.left = `${rect[0]}px`;
+      highlightIndicator.style.top = `${rect[1]}px`;
+      highlightIndicator.style.width = `${rect[2] - rect[0]}px`;
+      highlightIndicator.style.height = `${rect[3] - rect[1]}px`;
+      highlightIndicator.style.border = '2px solid #000';
+      highlightIndicator.style.backgroundColor = 'rgba(255, 255, 0, 0.3)';
+      highlightIndicator.style.animation = 'fadeOut 2s forwards';
+      highlightIndicator.style.zIndex = '1000';
+      
+      const style = document.createElement('style');
+      style.innerHTML = `
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      textLayer.appendChild(highlightIndicator);
+      
+      setTimeout(() => {
+        textLayer.removeChild(highlightIndicator);
+        document.head.removeChild(style);
+      }, 2000);
+    }, 300);
+  };
 
-  //   let pageWidth = 0;
-  //   let pageHeight = 0;
-
-  //   if (pageCanvas instanceof HTMLElement) {
-  //     pageWidth = pageCanvas.offsetWidth;
-  //     pageHeight = pageCanvas.offsetHeight;
-  //   }
-
-  //   let rects: number[][] = [[0]];
-
-  //   if (selectionRange && textLayer) {
-  //     try {
-  //       const clientRects = selectionRange.getClientRects();
-
-  //       if (clientRects.length > 0) {
-  //         const textLayerRect = textLayer.getBoundingClientRect();
-
-  //         rects = Array.from(clientRects).map((rect) => [
-  //           Math.round(rect.left - textLayerRect.left),
-  //           Math.round(rect.top - textLayerRect.top),
-  //           Math.round(rect.right - textLayerRect.left),
-  //           Math.round(rect.bottom - textLayerRect.top),
-  //         ]);
-  //       }
-  //     } catch (e) {
-  //       console.error("Error getting selection rectangles:", e);
-  //     }
-  //   }
-
-  //   let textContext = selectedText;
-  //   let characterStartIndex = 0;
-  //   let characterEndIndex = selectedText.length;
-
-  //   if (textLayer && textLayer.textContent) {
-  //     const fullText = textLayer.textContent;
-  //     const selectionIndex = fullText.indexOf(selectedText);
-
-  //     if (selectionIndex !== -1) {
-  //       const contextLength = 50;
-  //       const startContext = Math.max(0, selectionIndex - contextLength);
-  //       const endContext = Math.min(fullText.length, selectionIndex + selectedText.length + contextLength);
-
-  //       textContext = fullText.substring(startContext, endContext);
-  //       characterStartIndex = selectionIndex - startContext;
-  //       characterEndIndex = characterStartIndex + selectedText.length;
-  //     }
-  //   }
-
-  //   const textNodeIndices = Array.from({ length: selectedText.length }, (_, i) => characterStartIndex + i);
-
-  //   const highlightData = {
-  //     pdf_id: pdfId,
-  //     page_number: currentPage - 1,
-  //     highlighted_text: selectedText,
-  //     note_content: "",
-  //     position_data: {
-  //       rects: rects,
-  //       page_width: pageWidth,
-  //       page_height: pageHeight,
-  //       text_node_indices: textNodeIndices,
-  //       text_context: textContext,
-  //       character_start_index: characterStartIndex,
-  //       character_end_index: characterEndIndex,
-  //     },
-  //     highlight_color: highlightColor,
-  //   };
-
-  //   saveHighlight(highlightData);
-
-  //   window.getSelection()?.removeAllRanges();
-  //   setSelectedText("");
-  //   setSelectionRange(null);
-  // };
-
-  // const saveHighlight = async (highlightData: HighlightData) => {
-  //   try {
-  //     toast.info("Highlighting text...", {
-  //       id: "highlight-toast",
-  //       duration: 2000,
-  //     });
-
-  //     await createNoteMutation.mutateAsync({
-  //       pdf_id: highlightData.pdf_id,
-  //       page_number: highlightData.page_number,
-  //       highlighted_text: highlightData.highlighted_text,
-  //       note_content:
-  //         highlightData.note_content ||
-  //         `Highlight: ${highlightData.highlighted_text.substring(0, 30)}${
-  //           highlightData.highlighted_text.length > 30 ? "..." : ""
-  //         }`,
-  //       position_data: highlightData.position_data,
-  //       highlight_color: highlightData.highlight_color,
-  //     });
-
-  //     toast.success("Text highlighted successfully", {
-  //       id: "highlight-toast",
-  //       duration: 2000,
-  //     });
-
-  //     const customEvent = new CustomEvent("highlightCreated", { detail: highlightData });
-  //     window.document.dispatchEvent(customEvent);
-  //   } catch (error) {
-  //     console.error("Error saving highlight:", error);
-  //     toast.error("Failed to highlight text. Please try again.", {
-  //       id: "highlight-toast",
-  //     });
-  //   }
-  // };
+  useEffect(() => {
+    const handleScrollToHighlight = (event: CustomEvent) => {
+      const { pageNumber, rects } = event.detail;
+      scrollToHighlight(pageNumber, rects);
+    };
+    
+    window.document.addEventListener("scrollToHighlight", handleScrollToHighlight as EventListener);
+    
+    return () => {
+      window.document.removeEventListener("scrollToHighlight", handleScrollToHighlight as EventListener);
+    };
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -331,7 +359,13 @@ export function PdfViewer({ pdfUrl, initialPage = 1 }: PdfViewerProps) {
           <Button variant="outline" size="icon" className="h-8 w-8 text-gray-500" onClick={handleZoomIn}>
             <ZoomIn className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8 text-gray-700" disabled={!selectedText}>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 text-gray-700" 
+            disabled={!selectedText}
+            onClick={handleHighlightSelection}
+          >
             <Pencil className="h-4 w-4" />
           </Button>
           <DropdownMenu>

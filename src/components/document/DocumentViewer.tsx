@@ -91,7 +91,7 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
       isCreating: true,
     };
 
-    setLocalNotes((prev) => [...prev, optimisticNote]);
+    setLocalNotes((prev) => [optimisticNote, ...prev]);
 
     try {
       const response = await createNoteMutation.mutateAsync({

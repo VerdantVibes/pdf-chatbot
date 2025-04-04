@@ -5,11 +5,11 @@ import { AuthRoute } from "./components/auth/AuthRoute";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import PrivateAssets from "./pages/PrivateAssets";
-import Chat from "./pages/Chat";
+import { Chat } from "./pages/Chat";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import DocumentViewer from "./pages/DocumentViewerPage";
+import { DocumentViewer } from "./pages/DocumentViewerPage";
 
 function App() {
   return (

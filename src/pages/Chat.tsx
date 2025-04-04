@@ -5,8 +5,9 @@ import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FileUpload } from "@/components/chat/FileUpload";
 import { buildChatIndex } from "@/lib/api/chat";
+import { Button } from "@/components/ui/button";
 
-export default function Chat() {
+export function Chat() {
   const [isFileViewOpen, setIsFileViewOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,12 +67,13 @@ export default function Chat() {
       <div className="flex w-full h-full overflow-hidden border-t border-stone-200">
         {/* File View Opener */}
         {!isFileViewOpen && (
-          <button
+          <Button
+            variant="ghost"
             className="absolute top-0 left-0 flex items-center gap-1 text-sm text-stone-700 font-semibold pl-2 pt-2 z-[99]"
             onClick={() => setIsFileViewOpen(true)}
           >
-            File viewer <ChevronRight width={14} />
-          </button>
+            File viewer <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
         )}
 
         {/* PDF Viewer Section */}
@@ -79,15 +81,16 @@ export default function Chat() {
           <div className="basis-1/2">
             <div className="flex items-center justify-between border-b border-stone-200 px-4 h-12">
               <h4 className="text-sm font-semibold flex items-center gap-1 text-stone-900">
-                <FileText width={16} /> PDF View{" "}
+                <FileText className="h-4 w-4" /> PDF View{" "}
                 <span className="text-stone-500 font-normal">({selectedPdfs.length} Selected)</span>
               </h4>
-              <button
-                className="flex items-center gap-1 text-sm text-stone-700 font-medium"
+              <Button
+                variant="ghost"
+                className="flex items-center gap-1 text-sm text-stone-700 font-medium h-8 px-2"
                 onClick={() => setIsFileViewOpen(false)}
               >
-                <ChevronLeft width={14} /> Hide view
-              </button>
+                <ChevronLeft className="h-3.5 w-3.5" /> Hide view
+              </Button>
             </div>
             <PdfViewer
               pdfUrl={currentPdfUrl}

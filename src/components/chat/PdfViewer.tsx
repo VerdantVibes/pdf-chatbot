@@ -3,6 +3,7 @@ import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
 import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import { RotateCw } from "lucide-react";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
@@ -22,13 +23,7 @@ interface PdfViewerProps {
   simplified?: boolean;
 }
 
-export const PdfViewer = ({ 
-  pdfUrl, 
-  selectedPdfs, 
-  onPdfChange, 
-  initialPage = 1,
-  simplified = false 
-}: PdfViewerProps) => {
+export function PdfViewer({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1, simplified = false }: PdfViewerProps) {
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const zoomPluginInstance = zoomPlugin();
   const { ZoomInButton, ZoomOutButton, zoomTo } = zoomPluginInstance;
@@ -94,9 +89,14 @@ export const PdfViewer = ({
               <ZoomOutButton />
             </div>
             <div>
-              <button onClick={() => zoomTo(1.3)} className="rounded-sm hover:bg-[#0000001a] p-2 mb-[6px]">
-                <RotateCw width={16} height={16} color="#707070" />
-              </button>
+              <Button
+                onClick={() => zoomTo(1.3)}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-sm text-[#707070]"
+              >
+                <RotateCw className="h-4 w-4" />
+              </Button>
             </div>
             <div>
               <ZoomInButton />
@@ -106,4 +106,4 @@ export const PdfViewer = ({
       )}
     </div>
   );
-};
+}

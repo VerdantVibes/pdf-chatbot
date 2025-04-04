@@ -3,18 +3,19 @@ import { useEffect } from "react";
 import { useBreadcrumbs } from "../layout";
 import { useSidebar } from "@/components/ui/sidebar";
 import { DocumentViewer as DocumentViewerComponent } from "@/components/document/DocumentViewer";
+import { Button } from "@/components/ui/button";
 
-export default function DocumentViewer() {
+export function DocumentViewer() {
   const { id } = useParams<{ id: string }>();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { state: sidebarState } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const document = location.state?.document;
+  const documentData = location.state?.document;
 
   useEffect(() => {
-    if (document) {
+    if (documentData) {
       setBreadcrumbs([
         {
           label: "Knowledge Base",
@@ -27,7 +28,7 @@ export default function DocumentViewer() {
           isCurrentPage: false,
         },
         {
-          label: (document.email_subject || document.filename || "Document") + " (Deep Read)",
+          label: (documentData.email_subject || documentData.filename || "Document") + " (Deep Read)",
           path: `/document/${id}`,
           isCurrentPage: true,
         },
@@ -37,9 +38,9 @@ export default function DocumentViewer() {
     return () => {
       setBreadcrumbs([]);
     };
-  }, [setBreadcrumbs, document, id]);
+  }, [setBreadcrumbs, documentData, id]);
 
-  if (!document) {
+  if (!documentData) {
     useEffect(() => {
       navigate("/private-assets", { replace: true });
     }, [navigate]);
@@ -50,9 +51,9 @@ export default function DocumentViewer() {
           <h2 className="text-lg font-semibold mb-2">Loading document...</h2>
           <p className="text-gray-500">
             If not redirected,{" "}
-            <button onClick={() => navigate("/private-assets")} className="text-primary hover:underline">
+            <Button onClick={() => navigate("/private-assets")} variant="link" className="h-auto p-0">
               click here
-            </button>
+            </Button>
           </p>
         </div>
       </div>
@@ -61,15 +62,15 @@ export default function DocumentViewer() {
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || "";
   const pdfUrl = id ? `${apiBaseUrl}/pdf/${id}/content` : "";
-  const googleDriveProxyUrl = document?.drive_file_id
-    ? `${apiBaseUrl}/proxy/googledrive/${document.drive_file_id}`
+  const googleDriveProxyUrl = documentData?.drive_file_id
+    ? `${apiBaseUrl}/proxy/googledrive/${documentData.drive_file_id}`
     : "";
 
   const documentUrl = pdfUrl || googleDriveProxyUrl;
 
   return (
     <div className="h-full">
-      <DocumentViewerComponent pdfUrl={documentUrl} document={document} sidebarOpen={sidebarState === "expanded"} />
+      <DocumentViewerComponent pdfUrl={documentUrl} document={documentData} sidebarOpen={sidebarState === "expanded"} />
     </div>
   );
 }

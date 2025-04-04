@@ -125,13 +125,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 px-4">
               {location.pathname === "/private-assets" && (
                 <>
-                  <Button
-                    onClick={handleImportDocument}
-                    className="h-9 px-4 py-2 flex items-center justify-center gap-2 rounded-[6px] border border-[#E4E4E7] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]"
-                    variant="outline"
-                  >
+                  <Button onClick={handleImportDocument} variant="outline" className="gap-2">
                     <UploadIcon className="h-4 w-4" />
-                    <span className="text-[#18181B] font-sans text-sm font-medium leading-5">Import Document</span>
+                    <span>Import Document</span>
                   </Button>
                 </>
               )}

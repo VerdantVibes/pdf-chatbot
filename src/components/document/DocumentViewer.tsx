@@ -168,6 +168,9 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
             return noteExists ? currentNotes : [...currentNotes, noteToDelete];
           });
         },
+        onSuccess: () => {
+          refetchNotes();
+        },
       }
     );
   };

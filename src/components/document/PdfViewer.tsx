@@ -175,7 +175,12 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
         if (specificPage && pageNumber !== specificPage) return;
 
         if (pageNumber === currentPage) {
-          const textLayer = viewerRef.current?.querySelector(".rpv-core__text-layer");
+          const textLayers = viewerRef.current?.querySelectorAll(".rpv-core__text-layer");
+          const textLayer = textLayers
+            ? [...textLayers].filter(
+                (textLayer) => textLayer.parentElement?.parentElement?.parentElement?.ariaLabel === `Page ${pageNumber}`
+              )[0]
+            : null;
           if (!textLayer) return;
 
           const effectiveZoom = typeof zoomLevel === "number" ? zoomLevel : 1;
@@ -359,22 +364,59 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
       if (!selection || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
-      const textLayer = viewerRef.current.querySelector(".rpv-core__text-layer");
-      if (!textLayer) return;
+
+      // Get all visible text layers
+      const textLayers = viewerRef.current.querySelectorAll(".rpv-core__text-layer");
+      if (!textLayers || textLayers.length === 0) {
+        console.error("No text layers found");
+        return;
+      }
+
+      // Find which text layer contains our selection
+      let activeTextLayer: Element | null = null;
+      let textLayerRect: DOMRect | null = null;
+
+      // Find the text layer that contains the selection
+      for (let i = 0; i < textLayers.length; i++) {
+        const layer = textLayers[i];
+        const layerRect = layer.getBoundingClientRect();
+        const rangeRect = range.getBoundingClientRect();
+
+        // Check if the selection is within this text layer's bounds
+        if (
+          rangeRect.top >= layerRect.top &&
+          rangeRect.bottom <= layerRect.bottom &&
+          rangeRect.left >= layerRect.left &&
+          rangeRect.right <= layerRect.right
+        ) {
+          activeTextLayer = layer;
+          textLayerRect = layerRect;
+          break;
+        }
+      }
+
+      if (!activeTextLayer || !textLayerRect) {
+        // If we couldn't find the exact layer, use the text layer of the current page
+        console.warn("Could not find exact text layer for selection, using current page text layer");
+        const currentPageLayer = viewerRef.current.querySelector(".rpv-core__text-layer");
+        if (!currentPageLayer) {
+          console.error("No text layer found for current page");
+          return;
+        }
+        activeTextLayer = currentPageLayer;
+        textLayerRect = activeTextLayer.getBoundingClientRect();
+      }
 
       const effectiveZoom = typeof zoomLevel === "number" ? zoomLevel : 1;
-
-      const pageWidth = textLayer.clientWidth;
-      const pageHeight = textLayer.clientHeight;
-
-      const viewerRect = viewerRef.current.getBoundingClientRect();
-      const textLayerRect = textLayer.getBoundingClientRect();
-
-      const rects = [];
-      const domRects = range.getClientRects();
+      const pageWidth = activeTextLayer.clientWidth;
+      const pageHeight = activeTextLayer.clientHeight;
 
       console.log("[DEBUG] Creating highlight with zoom:", effectiveZoom);
       console.log("[DEBUG] Page dimensions:", pageWidth, pageHeight);
+      console.log("[DEBUG] Current page:", pageNumber);
+
+      const rects = [];
+      const domRects = range.getClientRects();
 
       for (let i = 0; i < domRects.length; i++) {
         const rect = domRects[i];
@@ -417,27 +459,6 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
         highlight_color: highlightColor,
       });
 
-      for (let i = 0; i < domRects.length; i++) {
-        const rect = domRects[i];
-
-        const highlightDiv = document.createElement("div");
-        highlightDiv.style.position = "absolute";
-        highlightDiv.style.left = `${rect.left - textLayerRect.left}px`;
-        highlightDiv.style.top = `${rect.top - textLayerRect.top}px`;
-        highlightDiv.style.width = `${rect.width}px`;
-        highlightDiv.style.height = `${rect.height}px`;
-
-        const adjustedColor = saturateColor(highlightColor, 30);
-
-        highlightDiv.style.backgroundColor = adjustedColor;
-        highlightDiv.style.opacity = "1";
-        highlightDiv.style.mixBlendMode = "multiply";
-        highlightDiv.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
-        highlightDiv.style.pointerEvents = "none";
-
-        textLayer.appendChild(highlightDiv);
-      }
-
       window.getSelection()?.removeAllRanges();
       setSelectedText("");
       setSelectionRange(null);
@@ -455,7 +476,13 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
     jumpToPage(pageNumber - 1);
 
     setTimeout(() => {
-      const textLayer = viewerRef.current?.querySelector(".rpv-core__text-layer");
+      const textLayers = viewerRef.current?.querySelectorAll(".rpv-core__text-layer");
+
+      const textLayer = textLayers
+        ? [...textLayers].filter(
+            (textLayer) => textLayer.parentElement?.parentElement?.parentElement?.ariaLabel === `Page ${pageNumber}`
+          )[0]
+        : null;
       if (!textLayer) {
         console.error("Text layer not found when trying to scroll to highlight");
         return;
@@ -488,6 +515,7 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
       highlightIndicator.style.width = `${width}px`;
       highlightIndicator.style.height = `${height}px`;
       highlightIndicator.style.backgroundColor = "rgba(255, 215, 0, 0.6)";
+      highlightIndicator.style.border = "3px solid rgba(255, 215, 0, 0.8)";
       highlightIndicator.style.boxShadow = "0 0 10px rgba(255, 215, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.5)";
       highlightIndicator.style.zIndex = "1000";
 
@@ -655,7 +683,7 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
       </div>
 
       <div className="flex-1 overflow-hidden w-full" ref={viewerRef}>
-        <div className="pdf-container h-full w-full">
+        <div className="pdf-container h-full w-full relative">
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
             <Viewer
               fileUrl={pdfUrl}

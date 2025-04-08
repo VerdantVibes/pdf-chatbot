@@ -76,14 +76,12 @@ export const getColumns = (onRowExpand?: (rowId: string) => void): ExtendedColum
 
       const hours = date.getHours().toString().padStart(2, "0");
       const minutes = date.getMinutes().toString().padStart(2, "0");
-      const timezoneOffset = date.getTimezoneOffset() / 60;
-      const timezone = `GMT${timezoneOffset >= 0 ? "+" : ""}${timezoneOffset}`;
 
       return (
         <div className="w-fit text-nowrap font-medium flex flex-col">
           <span className={row.getIsExpanded() ? "font-bold" : ""}>{formattedDate}</span>
           <span className="text-gray-500">
-            {hours}:{minutes} {timezone}
+            {hours}:{minutes}
           </span>
         </div>
       );

@@ -13,6 +13,50 @@ interface DocumentSidebarProps {
   document: any;
 }
 
+interface IconProps {
+  className?: string;
+}
+
+const SummaryIcon = ({ className }: IconProps) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+    <path d="M11.8333 4.06641H2.5" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.5 8.06641H2.5" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M10.5667 12H2.5" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const SignalsIcon = ({ className }: IconProps) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+    <path d="M3.76641 12.7333C1.16641 10.1333 1.16641 5.8666 3.76641 3.2666" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5.70078 10.8005C4.16745 9.26712 4.16745 6.73379 5.70078 5.13379" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8.49935 9.33366C9.23573 9.33366 9.83268 8.73671 9.83268 8.00033C9.83268 7.26395 9.23573 6.66699 8.49935 6.66699C7.76297 6.66699 7.16602 7.26395 7.16602 8.00033C7.16602 8.73671 7.76297 9.33366 8.49935 9.33366Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11.3008 5.2002C12.8341 6.73353 12.8341 9.26686 11.3008 10.8669" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M13.2324 3.2666C15.8324 5.8666 15.8324 10.0666 13.2324 12.6666" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ThreadsIcon = ({ className }: IconProps) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M14 10C14 10.3536 13.8595 10.6928 13.6095 10.9428C13.3594 11.1929 13.0203 11.3333 12.6667 11.3333H4.66667L2 14V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H12.6667C13.0203 2 13.3594 2.14048 13.6095 2.39052C13.8595 2.64057 14 2.97971 14 3.33333V10Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8.66602 5.33301H4.66602" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11.3327 8H4.66602" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const DocIcon = ({ className }: IconProps) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="13" height="16" viewBox="0 0 13 16" fill="none">
+    <path d="M8.49935 1.33301H2.49935C2.14573 1.33301 1.80659 1.47348 1.55654 1.72353C1.30649 1.97358 1.16602 2.31272 1.16602 2.66634V13.333C1.16602 13.6866 1.30649 14.0258 1.55654 14.2758C1.80659 14.5259 2.14573 14.6663 2.49935 14.6663H10.4993C10.853 14.6663 11.1921 14.5259 11.4422 14.2758C11.6922 14.0258 11.8327 13.6866 11.8327 13.333V4.66634L8.49935 1.33301Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const InfoIcon = ({ className }: IconProps) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="17" height="16" viewBox="0 0 17 16" fill="none">
+    <path d="M8.50065 14.6663C12.1825 14.6663 15.1673 11.6816 15.1673 7.99967C15.1673 4.31778 12.1825 1.33301 8.50065 1.33301C4.81875 1.33301 1.83398 4.31778 1.83398 7.99967C1.83398 11.6816 4.81875 14.6663 8.50065 14.6663Z" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8.5 10.6667V8" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8.5 5.33301H8.50667" stroke="currentColor" strokeWidth="1.33" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
@@ -70,6 +114,7 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
 
   const [, setCurrentPdfId] = useState<string>(id || "");
   const [currentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("summary");
 
   const selectedPdfs = [
     {
@@ -105,38 +150,115 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
       className="h-full bg-white z-10 overflow-hidden"
     >
       <div className="flex flex-col h-full">
-        <Tabs defaultValue="summary" className="h-full flex flex-col">
+        <Tabs
+          defaultValue="summary"
+          className="h-full flex flex-col"
+          onValueChange={(value) => setActiveTab(value)}
+        >
           <header className="relative flex items-center">
             <div className="flex items-center w-full mx-4 mt-2">
-              <TabsList className="flex w-full justify-start bg-white p-0 h-10 space-x-3">
+              <TabsList
+                className="flex w-full justify-start p-0 space-x-3"
+                style={{
+                  borderRadius: "var(--border-radius-lg, 8px)",
+                  background: "var(--base-border-primary, #F4F4F5)",
+                  height: "var(--height-h-9, 36px)",
+                  flexShrink: 0,
+                }}
+              >
                 <TabsTrigger
                   value="summary"
-                  className="data-[state=active]:bg-gray-100 data-[state=active]:font-semibold data-[state=active]:ml-2 px-2"
+                  className={`px-2 ${
+                    activeTab === "summary"
+                      ? "bg-white shadow-md flex justify-center items-center gap-1"
+                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                  }`}
+                  style={{
+                    borderRadius: "var(--border-radius-md, 6px)",
+                    boxShadow:
+                      activeTab === "summary"
+                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                        : "none",
+                    flexShrink: 0,
+                  }}
                 >
+                  {activeTab === "summary" && <SummaryIcon />}
                   Summary
                 </TabsTrigger>
                 <TabsTrigger
                   value="signals"
-                  className="data-[state=active]:bg-gray-100 data-[state=active]:font-semibold data-[state=active]:ml-2 px-2"
+                  className={`px-2 ${
+                    activeTab === "signals"
+                      ? "bg-white shadow-md flex justify-center items-center gap-1"
+                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                  }`}
+                  style={{
+                    borderRadius: "var(--border-radius-md, 6px)",
+                    boxShadow:
+                      activeTab === "signals"
+                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                        : "none",
+                    flexShrink: 0,
+                  }}
                 >
+                  {activeTab === "signals" && <SignalsIcon />}
                   Signals
                 </TabsTrigger>
                 <TabsTrigger
                   value="threads"
-                  className="data-[state=active]:bg-gray-100 data-[state=active]:font-semibold data-[state=active]:ml-2 px-2"
+                  className={`px-2 ${
+                    activeTab === "threads"
+                      ? "bg-white shadow-md flex justify-center items-center gap-1"
+                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                  }`}
+                  style={{
+                    borderRadius: "var(--border-radius-md, 6px)",
+                    boxShadow:
+                      activeTab === "threads"
+                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                        : "none",
+                    flexShrink: 0,
+                  }}
                 >
+                  {activeTab === "threads" && <ThreadsIcon />}
                   Threads
                 </TabsTrigger>
                 <TabsTrigger
                   value="doc"
-                  className="data-[state=active]:bg-gray-100 data-[state=active]:font-semibold px-2"
+                  className={`px-2 ${
+                    activeTab === "doc"
+                      ? "bg-white shadow-md flex justify-center items-center gap-1"
+                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                  }`}
+                  style={{
+                    borderRadius: "var(--border-radius-md, 6px)",
+                    boxShadow:
+                      activeTab === "doc"
+                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                        : "none",
+                    flexShrink: 0,
+                  }}
                 >
+                  {activeTab === "doc" && <DocIcon />}
                   Doc
                 </TabsTrigger>
                 <TabsTrigger
                   value="info"
-                  className="data-[state=active]:bg-gray-100 data-[state=active]:font-semibold px-2"
+                  className={`px-2 ${
+                    activeTab === "info"
+                      ? "bg-white shadow-md flex justify-center items-center gap-1"
+                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                  }`}
+                  style={{
+                    borderRadius: "var(--border-radius-md, 6px)",
+                    boxShadow:
+                      activeTab === "info"
+                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                        : "none",
+                    flexShrink: 0,
+                  }}
                 >
+                  {activeTab === "info" && <InfoIcon />}
                   Info
                 </TabsTrigger>
               </TabsList>
@@ -150,11 +272,11 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
             <ScrollArea className="h-full px-6 pt-6 pb-4">
               <TabsContent value="summary" className="mt-0">
                 <div className="space-y-4">
-                  <div className="pb-4">
-                    <h3 className="text-sm font-semibold mb-2">Document</h3>
+                  <h3 className="text-sm font-semibold mb-2">Document</h3>
+                  <div className="border border-[#E4E4E4] rounded-lg bg-[#FCFBFC]">
                     <Link to={`/document/${id}`} state={{ document }} className="block group">
                       <div
-                        className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 
+                        className="flex items-center gap-2 border-b border-[#E4E4E4] p-2
                         transition-all duration-300 ease-in-out 
                         transform group-hover:translate-y-[-2px] group-hover:border-blue-300 group-hover:shadow-md
                         group-hover:bg-white group-active:translate-y-[0px] group-active:shadow-sm"
@@ -176,6 +298,9 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                         </div>
                       </div>
                     </Link>
+                    <div className="space-y-2 text-sm text-gray-500 px-4 py-3">
+                      {ai_summary ? <p>{ai_summary}</p> : <p>N/A</p>}
+                    </div>
                   </div>
 
                   <div>
@@ -204,13 +329,6 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                     <h3 className="text-sm font-semibold mb-2">Threads</h3>
                     <div className="bg-purple-100 px-2 py-1 rounded-lg w-fit">
                       <p className="text-xs text-black font-medium">{threads.length || 0} Threads</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold mb-2 mt-8">Summary</h3>
-                    <div className="space-y-2 text-sm text-gray-500 border border-gray-200 px-4 py-3 rounded-lg">
-                      {ai_summary ? <p>{ai_summary}</p> : <p>N/A</p>}
                     </div>
                   </div>
                 </div>

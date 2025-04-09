@@ -11,6 +11,7 @@ export const pdfSchema = z.object({
   drive_web_link: z.string(),
   email_received_date: z.string(),
   file_size: z.number(),
+  thumbnail: z.string().nullable(),
   analysis: z.object({
     ai_summary: z.string(),
   }),

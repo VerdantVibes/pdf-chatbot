@@ -24,6 +24,7 @@ interface PdfViewerProps {
   pdfUrl: string;
   initialPage?: number;
   notes?: NoteResponse[];
+  onPageChange?: (page: number) => void;
 }
 
 type ZoomLevelType = number | SpecialZoomLevel;
@@ -39,7 +40,7 @@ interface PositionData {
   zoom_level: number;
 }
 
-export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProps) {
+export function PdfViewer({ pdfUrl, initialPage = 1, notes = [], onPageChange }: PdfViewerProps) {
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [zoomLevel, setZoomLevel] = useState<ZoomLevelType>(SpecialZoomLevel.PageWidth);
@@ -695,6 +696,7 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [] }: PdfViewerProp
               }}
               onPageChange={(e) => {
                 setCurrentPage(e.currentPage + 1);
+                onPageChange?.(e.currentPage + 1);
               }}
               onZoom={(e) => {
                 setZoomLevel(e.scale);

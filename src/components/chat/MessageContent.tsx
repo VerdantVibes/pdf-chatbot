@@ -13,11 +13,33 @@ export const MessageContent = ({ content, onPageClick }: MessageContentProps) =>
     return content
       // First escape numbers at the start of lines to prevent list conversion
       .replace(/^\\(\d+\.)/gm, '$1')
-      // Then replace PDF references with sup tags
+      // Remove UUID-like strings
+      .replace(/\(ID: [a-f0-9-]+\)/g, '')
+      // Handle PDF references with en-dash and hyphens
       .replace(
-        /\[PDF: ([a-f0-9-]+), Page: (\d+)\]/g,
-        (_, pdfId, page) => 
-          `<sup data-pdf-id="${pdfId}" data-page="${page}" style="color: #228be6; cursor: pointer; margin: 0 2px;">[${page}]</sup>`
+        /\[PDF: ([a-f0-9-]+), Page: ([\d,\s–-]+)\]/g,
+        (_, pdfId, pages) => {
+          const pageRanges = pages.split(',').map((p: string) => p.trim());
+          const expandedPages = pageRanges.flatMap((range: string) => {
+            if (range.includes('–') || range.includes('-')) {
+              const [start, end] = range.split(/[-–]/).map(Number);
+              return Array.from(
+                { length: end - start + 1 },
+                (_, i) => (start + i).toString()
+              );
+            }
+            return [range];
+          });
+          
+          return expandedPages
+            .map((page: string) => `<sup data-pdf-id="${pdfId}" data-page="${page}" style="color: #228be6; cursor: pointer; margin: 0 2px;">[${page}]</sup>`)
+            .join(' ');
+        }
+      )
+      // Handle individual page references
+      .replace(
+        /\[(\d+)\]/g,
+        (_, page) => `<sup data-pdf-id="current" data-page="${page}" style="color: #228be6; cursor: pointer; margin: 0 2px;">[${page}]</sup>`
       );
   }, [content]);
 

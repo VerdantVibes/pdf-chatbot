@@ -57,6 +57,26 @@ const InfoIcon = ({ className }: IconProps) => (
   </svg>
 );
 
+const DocumentThumbnail = ({ thumbnail, filename }: { thumbnail: string | null; filename: string }) => {
+  if (!thumbnail) {
+    return (
+      <img
+        src={pdfIcon}
+        alt="PDF Icon"
+        className="w-[48px] h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+      />
+    );
+  }
+
+  return (
+    <img
+      src={`data:image/jpeg;base64,${thumbnail}`}
+      alt={`${filename} thumbnail`}
+      className="w-[48px] h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+    />
+  );
+};
+
 export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
@@ -108,6 +128,7 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
     downloaded_at,
     drive_web_link,
     drive_file_id,
+    thumbnail,
   } = document || {};
 
   const { ai_summary, signals = [], threads = [] } = analysis;
@@ -147,126 +168,127 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={transitionConfig}
-      className="h-full bg-white z-10 overflow-hidden"
+      className="min-h-[630px] max-h-screen bg-white z-10 overflow-y-auto"
     >
       <div className="flex flex-col h-full">
+      <header className="flex items-center justify-end px-4 py-2 w-full box-border">
+          <button onClick={onClose} className="p-1 rounded-sm hover:bg-gray-200">
+            <X className="w-4 h-4 text-gray-500 font-semibold" />
+          </button>
+        </header>
+
         <Tabs
           defaultValue="summary"
           className="h-full flex flex-col"
           onValueChange={(value) => setActiveTab(value)}
         >
-          <header className="relative flex items-center">
-            <div className="flex items-center w-full mx-4 mt-2">
-              <TabsList
-                className="flex w-full justify-start p-0 space-x-3"
+          <div className="flex items-center w-full mt-2 px-4">
+            <TabsList
+              className="flex w-full justify-start p-0 space-x-3"
+              style={{
+                borderRadius: "var(--border-radius-lg, 8px)",
+                background: "var(--base-border-primary, #F4F4F5)",
+                height: "var(--height-h-9, 36px)",
+                flexShrink: 0,
+              }}
+            >
+              <TabsTrigger
+                value="summary"
+                className={`px-2 ${
+                  activeTab === "summary"
+                    ? "bg-white shadow-md flex justify-center items-center gap-1"
+                    : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                }`}
                 style={{
-                  borderRadius: "var(--border-radius-lg, 8px)",
-                  background: "var(--base-border-primary, #F4F4F5)",
-                  height: "var(--height-h-9, 36px)",
+                  borderRadius: "var(--border-radius-md, 6px)",
+                  boxShadow:
+                    activeTab === "summary"
+                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                      : "none",
                   flexShrink: 0,
                 }}
               >
-                <TabsTrigger
-                  value="summary"
-                  className={`px-2 ${
-                    activeTab === "summary"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "summary"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "summary" && <SummaryIcon />}
-                  Summary
-                </TabsTrigger>
-                <TabsTrigger
-                  value="signals"
-                  className={`px-2 ${
+                {activeTab === "summary" && <SummaryIcon />}
+                Summary
+              </TabsTrigger>
+              <TabsTrigger
+                value="signals"
+                className={`px-2 ${
+                  activeTab === "signals"
+                    ? "bg-white shadow-md flex justify-center items-center gap-1"
+                    : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                }`}
+                style={{
+                  borderRadius: "var(--border-radius-md, 6px)",
+                  boxShadow:
                     activeTab === "signals"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "signals"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "signals" && <SignalsIcon />}
-                  Signals
-                </TabsTrigger>
-                <TabsTrigger
-                  value="threads"
-                  className={`px-2 ${
+                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                      : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {activeTab === "signals" && <SignalsIcon />}
+                Signals
+              </TabsTrigger>
+              <TabsTrigger
+                value="threads"
+                className={`px-2 ${
+                  activeTab === "threads"
+                    ? "bg-white shadow-md flex justify-center items-center gap-1"
+                    : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                }`}
+                style={{
+                  borderRadius: "var(--border-radius-md, 6px)",
+                  boxShadow:
                     activeTab === "threads"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "threads"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "threads" && <ThreadsIcon />}
-                  Threads
-                </TabsTrigger>
-                <TabsTrigger
-                  value="doc"
-                  className={`px-2 ${
+                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                      : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {activeTab === "threads" && <ThreadsIcon />}
+                Threads
+              </TabsTrigger>
+              <TabsTrigger
+                value="doc"
+                className={`px-2 ${
+                  activeTab === "doc"
+                    ? "bg-white shadow-md flex justify-center items-center gap-1"
+                    : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                }`}
+                style={{
+                  borderRadius: "var(--border-radius-md, 6px)",
+                  boxShadow:
                     activeTab === "doc"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "doc"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "doc" && <DocIcon />}
-                  Doc
-                </TabsTrigger>
-                <TabsTrigger
-                  value="info"
-                  className={`px-2 ${
+                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                      : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {activeTab === "doc" && <DocIcon />}
+                Doc
+              </TabsTrigger>
+              <TabsTrigger
+                value="info"
+                className={`px-2 ${
+                  activeTab === "info"
+                    ? "bg-white shadow-md flex justify-center items-center gap-1"
+                    : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                }`}
+                style={{
+                  borderRadius: "var(--border-radius-md, 6px)",
+                  boxShadow:
                     activeTab === "info"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "info"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "info" && <InfoIcon />}
-                  Info
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <button onClick={onClose} className="absolute right-2 p-1 rounded-sm hover:bg-gray-200 z-10 mb-4">
-              <X className="w-4 h-4 text-gray-500 font-semibold" />
-            </button>
-          </header>
+                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                      : "none",
+                  flexShrink: 0,
+                }}
+              >
+                {activeTab === "info" && <InfoIcon />}
+                Info
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <div className="h-[calc(100%-40px)] overflow-hidden">
             <ScrollArea className="h-full px-6 pt-6 pb-4">
@@ -274,31 +296,31 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold mb-2">Document</h3>
                   <div className="border border-[#E4E4E4] rounded-lg bg-[#FCFBFC]">
-                    <Link to={`/document/${id}`} state={{ document }} className="block group">
-                      <div
-                        className="flex items-center gap-2 border-b border-[#E4E4E4] p-2
-                        transition-all duration-300 ease-in-out 
-                        transform group-hover:translate-y-[-2px] group-hover:border-blue-300 group-hover:shadow-md
-                        group-hover:bg-white group-active:translate-y-[0px] group-active:shadow-sm"
-                      >
-                        <div className="p-2 rounded transition-all duration-300">
-                          <img
-                            src={pdfIcon}
-                            alt="PDF Icon"
-                            className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm text-black font-semibold transition-colors duration-300 group-hover:text-blue-600">
-                            {email_subject || "Untitled Document"}
-                          </p>
-                          <p className="text-xs text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
-                            {filename || "document.pdf"}
-                          </p>
+                    <div className="flex items-center gap-2 p-4">
+                      <div className="flex-shrink-0">
+                        <DocumentThumbnail thumbnail={thumbnail} filename={filename || "document.pdf"} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="min-w-0 flex-1 max-w-[360px]">
+                            <p className="text-sm text-black font-semibold truncate">
+                              {email_subject || "Untitled Document"}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {filename || "document.pdf"}
+                            </p>
+                          </div>
+                          <Link 
+                            to={`/document/${id}`} 
+                            state={{ document }}
+                            className="flex-shrink-0 flex items-center justify-center px-4 h-9 bg-[#18181B] text-[#FAFAFA] rounded-md shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10),0px_1px_2px_0px_rgba(0,0,0,0.06)] hover:bg-[#27272A] transition-colors whitespace-nowrap"
+                          >
+                            Deep Read
+                          </Link>
                         </div>
                       </div>
-                    </Link>
-                    <div className="space-y-2 text-sm text-gray-500 px-4 py-3">
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-500 px-4 py-3 border-t border-[#E4E4E4]">
                       {ai_summary ? <p>{ai_summary}</p> : <p>N/A</p>}
                     </div>
                   </div>

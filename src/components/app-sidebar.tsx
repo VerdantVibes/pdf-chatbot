@@ -35,7 +35,7 @@ const data = {
   teams: [
     {
       name: "Delphis",
-      description: "by Delhis",
+      description: "v1.0.1 (Beta)",
     },
   ],
   navMain: [

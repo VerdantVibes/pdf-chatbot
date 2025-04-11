@@ -79,10 +79,6 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
       fileInputRef.current.value = "";
     }
 
-    if (isConnected) {
-      disconnectWebSocket();
-    }
-
     resetWebSocket();
 
     console.log("Modal state reset");
@@ -504,7 +500,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
       case "exists":
         return "bg-blue-500";
       case "complete":
-        return "bg-green-500";
+        return "bg-green-600";
       case "uploaded":
         return "bg-indigo-500";
       case "uploading":
@@ -516,27 +512,6 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
       default:
         return "bg-[#2DA395]";
     }
-  };
-
-  const calculateOverallProgress = () => {
-    if (!selectedFiles) return 0;
-
-    const allFiles = Array.from(selectedFiles);
-    let totalProgress = 0;
-
-    allFiles.forEach((file) => {
-      const filename = file.name;
-      const fileProgress = fileProgresses[filename];
-      const status = fileStatuses[filename] || (fileProgress?.status as FileStatus);
-
-      if (FINAL_STATUSES.includes(status)) {
-        totalProgress += 100;
-      } else {
-        totalProgress += fileProgress?.progress || 0;
-      }
-    });
-
-    return Math.round(totalProgress / allFiles.length);
   };
 
   return (
@@ -581,11 +556,11 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
             <h2 className="text-lg font-medium text-[#18181B]">Import Document</h2>
           </div>
 
-          {isUploading || connectingWebsocket ? null : (
+          {
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-200"
-              }`}
+                isUploading || connectingWebsocket ? "opacity-75 pointer-events-none" : ""
+              } ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -598,6 +573,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                   variant="default"
                   className="bg-[#18181B] hover:bg-[#303035] text-white mt-2"
                   onClick={handleBrowseFiles}
+                  disabled={isUploading || connectingWebsocket}
                 >
                   Browse Files
                 </Button>
@@ -612,7 +588,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                 />
               </div>
             </div>
-          )}
+          }
 
           {uploadError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
@@ -651,32 +627,6 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                   </span>
                 )}
               </h3>
-
-              {(isUploading || connectingWebsocket) && selectedFiles && Array.from(selectedFiles).length > 1 && (
-                <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-[#18181B]">
-                        {connectingWebsocket ? "Connecting..." : "Uploading..."}
-                      </span>
-                      <span className="text-xs font-medium bg-[#E6F7F5] text-[#2DA395] px-2 py-1 rounded-full">
-                        {completedFilesRef.current} of {totalFilesRef.current} files
-                      </span>
-                    </div>
-
-                    <div className="h-2 bg-gray-100 rounded-full w-full overflow-hidden">
-                      <div
-                        className="h-2 bg-[#2DA395] rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${calculateOverallProgress()}%` }}
-                      />
-                    </div>
-
-                    <p className="text-xs text-gray-500 mt-1">
-                      Please wait while your documents are being processed. This may take a few moments.
-                    </p>
-                  </div>
-                </div>
-              )}
 
               <div style={{ maxHeight: "300px", overflow: "auto" }} className="pr-2">
                 <div className="space-y-3">
@@ -717,6 +667,24 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+          {selectedFiles && (
+            <div className="mt-4">
+              <Button
+                onClick={handleDone}
+                disabled={isUploading || connectingWebsocket}
+                className="w-full bg-[#18181B] hover:bg-[#303035] text-white"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : uploadCompleted ? (
+                  "Done"
+                ) : null}
+              </Button>
             </div>
           )}
         </div>

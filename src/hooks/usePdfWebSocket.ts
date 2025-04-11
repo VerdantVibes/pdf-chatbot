@@ -342,6 +342,19 @@ export function usePdfWebSocket() {
     [user, connectWebSocket, disconnectWebSocket, isUploading, fileProgresses, getWebSocketService, queryClient]
   );
 
+  const resetWebSocket = useCallback(() => {
+    disconnectWebSocket();
+    setFileProgresses({});
+    setIsConnected(false);
+    setIsConnecting(false);
+    setIsUploading(false);
+    setIsAllUploaded(false);
+    setConnectionError(null);
+    setRetryCount(0);
+    shouldMaintainConnection.current = false;
+    progressTimeoutRef.current = null;
+  }, [disconnectWebSocket]);
+
   return {
     isConnected,
     isConnecting,
@@ -351,5 +364,6 @@ export function usePdfWebSocket() {
     fileProgresses,
     connectWebSocket,
     disconnectWebSocket,
+    resetWebSocket,
   };
 }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import {
   UploadIcon,
@@ -10,6 +11,7 @@ import {
   InfoIcon,
   AlertCircle,
   ArrowUpFromLine,
+  X,
 } from "lucide-react";
 import pdfIcon from "@/assets/pdficon.svg";
 import { usePdfWebSocket, FileProgress } from "@/hooks/usePdfWebSocket";
@@ -52,25 +54,45 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
     fileProgresses: wsFileProgresses,
     connectWebSocket,
     disconnectWebSocket,
+    resetWebSocket,
   } = usePdfWebSocket();
 
   const completedCount = Object.values(fileStatuses).filter((status) => status === "complete").length;
   const existsCount = Object.values(fileStatuses).filter((status) => status === "exists").length;
   const errorCount = Object.values(fileStatuses).filter((status) => status === "error").length;
 
+  const resetState = () => {
+    setSelectedFiles(null);
+    setUploadCompleted(false);
+    setUploadError(null);
+    setConnectingWebsocket(false);
+    setConnectionError(null);
+    setFileStatuses({});
+    setFileProgresses({});
+    setIsDragging(false);
+
+    totalFilesRef.current = 0;
+    completedFilesRef.current = 0;
+    disconnectCalledRef.current = false;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    if (isConnected) {
+      disconnectWebSocket();
+    }
+
+    resetWebSocket();
+
+    console.log("Modal state reset");
+  };
+
   useEffect(() => {
     if (!open) {
-      setSelectedFiles(null);
-      setUploadCompleted(false);
-      setUploadError(null);
-      setConnectingWebsocket(false);
-      setFileStatuses({});
-      setFileProgresses({});
-      totalFilesRef.current = 0;
-      completedFilesRef.current = 0;
-      disconnectCalledRef.current = false;
+      resetState();
     }
-  }, [open]);
+  }, [open, isConnected, disconnectWebSocket]);
 
   useEffect(() => {
     if (wsFileProgresses && Object.keys(wsFileProgresses).length > 0) {
@@ -142,6 +164,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
     if (!uploadCompleted && !isUploading && isAllUploaded && selectedFiles) {
       console.log("Upload completed based on WebSocket hook state");
       setUploadCompleted(true);
+      resetWebSocket();
     }
   }, [isUploading, isAllUploaded, uploadCompleted, selectedFiles]);
 
@@ -219,7 +242,9 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!isUploading && !connectingWebsocket) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = () => {
@@ -229,6 +254,11 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
+
+    if (isUploading || connectingWebsocket) {
+      return;
+    }
+
     setUploadError(null);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -289,7 +319,8 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
     const dataTransfer = new DataTransfer();
     validFiles.forEach((file) => dataTransfer.items.add(file));
 
-    setSelectedFiles(dataTransfer.files);
+    const filesForUpload = dataTransfer.files;
+    setSelectedFiles(filesForUpload);
     setUploadCompleted(false);
     setFileStatuses({});
     setFileProgresses({});
@@ -302,33 +333,38 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
       initialStatuses[file.name] = "waiting";
     });
     setFileStatuses(initialStatuses);
-  };
 
-  const handleUpload = async () => {
-    if (!selectedFiles) return;
-    setUploadError(null);
-    setConnectingWebsocket(true);
-    setUploadCompleted(false);
+    if (validFiles.length > 0) {
+      console.log("Starting automatic upload process with WebSocket...");
 
-    totalFilesRef.current = Array.from(selectedFiles).length;
-    completedFilesRef.current = 0;
-    disconnectCalledRef.current = false;
+      const startUpload = async () => {
+        console.log("Auto-upload triggered for", validFiles.length, "files");
 
-    if (onFileSelected) {
-      onFileSelected(selectedFiles);
-    }
+        if (onFileSelected) {
+          onFileSelected(filesForUpload);
+        }
 
-    try {
-      await uploadFiles(selectedFiles);
-      setConnectingWebsocket(false);
-    } catch (error) {
-      setConnectingWebsocket(false);
-      if (error instanceof Error) {
-        setUploadError(error.message);
-        setConnectionError(error);
-      } else {
-        setUploadError("An unknown error occurred during upload");
-      }
+        setUploadError(null);
+        setConnectingWebsocket(true);
+
+        try {
+          console.log("Initiating uploadFiles WebSocket process");
+          await uploadFiles(filesForUpload);
+          console.log("WebSocket connection established successfully");
+          setConnectingWebsocket(false);
+        } catch (error) {
+          console.error("WebSocket connection or upload failed:", error);
+          setConnectingWebsocket(false);
+          if (error instanceof Error) {
+            setUploadError(error.message);
+            setConnectionError(error);
+          } else {
+            setUploadError("An unknown error occurred during upload");
+          }
+        }
+      };
+
+      setTimeout(startUpload, 0);
     }
   };
 
@@ -337,19 +373,19 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
   };
 
   const handleDone = () => {
+    resetState();
+
     onOpenChange(false);
-
-    setSelectedFiles(null);
-    setUploadCompleted(false);
-    setFileStatuses({});
-    setFileProgresses({});
-    totalFilesRef.current = 0;
-    completedFilesRef.current = 0;
-    disconnectCalledRef.current = false;
-
     queryClient.invalidateQueries({ queryKey: ["pdfs"] });
-
     navigate(`/private-assets?t=${Date.now()}`, { replace: true });
+  };
+
+  const handleClose = () => {
+    if (uploadCompleted) {
+      handleDone();
+    } else {
+      onOpenChange(false);
+    }
   };
 
   const retryConnection = async () => {
@@ -504,8 +540,39 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open && !isUploading && !connectingWebsocket) {
+          handleClose();
+        }
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-md p-0 overflow-hidden"
+        onInteractOutside={(e) => {
+          if (isUploading || connectingWebsocket) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isUploading || connectingWebsocket) {
+            e.preventDefault();
+          } else {
+            handleClose();
+          }
+        }}
+      >
+        {!(isUploading || connectingWebsocket) && (
+          <DialogPrimitive.Close
+            onClick={handleClose}
+            disabled={isUploading || connectingWebsocket}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        )}
         <VisuallyHidden>
           <DialogTitle>Import Document</DialogTitle>
         </VisuallyHidden>
@@ -514,7 +581,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
             <h2 className="text-lg font-medium text-[#18181B]">Import Document</h2>
           </div>
 
-          {
+          {isUploading || connectingWebsocket ? null : (
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center ${
                 isDragging ? "border-blue-500 bg-blue-50" : "border-gray-200"
@@ -541,10 +608,11 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                   className="hidden"
                   onChange={handleFileInputChange}
                   multiple
+                  disabled={isUploading || connectingWebsocket}
                 />
               </div>
             </div>
-          }
+          )}
 
           {uploadError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
@@ -585,20 +653,27 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
               </h3>
 
               {(isUploading || connectingWebsocket) && selectedFiles && Array.from(selectedFiles).length > 1 && (
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-500">Overall Progress</span>
-                    <div className="flex items-center">
-                      <span className="text-xs font-semibold text-gray-700">
-                        {completedFilesRef.current} of {totalFilesRef.current} files ({calculateOverallProgress()}%)
+                <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-[#18181B]">
+                        {connectingWebsocket ? "Connecting..." : "Uploading..."}
+                      </span>
+                      <span className="text-xs font-medium bg-[#E6F7F5] text-[#2DA395] px-2 py-1 rounded-full">
+                        {completedFilesRef.current} of {totalFilesRef.current} files
                       </span>
                     </div>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full w-full">
-                    <div
-                      className="h-2 bg-[#2DA395] rounded-full transition-all duration-300 ease-out"
-                      style={{ width: `${calculateOverallProgress()}%` }}
-                    />
+
+                    <div className="h-2 bg-gray-100 rounded-full w-full overflow-hidden">
+                      <div
+                        className="h-2 bg-[#2DA395] rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${calculateOverallProgress()}%` }}
+                      />
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-1">
+                      Please wait while your documents are being processed. This may take a few moments.
+                    </p>
                   </div>
                 </div>
               )}
@@ -642,32 +717,6 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
                   ))}
                 </div>
               </div>
-            </div>
-          )}
-
-          {selectedFiles && (
-            <div className="mt-4">
-              <Button
-                onClick={uploadCompleted ? handleDone : handleUpload}
-                disabled={isUploading || connectingWebsocket || (!isConnected && isUploading)}
-                className={`w-full bg-[#18181B] hover:bg-[#303035] text-white`}
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
-                  </>
-                ) : connectingWebsocket ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connecting...
-                  </>
-                ) : uploadCompleted || isAllUploaded ? (
-                  "Done"
-                ) : (
-                  "Upload Files"
-                )}
-              </Button>
             </div>
           )}
         </div>

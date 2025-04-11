@@ -63,21 +63,8 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [], onPageChange }:
   const createNoteMutation = useCreateNote();
 
   const pageViewboxRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
-  const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   const permanentHighlightsRef = useRef<{ [pageNumber: number]: HTMLDivElement[] }>({});
-
-  const adjustColorBrightness = (hex: string, percent: number): string => {
-    let r = parseInt(hex.substring(1, 3), 16);
-    let g = parseInt(hex.substring(3, 5), 16);
-    let b = parseInt(hex.substring(5, 7), 16);
-
-    r = Math.min(255, Math.max(0, Math.round(r + (percent / 100) * 255)));
-    g = Math.min(255, Math.max(0, Math.round(g + (percent / 100) * 255)));
-    b = Math.min(255, Math.max(0, Math.round(b + (percent / 100) * 255)));
-
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-  };
 
   const saturateColor = (hex: string, percent: number): string => {
     let r = parseInt(hex.substring(1, 3), 16);
@@ -183,8 +170,6 @@ export function PdfViewer({ pdfUrl, initialPage = 1, notes = [], onPageChange }:
               )[0]
             : null;
           if (!textLayer) return;
-
-          const effectiveZoom = typeof zoomLevel === "number" ? zoomLevel : 1;
 
           const highlightElements: HTMLDivElement[] = [];
 

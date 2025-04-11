@@ -12,7 +12,6 @@ export class BaseWebSocketService {
   private maxReconnectAttempts: number = 5;
   private reconnectTimeout: number = 2000;
   private reconnectTimer: number | null = null;
-  private isConnecting: boolean = false;
   private connectionPromise: Promise<void> | null = null;
   private openHandler: (() => void) | null = null;
 
@@ -38,7 +37,6 @@ export class BaseWebSocketService {
       return Promise.resolve();
     }
 
-    this.isConnecting = true;
     this.connectionPromise = new Promise((resolve, reject) => {
       try {
         if (this.socket) {
@@ -58,7 +56,6 @@ export class BaseWebSocketService {
         this.socket.onopen = () => {
           console.log("WebSocket connection established");
           this.reconnectAttempts = 0;
-          this.isConnecting = false;
 
           if (this.openHandler) {
             this.openHandler();
@@ -96,8 +93,6 @@ export class BaseWebSocketService {
 
         this.socket.onclose = (event) => {
           console.log("WebSocket connection closed:", event.code, event.reason);
-          this.isConnecting = false;
-          this.connectionPromise = null;
 
           if (event.code !== 1000) {
             this.attemptReconnect();
@@ -106,13 +101,11 @@ export class BaseWebSocketService {
 
         this.socket.onerror = (error) => {
           console.error("WebSocket error:", error);
-          this.isConnecting = false;
           reject(error);
           this.connectionPromise = null;
         };
       } catch (error) {
         console.error("WebSocket connection error:", error);
-        this.isConnecting = false;
         reject(error);
         this.connectionPromise = null;
       }

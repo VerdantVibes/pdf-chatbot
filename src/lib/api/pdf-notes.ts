@@ -119,7 +119,7 @@ export const useCreateNote = (): UseMutationResult<NoteResponse, Error, NoteCrea
 
       return { previousNotes, optimisticId };
     },
-    onError: (err, newNote, context) => {
+    onError: (_err, newNote, context) => {
       if (context?.previousNotes) {
         queryClient.setQueryData(["pdf-notes", newNote.pdf_id], context.previousNotes);
       }
@@ -154,17 +154,13 @@ export const useGetNote = (noteId: string): UseQueryResult<NoteResponse, Error> 
 };
 
 export const useUpdateNote = (): UseMutationResult<NoteResponse, Error, { noteId: string; noteData: NoteUpdate }> => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ noteId, noteData }) => pdfNotesApi.updateNote(noteId, noteData),
-    onSuccess: (data) => {},
+    onSuccess: () => {},
   });
 };
 
 export const useDeleteNote = (): UseMutationResult<string, Error, { noteId: string; permanent?: boolean }> => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ noteId, permanent }) => pdfNotesApi.deleteNote(noteId, permanent),
     onSuccess: () => {},

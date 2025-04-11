@@ -20,7 +20,6 @@ export function usePdfWebSocket() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isAllUploaded, setIsAllUploaded] = useState(false);
-  const [connectionError, setConnectionError] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
   const queryClient = useQueryClient();
@@ -83,12 +82,10 @@ export function usePdfWebSocket() {
         setIsConnected(true);
         setIsConnecting(false);
         setRetryCount(0);
-        setConnectionError(null);
       });
 
       getWebSocketService()?.onError((error: unknown) => {
         console.error("WebSocket connection error:", error);
-        setConnectionError(error instanceof Error ? error : new Error("Unknown connection error"));
 
         if (retryCount < maxRetries) {
           if (retryCount > 1) {
@@ -111,7 +108,6 @@ export function usePdfWebSocket() {
     } catch (error) {
       console.error("Error connecting to WebSocket:", error);
       setRetryCount((prev) => prev + 1);
-      setConnectionError(error instanceof Error ? error : new Error("Unknown connection error"));
 
       if (retryCount < maxRetries) {
         const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
@@ -137,7 +133,7 @@ export function usePdfWebSocket() {
   }, [disconnectWebSocket]);
 
   const uploadFiles = useCallback(
-    async (files: FileList | File[], onComplete?: () => void) => {
+    async (files: FileList | File[]) => {
       if (!files || files.length === 0 || !user || !user.id) {
         toast.error("No files to upload or user information missing");
         return;
@@ -171,7 +167,7 @@ export function usePdfWebSocket() {
 
         const progressHandler = (data: any) => {
           console.log("Progress update received:", data);
-          const { filename, progress_percent, status, file_id, current_file, total_files } = data;
+          const { filename, progress_percent, status, file_id } = data;
 
           if (filename) {
             setFileProgresses((prev) => {
@@ -184,8 +180,6 @@ export function usePdfWebSocket() {
                   fileId: file_id || prev[filename]?.fileId,
                 },
               };
-
-              const allFileNames = Array.from(files).map((file: File) => file.name);
 
               const orderedFiles = Array.from(files).map((file: File) => file.name);
 
@@ -349,7 +343,6 @@ export function usePdfWebSocket() {
     setIsConnecting(false);
     setIsUploading(false);
     setIsAllUploaded(false);
-    setConnectionError(null);
     setRetryCount(0);
     shouldMaintainConnection.current = false;
     progressTimeoutRef.current = null;

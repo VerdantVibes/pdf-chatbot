@@ -66,7 +66,6 @@ export function DataTable<TData>({
   const [isBuildingIndex, setIsBuildingIndex] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState<TData | null>(null);
-  const [activeTab, setActiveTab] = React.useState("all-files");
   const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
 
   React.useEffect(() => {
@@ -84,8 +83,8 @@ export function DataTable<TData>({
 
   // Get columns with our custom expand handler
   const columns = React.useMemo(() => {
-    return getColumns(handleToggleExpand) as unknown as ColumnDef<TData>[];
-  }, [handleToggleExpand]);
+    return getColumns() as unknown as ColumnDef<TData>[];
+  }, []);
 
   const table = useReactTable({
     data,
@@ -228,8 +227,7 @@ export function DataTable<TData>({
     }
   };
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+  const handleTabChange = () => {
     // You could add additional logic here to filter data based on selected tab
   };
 

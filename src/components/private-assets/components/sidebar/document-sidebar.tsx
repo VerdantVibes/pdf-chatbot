@@ -1,18 +1,4 @@
-import {
-  X,
-  CheckCircle,
-  AlertCircle,
-  Filter,
-  Check,
-  ChevronLeft,
-  Download,
-  ExternalLink,
-  Info,
-  Lightbulb,
-  ThumbsDown,
-  ThumbsUp,
-  Bot,
-} from "lucide-react";
+import { X, Filter, ThumbsDown, ThumbsUp, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -183,29 +169,6 @@ const DocumentThumbnail = ({ thumbnail, filename }: { thumbnail: string | null; 
 };
 
 export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  };
-
   const formatFileSize = (sizeInBytes?: number) => {
     if (!sizeInBytes) return "N/A";
 
@@ -227,16 +190,12 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
     file_size,
     category_tags = [],
     id,
-    source,
-    upload_date,
-    email_received_date,
-    downloaded_at,
     drive_web_link,
     drive_file_id,
     thumbnail,
   } = document || {};
 
-  const { ai_summary, signals = [], threads = [] } = analysis;
+  const { ai_summary, threads = [] } = analysis;
 
   const [, setCurrentPdfId] = useState<string>(id || "");
   const [currentPage] = useState(1);

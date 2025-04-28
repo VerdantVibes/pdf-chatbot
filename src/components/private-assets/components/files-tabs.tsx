@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Folder, createFolder, getFolders } from "@/lib/api/folder";
+import { createFolder, getFolders } from "@/lib/api/folder";
 
 interface FilesTabsProps {
   onTabChange?: (tab: string) => void;

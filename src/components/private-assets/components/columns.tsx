@@ -10,7 +10,7 @@ type ExtendedColumnDef<T> = ColumnDef<T> & {
   identifier?: string | boolean;
 };
 
-export const getColumns = (onRowExpand?: (rowId: string) => void): ExtendedColumnDef<Pdf>[] => [
+export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
   {
     id: "select",
     header: ({ table }) => (

@@ -7,15 +7,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/context/AuthContext";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { UploadIcon } from "lucide-react";
-import { ImportDocumentModal } from "@/components/document/ImportDocumentModal";
 
 type BreadcrumbItem = {
   label: string;
@@ -40,7 +36,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
   const location = useLocation();
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const generateDefaultBreadcrumbs = () => {
     const pathSegments = location.pathname.split("/").filter((segment) => segment);
@@ -86,25 +81,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleImportDocument = () => {
-    setIsImportModalOpen(true);
-  };
-
-  const handleFileSelected = (files: FileList) => {
-    console.log("Selected files:", files);
-    // Here you would implement the upload logic when ready
-    // This currently just logs the files to the console
-  };
-
   return (
     <BreadcrumbContext.Provider value={{ breadcrumbs, setBreadcrumbs }}>
       <SidebarProvider>
         <AppSidebar handleLogout={handleLogout} isLoading={isLoading} user={user || undefined} />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <header className="flex sticky top-0 z-10 bg-white border-b-[1.25px] shadow-sm border-neutral-200 min-h-16 px-3 py-4 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+              {/* <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" /> */}
               <Breadcrumb>
                 <BreadcrumbList>
                   {displayBreadcrumbs.map((item, index) => (
@@ -122,24 +107,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
-            <div className="flex items-center gap-2 px-4">
-              {location.pathname === "/private-assets" && (
-                <>
-                  <Button onClick={handleImportDocument} variant="outline" className="gap-2">
-                    <UploadIcon className="h-4 w-4" />
-                    <span>Import Document</span>
-                  </Button>
-                </>
-              )}
-            </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0 relative">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 px-7 py-6 relative">{children}</div>
         </SidebarInset>
-        <ImportDocumentModal
-          open={isImportModalOpen}
-          onOpenChange={setIsImportModalOpen}
-          onFileSelected={handleFileSelected}
-        />
       </SidebarProvider>
     </BreadcrumbContext.Provider>
   );

@@ -2,8 +2,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pdf } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { Expand, Minimize2 } from "lucide-react";
+import { FileText, Youtube, Podcast, Radio, File, Archive, Bookmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type ExtendedColumnDef<T> = ColumnDef<T> & {
   identifier?: string | boolean;
@@ -41,6 +42,24 @@ export const getColumns = (onRowExpand?: (rowId: string) => void): ExtendedColum
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
+    cell: () => {
+      const icons = ["file", "podcast", "youtube", "filetext", "radio"];
+      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+      return (
+        <div className="ml-0.5 text-secondary-foreground/40">
+          {randomIcon === "file" && <File className="h-4 w-4" />}
+          {randomIcon === "podcast" && <Podcast className="h-4 w-4" />}
+          {randomIcon === "youtube" && <Youtube className="h-4 w-4" />}
+          {randomIcon === "filetext" && <FileText className="h-4 w-4" />}
+          {randomIcon === "radio" && <Radio className="h-4 w-4" />}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     accessorKey: "Tags",
@@ -100,30 +119,48 @@ export const getColumns = (onRowExpand?: (rowId: string) => void): ExtendedColum
     },
     enableSorting: false,
   },
+  // {
+  //   accessorKey: "action",
+  //   header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
+  //   cell: ({ row }) => {
+  //     const handleClick = () => {
+  //       if (onRowExpand) {
+  //         onRowExpand(row.id);
+  //       } else {
+  //         row.toggleExpanded();
+  //       }
+  //     };
+
+  //     return (
+  //       <button onClick={handleClick} className="cursor-pointer p-1 rounded-sm hover:bg-gray-100">
+  //         {row.getIsExpanded() ? (
+  //           <div className="flex items-center justify-center">
+  //             <Minimize2 className="h-3.5 w-3.5 text-gray-900" />
+  //           </div>
+  //         ) : (
+  //           <div className="flex items-center justify-center">
+  //             <Expand className="h-3.5 w-3.5 text-gray-900" />
+  //           </div>
+  //         )}
+  //       </button>
+  //     );
+  //   },
+  //   enableSorting: false,
+  //   identifier: false,
+  // },
   {
     accessorKey: "action",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
-    cell: ({ row }) => {
-      const handleClick = () => {
-        if (onRowExpand) {
-          onRowExpand(row.id);
-        } else {
-          row.toggleExpanded();
-        }
-      };
-
+    cell: () => {
       return (
-        <button onClick={handleClick} className="cursor-pointer p-1 rounded-sm hover:bg-gray-100">
-          {row.getIsExpanded() ? (
-            <div className="flex items-center justify-center">
-              <Minimize2 className="h-3.5 w-3.5 text-gray-900" />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <Expand className="h-3.5 w-3.5 text-gray-900" />
-            </div>
-          )}
-        </button>
+        <div className="flex">
+          <Button variant={"ghost"} size={"icon"} className="w-7 h-7 text-neutral-700">
+            <Archive />
+          </Button>
+          <Button variant={"ghost"} size={"icon"} className="w-7 h-7 text-neutral-700">
+            <Bookmark />
+          </Button>
+        </div>
       );
     },
     enableSorting: false,

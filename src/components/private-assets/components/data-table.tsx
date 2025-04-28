@@ -26,6 +26,8 @@ import { DataTableToolbar } from "./data-table-toolbar";
 import { TableSelectionActions } from "./table-selection-actions";
 import { DocumentSidebar } from "./sidebar/document-sidebar";
 import { getColumns } from "./columns";
+import { FilesTabs } from "./files-tabs";
+import { ViewMode } from "./view-mode";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -64,6 +66,8 @@ export function DataTable<TData>({
   const [isBuildingIndex, setIsBuildingIndex] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState<TData | null>(null);
+  const [activeTab, setActiveTab] = React.useState("all-files");
+  const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
 
   React.useEffect(() => {
     if (sorting.length > 0 && onSortingChange) {
@@ -224,6 +228,16 @@ export function DataTable<TData>({
     }
   };
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // You could add additional logic here to filter data based on selected tab
+  };
+
+  const handleViewChange = (view: "list" | "grid") => {
+    setViewMode(view);
+    // Logic for changing the view display mode
+  };
+
   const selectedRowCount = table.getFilteredSelectedRowModel().rows.length;
   const showSkeleton = isLoading || isFetching;
   const skeletonRowCount = 8;
@@ -239,6 +253,11 @@ export function DataTable<TData>({
     <div className="space-y-4">
       <DataTableToolbar table={table} onFiltersChange={onFiltersChange} />
 
+      <div className="flex justify-between items-center py-2 gap-4">
+        <FilesTabs onTabChange={handleTabChange} />
+        <ViewMode onViewChange={handleViewChange} />
+      </div>
+
       <div className="flex space-x-0">
         <motion.div
           className="relative"
@@ -248,61 +267,108 @@ export function DataTable<TData>({
           transition={transitionConfig}
         >
           <div className="space-y-4">
-          <div className={`rounded-md border ${showSkeleton ? "min-h-[250px]" : "min-h-[0]"}`}>
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id} colSpan={header.colSpan}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(header.column.columnDef.header, header.getContext())}
-                          </TableHead>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {showSkeleton
-                    ? Array.from({ length: skeletonRowCount }).map((_, i) => (
-                        <TableRow className="animate-pulse" key={i}>
-                          {Array.from({ length: 6 }).map((_, j) => (
-                            <TableCell key={j}>
-                              <div className="h-6 bg-gray-200 rounded"></div>
+            {viewMode === "list" ? (
+              <div className={`rounded-md border ${showSkeleton ? "min-h-[250px]" : "min-h-[0]"}`}>
+                <Table>
+                  <TableHeader className="bg-neutral-50">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <TableHead key={header.id} colSpan={header.colSpan}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(header.column.columnDef.header, header.getContext())}
+                            </TableHead>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {showSkeleton
+                      ? Array.from({ length: skeletonRowCount }).map((_, i) => (
+                          <TableRow className="animate-pulse" key={i}>
+                            {Array.from({ length: 6 }).map((_, j) => (
+                              <TableCell key={j}>
+                                <div className="h-6 bg-neutral-200 rounded"></div>
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      : table.getRowModel().rows?.length
+                      ? table.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            data-state={row.getIsSelected() && "selected"}
+                            className={`${
+                              row.getIsExpanded() ? "bg-neutral-100 font-semibold" : ""
+                            } cursor-pointer transition-colors hover:bg-neutral-50`}
+                            onClick={(e) => handleRowClick(e, row.id)}
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      : !showSkeleton && (
+                          <TableRow>
+                            <TableCell colSpan={columns.length} className="h-24 text-center">
+                              No results.
                             </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : table.getRowModel().rows?.length
-                    ? table.getRowModel().rows.map((row) => (
-                        <TableRow
+                          </TableRow>
+                        )}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {showSkeleton
+                  ? Array.from({ length: skeletonRowCount }).map((_, i) => (
+                      <div className="animate-pulse border rounded-md p-4 flex flex-col space-y-3" key={i}>
+                        <div className="h-5 bg-neutral-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-neutral-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
+                      </div>
+                    ))
+                  : table.getRowModel().rows?.length
+                  ? table.getRowModel().rows.map((row) => {
+                      const data = row.original as any;
+                      return (
+                        <div
                           key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
-                          className={`${
-                            row.getIsExpanded() ? "bg-gray-100 font-semibold" : ""
-                          } cursor-pointer transition-colors hover:bg-gray-50`}
+                          className={`border rounded-md p-4 cursor-pointer ${
+                            row.getIsSelected() ? "border-primary ring-1 ring-primary" : ""
+                          } ${row.getIsExpanded() ? "bg-neutral-100" : ""} hover:bg-neutral-50 transition-colors`}
                           onClick={(e) => handleRowClick(e, row.id)}
                         >
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    : !showSkeleton && (
-                        <TableRow>
-                          <TableCell colSpan={columns.length} className="h-24 text-center">
-                            No results.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                </TableBody>
-              </Table>
-            </div>
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium truncate">{data.filename || "Untitled"}</h3>
+                            <input
+                              type="checkbox"
+                              checked={row.getIsSelected()}
+                              onChange={(e) => {
+                                row.toggleSelected(e.target.checked);
+                                e.stopPropagation();
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-4 w-4"
+                            />
+                          </div>
+                          <div className="text-sm text-neutral-500 mb-2 truncate">
+                            {data.email_subject || "No subject"}
+                          </div>
+                          <div className="text-xs text-neutral-400">
+                            {new Date(data.created_at).toLocaleDateString() || "Unknown date"}
+                          </div>
+                        </div>
+                      );
+                    })
+                  : !showSkeleton && <div className="col-span-full text-center py-8">No results.</div>}
+              </div>
+            )}
             <DataTablePagination table={table} />
           </div>
         </motion.div>
@@ -310,7 +376,7 @@ export function DataTable<TData>({
         <AnimatePresence>
           {sidebarOpen && selectedDocument && (
             <motion.div
-              className="w-[40%] border border-gray-200 z-10"
+              className="w-[40%] border border-neutral-200 z-10"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}

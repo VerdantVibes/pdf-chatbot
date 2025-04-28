@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getGmailPdfs } from "@/lib/api/knowledge-base";
 import { ErrorDisplay } from "../ui/error-display";
 import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
+import { ImportDocumentModal } from "../document/ImportDocumentModal";
 
 export function PrivateAssetsPage() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -12,6 +14,7 @@ export function PrivateAssetsPage() {
     sortBy: "created_at",
     sortOrder: "desc",
   });
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [filters, setFilters] = useState<{
     selectedAuthors: string[];
     selectedCategories: string[];
@@ -61,6 +64,16 @@ export function PrivateAssetsPage() {
     }
   }, [selectedRows, response?.items]);
 
+  const handleImportDocument = () => {
+    setIsImportModalOpen(true);
+  };
+
+  const handleFileSelected = (files: FileList) => {
+    console.log("Selected files:", files);
+    // Here you would implement the upload logic when ready
+    // This currently just logs the files to the console
+  };
+
   const handleFiltersChange = (newFilters: {
     selectedAuthors: string[];
     selectedCategories: string[];
@@ -83,11 +96,28 @@ export function PrivateAssetsPage() {
   const items = response?.items || [];
 
   return (
-    <>
+    <div>
+      <ImportDocumentModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        onFileSelected={handleFileSelected}
+      />
       <div className="hidden flex-1 flex-col space-y-5 py-2 md:flex">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight">Files</h2>
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col items-start justify-center mb-1">
+            <h2 className="text-2xl font-bold tracking-tight">Knowledge Base</h2>
+            <p className="text-secondary-foreground/50">Description subtext will go here</p>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={handleImportDocument} variant="outline">
+              <span className="font-medium">Import Document</span>
+            </Button>
+            <Button variant="default">
+              <span className="font-medium px-2">Main Button</span>
+            </Button>
+          </div>
         </div>
+
         <DataTable
           data={items}
           columns={getColumns()}
@@ -104,6 +134,6 @@ export function PrivateAssetsPage() {
           refetch={refetch}
         />
       </div>
-    </>
+    </div>
   );
 }

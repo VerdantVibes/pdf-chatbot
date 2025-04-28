@@ -13,7 +13,7 @@ export default function PrivateAssets() {
         isCurrentPage: false,
       },
       {
-        label: "Private Assets",
+        label: "General",
         path: "/private-assets",
         isCurrentPage: true,
       },

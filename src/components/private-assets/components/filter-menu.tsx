@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { ChartBarStacked, Check, ChevronDown, CircleUserRound, FileText, Filter } from "lucide-react";
+import { ChartBarStacked, Check, ChevronDown, CircleUserRound, FileText, Filter, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { getPdfAnalysisAuthors, getPdfAnalysisCategories, getPdfAnalysisSectors } from "@/lib/api/pdf-analysis";
 import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 interface FilterMenuProps {
   onFiltersChange?: (filters: {
@@ -20,6 +21,11 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
   const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set());
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set());
+
+  // Track applied filters separately from selected filters
+  const [appliedAuthors, setAppliedAuthors] = useState<Set<string>>(new Set());
+  const [appliedCategories, setAppliedCategories] = useState<Set<string>>(new Set());
+  const [appliedSectors, setAppliedSectors] = useState<Set<string>>(new Set());
 
   const { data: authors = [] } = useQuery({
     queryKey: ["authors"],
@@ -65,6 +71,11 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
   };
 
   const applyFilters = () => {
+    // Update applied filters from selected filters
+    setAppliedAuthors(new Set(selectedAuthors));
+    setAppliedCategories(new Set(selectedCategories));
+    setAppliedSectors(new Set(selectedSectors));
+
     if (onFiltersChange) {
       onFiltersChange({
         selectedAuthors: Array.from(selectedAuthors),
@@ -80,6 +91,11 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
     setSelectedCategories(new Set());
     setSelectedSectors(new Set());
 
+    // Clear applied filters as well
+    setAppliedAuthors(new Set());
+    setAppliedCategories(new Set());
+    setAppliedSectors(new Set());
+
     if (onFiltersChange) {
       onFiltersChange({
         selectedAuthors: [],
@@ -89,27 +105,116 @@ export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
     }
   };
 
-  const hasActiveFilters = selectedAuthors.size > 0 || selectedCategories.size > 0 || selectedSectors.size > 0;
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn("pr-4", hasActiveFilters && "bg-accent text-accent-foreground")}
-        >
-          <Filter className="h-4 w-4 mr-1" />
-          Filter
-          {hasActiveFilters && (
-            <span className="ml-1 rounded-full bg-primary w-4 h-4 text-[10px] flex items-center justify-center text-primary-foreground">
-              {selectedAuthors.size + selectedCategories.size + selectedSectors.size}
-            </span>
-          )}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" className={cn("pr-4")}>
+            <Filter className="h-4 w-4 mr-1" />
+            Filter
+          </Button>
+          <div className="flex flex-wrap gap-2">
+            {Array.from(appliedAuthors).map((author) => (
+              <Badge
+                key={`author-${author}`}
+                variant="secondary"
+                className="flex items-center gap-1 px-2 py-1 h-8 bg-neutral-100 hover:bg-neutral-100 text-neutral-800"
+              >
+                <Tag className="h-4 w-4 text-neutral-800 mr-1" />
+                {author}
+                <X
+                  className="h-3.5 w-3.5 cursor-pointer ml-1 text-neutral-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Remove from both applied and selected sets
+                    const newAppliedAuthors = new Set(appliedAuthors);
+                    newAppliedAuthors.delete(author);
+                    setAppliedAuthors(newAppliedAuthors);
+
+                    const newSelectedAuthors = new Set(selectedAuthors);
+                    newSelectedAuthors.delete(author);
+                    setSelectedAuthors(newSelectedAuthors);
+
+                    if (onFiltersChange) {
+                      onFiltersChange({
+                        selectedAuthors: Array.from(newAppliedAuthors),
+                        selectedCategories: Array.from(appliedCategories),
+                        selectedSectors: Array.from(appliedSectors),
+                      });
+                    }
+                  }}
+                />
+              </Badge>
+            ))}
+            {Array.from(appliedCategories).map((category) => (
+              <Badge
+                key={`category-${category}`}
+                variant="secondary"
+                className="flex items-center gap-1 px-2 py-1 h-8 bg-neutral-100 hover:bg-neutral-100 text-neutral-800"
+              >
+                <Tag className="h-4 w-4 text-neutral-800 mr-1" />
+                {category}
+                <X
+                  className="h-3.5 w-3.5 cursor-pointer ml-1 text-neutral-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Remove from both applied and selected sets
+                    const newAppliedCategories = new Set(appliedCategories);
+                    newAppliedCategories.delete(category);
+                    setAppliedCategories(newAppliedCategories);
+
+                    const newSelectedCategories = new Set(selectedCategories);
+                    newSelectedCategories.delete(category);
+                    setSelectedCategories(newSelectedCategories);
+
+                    if (onFiltersChange) {
+                      onFiltersChange({
+                        selectedAuthors: Array.from(appliedAuthors),
+                        selectedCategories: Array.from(newAppliedCategories),
+                        selectedSectors: Array.from(appliedSectors),
+                      });
+                    }
+                  }}
+                />
+              </Badge>
+            ))}
+            {Array.from(appliedSectors).map((sector) => (
+              <Badge
+                key={`sector-${sector}`}
+                variant="secondary"
+                className="flex items-center gap-1 px-2 py-1 h-8 bg-neutral-100 hover:bg-neutral-100 text-neutral-800"
+              >
+                <Tag className="h-4 w-4 text-neutral-800 mr-1" />
+                {sector}
+                <X
+                  className="h-3.5 w-3.5 cursor-pointer ml-1 text-neutral-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Remove from both applied and selected sets
+                    const newAppliedSectors = new Set(appliedSectors);
+                    newAppliedSectors.delete(sector);
+                    setAppliedSectors(newAppliedSectors);
+
+                    const newSelectedSectors = new Set(selectedSectors);
+                    newSelectedSectors.delete(sector);
+                    setSelectedSectors(newSelectedSectors);
+
+                    if (onFiltersChange) {
+                      onFiltersChange({
+                        selectedAuthors: Array.from(appliedAuthors),
+                        selectedCategories: Array.from(appliedCategories),
+                        selectedSectors: Array.from(newAppliedSectors),
+                      });
+                    }
+                  }}
+                />
+              </Badge>
+            ))}
+          </div>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="max-w-sm p-4" align="start">
-        <h3 className="font-semibold mb-2 text-xs text-gray-800">Filter By:</h3>
+        <h3 className="font-semibold mb-2 text-xs text-neutral-800">Filter By:</h3>
         <div className="space-y-1 mb-3">
           <label className="text-sm font-medium">By Author</label>
           <Popover>

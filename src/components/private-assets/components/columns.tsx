@@ -3,13 +3,38 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Pdf } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 // import { FileText, Youtube, Podcast, Radio, File, Archive, Bookmark } from "lucide-react";
-import { File, Archive, Bookmark } from "lucide-react";
+import {
+  File,
+  Archive,
+  Bookmark,
+  Folder,
+  Loader2,
+  Tag,
+  ChevronDown,
+  Star,
+  BookOpen,
+  Compass,
+  Share2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { movePdfsToFolder } from "@/lib/api/folder";
-import { useQueryClient } from "@tanstack/react-query";
+import { getFolders, movePdfsToFolder } from "@/lib/api/folder";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import React from "react";
+
+interface FolderType {
+  name: string;
+  // Add other properties if needed
+}
 
 type ExtendedColumnDef<T> = ColumnDef<T> & {
   identifier?: string | boolean;
@@ -158,6 +183,12 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
     accessorKey: "action",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
+      const [dropdownOpen, setDropdownOpen] = React.useState(false);
+      const { data: folders = [] } = useQuery<FolderType[]>({
+        queryKey: ["folders"],
+        queryFn: getFolders,
+        enabled: false, // Prevent additional fetching, just subscribe to the cache
+      });
       const queryClient = useQueryClient();
 
       const moveToCategoryMutation = useMutation({
@@ -198,8 +229,16 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
         moveToCategoryMutation.mutate({ pdfIds: [documentId], category: folderName });
       };
 
+      const handleMoveToCategory = (category: string) => {
+        const documentId = (row.original as any).id;
+        moveToCategoryMutation.mutate({ pdfIds: [documentId], category });
+        setDropdownOpen(false);
+      };
+
       return (
-        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+        <div
+          className={`flex transition-opacity ${dropdownOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+        >
           <Button
             disabled={moveToCategoryMutation.isPending}
             variant={"ghost"}
@@ -209,15 +248,84 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
           >
             <Archive className="h-4 w-4" />
           </Button>
-          <Button
-            disabled={moveToCategoryMutation.isPending}
-            variant={"ghost"}
-            size={"icon"}
-            className="w-7 h-7 text-neutral-700"
-            onClick={handleBookmark}
-          >
-            <Bookmark className="h-4 w-4" />
-          </Button>
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size={"icon"}
+                className="w-7 h-7 text-neutral-700"
+                disabled={moveToCategoryMutation.isPending}
+              >
+                <Bookmark className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {/* Hardcoded options matching files-tabs.tsx */}
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoveToCategory("Favorites");
+                }}
+                disabled={moveToCategoryMutation.isPending}
+              >
+                <Star className="h-4 w-4" />
+                <span>Favorites</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoveToCategory("Read Later");
+                }}
+                disabled={moveToCategoryMutation.isPending}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Read Later</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoveToCategory("Discover");
+                }}
+                disabled={moveToCategoryMutation.isPending}
+              >
+                <Compass className="h-4 w-4" />
+                <span>Discover</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMoveToCategory("Shared");
+                }}
+                disabled={moveToCategoryMutation.isPending}
+              >
+                <Share2 className="h-4 w-4" />
+                <span>Shared</span>
+              </DropdownMenuItem>
+
+              {/* Show separator if there are folders */}
+              {folders.length > 0 && <DropdownMenuSeparator />}
+
+              {/* Dynamic folders */}
+              {folders.map((folder: FolderType) => (
+                <DropdownMenuItem
+                  key={folder.name}
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMoveToCategory(folder.name);
+                  }}
+                  disabled={moveToCategoryMutation.isPending}
+                >
+                  <Folder className="h-4 w-4" />
+                  <span>{folder.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       );
     },

@@ -66,10 +66,10 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
               All Files
             </TabsTrigger>
             <TabsTrigger
-              value="favourites"
+              value="favorites"
               className="px-[1.15rem] h-9 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-foreground data-[state=active]:shadow-none data-[state=active]:bg-transparent data-[state=active]:font-medium"
             >
-              Favourites
+              Favorites
             </TabsTrigger>
             <TabsTrigger
               value="read-later"

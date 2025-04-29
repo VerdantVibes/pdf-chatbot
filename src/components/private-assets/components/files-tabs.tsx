@@ -38,7 +38,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
     },
     onError: (error) => {
       console.error("Failed to create folder:", error);
-      toast.error("Failed to create folder");
+      toast.error((error as any)?.response?.data?.detail || "Failed to create folder");
     },
   });
 
@@ -92,7 +92,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
 
             {isLoading
               ? // Skeleton loaders for folders
-                Array.from({ length: 2 }).map((_, index) => (
+                Array.from({ length: 1 }).map((_, index) => (
                   <div key={`skeleton-${index}`} className="px-[1.15rem] h-9 flex items-center">
                     <div className="h-4 bg-neutral-200 rounded w-16 animate-pulse"></div>
                   </div>

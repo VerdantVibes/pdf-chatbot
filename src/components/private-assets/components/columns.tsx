@@ -47,15 +47,16 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
     accessorKey: "type",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
     cell: () => {
-      const icons = ["file", "podcast", "youtube", "filetext", "radio"];
-      const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+      // const icons = ["file", "podcast", "youtube", "filetext", "radio"];
+      // const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+      const randomIcon = "file";
       return (
         <div className="ml-0.5 text-secondary-foreground/40">
           {randomIcon === "file" && <File className="h-4 w-4" />}
-          {randomIcon === "podcast" && <Podcast className="h-4 w-4" />}
+          {/* {randomIcon === "podcast" && <Podcast className="h-4 w-4" />}
           {randomIcon === "youtube" && <Youtube className="h-4 w-4" />}
           {randomIcon === "filetext" && <FileText className="h-4 w-4" />}
-          {randomIcon === "radio" && <Radio className="h-4 w-4" />}
+          {randomIcon === "radio" && <Radio className="h-4 w-4" />} */}
         </div>
       );
     },

@@ -265,8 +265,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 flexShrink: 0,
               }}
             >
-              <TabsTrigger
-                value="summary"
+                <TabsTrigger
+                  value="summary"
                 className={`px-3 ${
                   activeTab === "summary"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -282,10 +282,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "summary" && <SummaryIcon />}
-                Summary
-              </TabsTrigger>
-              <TabsTrigger
-                value="signals"
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signals"
                 className={`px-3 ${
                   activeTab === "signals"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -301,10 +301,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "signals" && <SignalsIcon />}
-                Signals
-              </TabsTrigger>
-              <TabsTrigger
-                value="threads"
+                  Signals
+                </TabsTrigger>
+                <TabsTrigger
+                  value="threads"
                 className={`px-3 ${
                   activeTab === "threads"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -320,10 +320,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "threads" && <ThreadsIcon />}
-                Threads
-              </TabsTrigger>
-              <TabsTrigger
-                value="doc"
+                  Threads
+                </TabsTrigger>
+                <TabsTrigger
+                  value="doc"
                 className={`px-3 ${
                   activeTab === "doc"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -339,8 +339,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "doc" && <DocIcon />}
-                Doc
-              </TabsTrigger>
+                  Doc
+                </TabsTrigger>
               <TabsTrigger
                 value="ai"
                 className={`px-3 ${
@@ -360,8 +360,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 {activeTab === "ai" && <Bot className="h-4 w-4 mr-0.5 mb-0.5" />}
                 AI
               </TabsTrigger>
-              <TabsTrigger
-                value="info"
+                <TabsTrigger
+                  value="info"
                 className={`px-3 ${
                   activeTab === "info"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -377,10 +377,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "info" && <InfoIcon />}
-                Info
-              </TabsTrigger>
-            </TabsList>
-          </div>
+                  Info
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
           <div className="h-[calc(100%-40px)] overflow-hidden">
             <ScrollArea className="h-full pt-6 pb-4">
@@ -391,13 +391,13 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                     <div className="flex items-center gap-2 p-4">
                       <div className="flex-shrink-0">
                         <DocumentThumbnail thumbnail={thumbnail} filename={filename || "document.pdf"} />
-                      </div>
+                        </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1 max-w-[360px]">
                             <p className="text-sm text-black font-semibold truncate">
-                              {email_subject || "Untitled Document"}
-                            </p>
+                            {email_subject || "Untitled Document"}
+                          </p>
                             <p className="text-xs text-neutral-500 truncate">{filename || "document.pdf"}</p>
                           </div>
                           <Link

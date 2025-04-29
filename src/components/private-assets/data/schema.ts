@@ -12,6 +12,7 @@ export const pdfSchema = z.object({
   email_received_date: z.string(),
   file_size: z.number(),
   thumbnail: z.string().nullable(),
+  grid_view: z.string().nullable(),
   analysis: z.object({
     ai_summary: z.string(),
   }),

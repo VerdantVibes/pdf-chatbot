@@ -16,6 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
+import { ThumbsDown, ThumbsUp, Bookmark } from "lucide-react";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { deleteDocuments } from "@/lib/api/knowledge-base";
@@ -28,6 +29,23 @@ import { DocumentSidebar } from "./sidebar/document-sidebar";
 import { getColumns } from "./columns";
 import { FilesTabs } from "./files-tabs";
 import { ViewMode } from "./view-mode";
+
+const ShareIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="19" 
+    height="20" 
+    viewBox="0 0 19 20" 
+    fill="none"
+    className="w-4 h-4 text-neutral-600"
+    >
+    <path d="M15.3016 6.4C16.7927 6.4 18.0016 5.19117 18.0016 3.7C18.0016 2.20883 16.7927 1 15.3016 1C13.8104 1 12.6016 2.20883 12.6016 3.7C12.6016 5.19117 13.8104 6.4 15.3016 6.4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4.50469 12.6998C5.99586 12.6998 7.20469 11.491 7.20469 9.9998C7.20469 8.50864 5.99586 7.2998 4.50469 7.2998C3.01352 7.2998 1.80469 8.50864 1.80469 9.9998C1.80469 11.491 3.01352 12.6998 4.50469 12.6998Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M15.3016 18.9996C16.7927 18.9996 18.0016 17.7908 18.0016 16.2996C18.0016 14.8084 16.7927 13.5996 15.3016 13.5996C13.8104 13.5996 12.6016 14.8084 12.6016 16.2996C12.6016 17.7908 13.8104 18.9996 15.3016 18.9996Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6.83594 11.3594L12.9829 14.9414" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12.9739 5.05957L6.83594 8.64157" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -326,9 +344,9 @@ export function DataTable<TData>({
                 {showSkeleton
                   ? Array.from({ length: skeletonRowCount }).map((_, i) => (
                       <div className="animate-pulse border rounded-md p-4 flex flex-col space-y-3" key={i}>
+                        <div className="h-48 bg-neutral-200 rounded w-full"></div>
                         <div className="h-5 bg-neutral-200 rounded w-3/4"></div>
                         <div className="h-4 bg-neutral-200 rounded w-1/2"></div>
-                        <div className="h-4 bg-neutral-200 rounded w-1/4"></div>
                       </div>
                     ))
                   : table.getRowModel().rows?.length
@@ -337,29 +355,102 @@ export function DataTable<TData>({
                       return (
                         <div
                           key={row.id}
-                          className={`border rounded-md p-4 cursor-pointer ${
-                            row.getIsSelected() ? "border-primary ring-1 ring-primary" : ""
-                          } ${row.getIsExpanded() ? "bg-neutral-100" : ""} hover:bg-neutral-50 transition-colors`}
+                          className={`border rounded-lg overflow-hidden cursor-pointer ${
+                            row.getIsSelected() ? "border-primary ring-1 ring-primary" : "border-neutral-200"
+                          } ${row.getIsExpanded() ? "bg-neutral-50 border-neutral-300 ring-1 ring-neutral-300" : ""} hover:shadow-md transition-all`}
                           onClick={(e) => handleRowClick(e, row.id)}
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-medium truncate">{data.filename || "Untitled"}</h3>
-                            <input
-                              type="checkbox"
-                              checked={row.getIsSelected()}
-                              onChange={(e) => {
-                                row.toggleSelected(e.target.checked);
-                                e.stopPropagation();
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="h-4 w-4"
-                            />
+                          <div className="aspect-[4/3] relative bg-[#FCFBFC]">
+                            {data.grid_view ? (
+                              <img
+                                src={`data:image/jpeg;base64,${data.grid_view}`}
+                                alt={data.filename}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <svg
+                                  className="w-12 h-12 text-neutral-300"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 384 512"
+                                >
+                                  <path
+                                    fill="currentColor"
+                                    d="M320 464c8.8 0 16-7.2 16-16V160H256c-17.7 0-32-14.3-32-32V48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16H320zM0 64C0 28.7 28.7 0 64 0H229.5c17 0 33.3 6.7 45.3 18.7l90.5 90.5c12 12 18.7 28.3 18.7 45.3V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64z"
+                                  />
+                                </svg>
+                              </div>
+                            )}
+                            <div className="absolute top-2 right-2">
+                              <input
+                                type="checkbox"
+                                checked={row.getIsSelected()}
+                                onChange={(e) => {
+                                  row.toggleSelected(e.target.checked);
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-4 w-4 rounded border-neutral-300"
+                              />
+                            </div>
+                            {row.getIsExpanded() && (
+                              <div 
+                                className="absolute bottom-0 left-0 right-0 p-2 flex justify-between items-center bg-white/80 backdrop-blur-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Add thumbs down logic
+                                    }}
+                                    className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                                  >
+                                    <ThumbsDown className="w-4 h-4 text-neutral-600" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Add thumbs up logic
+                                    }}
+                                    className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                                  >
+                                    <ThumbsUp className="w-4 h-4 text-neutral-600" />
+                                  </button>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Add bookmark logic
+                                    }}
+                                    className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                                  >
+                                    <Bookmark className="w-4 h-4 text-neutral-600" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Add share logic
+                                    }}
+                                    className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                                  >
+                                    <ShareIcon />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="text-sm text-neutral-500 mb-2 truncate">
-                            {data.email_subject || "No subject"}
-                          </div>
-                          <div className="text-xs text-neutral-400">
-                            {new Date(data.created_at).toLocaleDateString() || "Unknown date"}
+                          <div className="p-4">
+                            <h3 className="font-medium text-sm truncate mb-1" title={data.filename}>
+                              {data.filename || "Untitled"}
+                            </h3>
+                            <p className="text-xs text-neutral-500 truncate" title={data.email_subject}>
+                              {data.email_subject || "No subject"}
+                            </p>
+                            <p className="text-xs text-neutral-400 mt-2">
+                              {new Date(data.created_at).toLocaleDateString() || "Unknown date"}
+                            </p>
                           </div>
                         </div>
                       );

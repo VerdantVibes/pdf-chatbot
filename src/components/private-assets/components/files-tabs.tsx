@@ -24,6 +24,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
   const { data: folders = [], isLoading } = useQuery({
     queryKey: ["folders"],
     queryFn: getFolders,
+    refetchOnWindowFocus: false,
   });
 
   // Create folder mutation

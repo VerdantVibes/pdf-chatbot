@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loader2, Trash2, Tag, ChevronDown, Star, BookOpen, Compass, Share2, Folder } from "lucide-react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getFolders, movePdfsToFolder } from "@/lib/api/folder";
+import { toast } from "sonner";
 
 // Define the Folder type to match what's returned by the API
 interface FolderType {
@@ -19,26 +21,72 @@ interface FolderType {
 
 interface TableSelectionActionsProps {
   selectedCount: number;
+  selectedRowIds: string[];
   onStartChat: () => void;
   onDelete: () => void;
   onSelectAll: () => void;
   isDeleting: boolean;
   isBuildingIndex: boolean;
+  refetch?: () => void;
 }
 
 export function TableSelectionActions({
   selectedCount,
+  selectedRowIds,
   onStartChat,
   onDelete,
   onSelectAll,
   isDeleting,
   isBuildingIndex,
+  refetch,
 }: TableSelectionActionsProps) {
   // Use useQuery with enabled: false to subscribe to cache updates without triggering new fetches
   const { data: folders = [] } = useQuery<FolderType[]>({
     queryKey: ["folders"],
     enabled: false, // Prevent additional fetching, just subscribe to the cache
   });
+
+  const queryClient = useQueryClient();
+
+  // Mutation for moving documents to a folder
+  const moveToCategoryMutation = useMutation({
+    mutationFn: ({ pdfIds, category }: { pdfIds: string[]; category: string }) => {
+      return movePdfsToFolder(pdfIds, category);
+    },
+    onSuccess: (data) => {
+      toast.success(
+        data.message || `Successfully moved ${data.moved_pdf_ids.length} document(s) to '${data.folder_name}'`
+      );
+
+      // Refresh the table data
+      if (refetch) {
+        refetch();
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["documents"] });
+      }
+
+      // Reset row selection after refetching data
+      onSelectAll();
+
+      // If there were failures, show a warning
+      if (data.failed_pdf_ids && data.failed_pdf_ids.length > 0) {
+        toast.warning(`Failed to move ${data.failed_pdf_ids.length} document(s)`);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || "Failed to move documents to folder");
+    },
+  });
+
+  // Handle moving documents to a category
+  const handleMoveToCategory = (category: string) => {
+    if (selectedRowIds.length === 0) {
+      toast.error("No documents selected");
+      return;
+    }
+
+    moveToCategoryMutation.mutate({ pdfIds: selectedRowIds, category });
+  };
 
   return (
     <motion.div
@@ -63,27 +111,56 @@ export function TableSelectionActions({
       <div className="flex items-center gap-2 ml-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-9 flex items-center gap-1">
-              <Tag className="h-4 w-4" />
-              <span>Tag as</span>
-              <ChevronDown className="h-4 w-4 ml-1" />
+            <Button
+              variant="outline"
+              className="h-9 flex items-center gap-1"
+              disabled={moveToCategoryMutation.isPending || isBuildingIndex || isDeleting}
+            >
+              {moveToCategoryMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Moving...
+                </>
+              ) : (
+                <>
+                  <Tag className="h-4 w-4" />
+                  <span>Tag as</span>
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {/* Hardcoded options matching files-tabs.tsx */}
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleMoveToCategory("Favorites")}
+              disabled={moveToCategoryMutation.isPending}
+            >
               <Star className="h-4 w-4" />
               <span>Favorites</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleMoveToCategory("Read Later")}
+              disabled={moveToCategoryMutation.isPending}
+            >
               <BookOpen className="h-4 w-4" />
               <span>Read Later</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleMoveToCategory("Discover")}
+              disabled={moveToCategoryMutation.isPending}
+            >
               <Compass className="h-4 w-4" />
               <span>Discover</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => handleMoveToCategory("Shared")}
+              disabled={moveToCategoryMutation.isPending}
+            >
               <Share2 className="h-4 w-4" />
               <span>Shared</span>
             </DropdownMenuItem>
@@ -93,7 +170,12 @@ export function TableSelectionActions({
 
             {/* Dynamic folders */}
             {folders.map((folder: FolderType) => (
-              <DropdownMenuItem key={folder.name} className="flex items-center gap-2">
+              <DropdownMenuItem
+                key={folder.name}
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => handleMoveToCategory(folder.name)}
+                disabled={moveToCategoryMutation.isPending}
+              >
                 <Folder className="h-4 w-4" />
                 <span>{folder.name}</span>
               </DropdownMenuItem>

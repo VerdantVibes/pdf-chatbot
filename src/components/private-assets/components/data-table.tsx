@@ -566,11 +566,13 @@ export function DataTable<TData>({
       {selectedRowCount > 0 && (
         <TableSelectionActions
           selectedCount={selectedRowCount}
+          selectedRowIds={table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id)}
           onDelete={handleDelete}
           onStartChat={handleStartChat}
           onSelectAll={handleSelectAll}
           isBuildingIndex={isBuildingIndex}
           isDeleting={isDeleting}
+          refetch={refetch}
         />
       )}
     </div>

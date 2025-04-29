@@ -13,6 +13,12 @@ interface DocumentSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   document: any;
+  appliedFilters?: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  };
+  onToggleAuthorFilter?: (author: string) => void;
 }
 
 interface IconProps {
@@ -168,7 +174,12 @@ const DocumentThumbnail = ({ thumbnail, filename }: { thumbnail: string | null; 
   );
 };
 
-export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
+export function DocumentSidebar({
+  onClose,
+  document,
+  appliedFilters = { selectedAuthors: [], selectedCategories: [], selectedSectors: [] },
+  onToggleAuthorFilter,
+}: DocumentSidebarProps) {
   const formatFileSize = (sizeInBytes?: number) => {
     if (!sizeInBytes) return "N/A";
 
@@ -229,6 +240,16 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
     setCurrentPdfId(newPdfId);
   };
 
+  const handleAuthorClick = (authorName: string) => {
+    if (onToggleAuthorFilter) {
+      onToggleAuthorFilter(authorName);
+    }
+  };
+
+  const isAuthorFiltered = (authorName: string) => {
+    return appliedFilters.selectedAuthors.includes(authorName);
+  };
+
   const transitionConfig = {
     type: "tween",
     duration: 0.3,
@@ -265,8 +286,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 flexShrink: 0,
               }}
             >
-                <TabsTrigger
-                  value="summary"
+              <TabsTrigger
+                value="summary"
                 className={`px-3 ${
                   activeTab === "summary"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -282,10 +303,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "summary" && <SummaryIcon />}
-                  Summary
-                </TabsTrigger>
-                <TabsTrigger
-                  value="signals"
+                Summary
+              </TabsTrigger>
+              <TabsTrigger
+                value="signals"
                 className={`px-3 ${
                   activeTab === "signals"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -301,10 +322,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "signals" && <SignalsIcon />}
-                  Signals
-                </TabsTrigger>
-                <TabsTrigger
-                  value="threads"
+                Signals
+              </TabsTrigger>
+              <TabsTrigger
+                value="threads"
                 className={`px-3 ${
                   activeTab === "threads"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -320,10 +341,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "threads" && <ThreadsIcon />}
-                  Threads
-                </TabsTrigger>
-                <TabsTrigger
-                  value="doc"
+                Threads
+              </TabsTrigger>
+              <TabsTrigger
+                value="doc"
                 className={`px-3 ${
                   activeTab === "doc"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -339,8 +360,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "doc" && <DocIcon />}
-                  Doc
-                </TabsTrigger>
+                Doc
+              </TabsTrigger>
               <TabsTrigger
                 value="ai"
                 className={`px-3 ${
@@ -360,8 +381,8 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 {activeTab === "ai" && <Bot className="h-4 w-4 mr-0.5 mb-0.5" />}
                 AI
               </TabsTrigger>
-                <TabsTrigger
-                  value="info"
+              <TabsTrigger
+                value="info"
                 className={`px-3 ${
                   activeTab === "info"
                     ? "bg-white shadow-md flex justify-center items-center gap-1"
@@ -377,10 +398,10 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                 }}
               >
                 {activeTab === "info" && <InfoIcon />}
-                  Info
-                </TabsTrigger>
-              </TabsList>
-            </div>
+                Info
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <div className="h-[calc(100%-40px)] overflow-hidden">
             <ScrollArea className="h-full pt-6 pb-4">
@@ -391,13 +412,13 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                     <div className="flex items-center gap-2 p-4">
                       <div className="flex-shrink-0">
                         <DocumentThumbnail thumbnail={thumbnail} filename={filename || "document.pdf"} />
-                        </div>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1 max-w-[360px]">
                             <p className="text-sm text-black font-semibold truncate">
-                            {email_subject || "Untitled Document"}
-                          </p>
+                              {email_subject || "Untitled Document"}
+                            </p>
                             <p className="text-xs text-neutral-500 truncate">{filename || "document.pdf"}</p>
                           </div>
                           <Link
@@ -419,21 +440,23 @@ export function DocumentSidebar({ onClose, document }: DocumentSidebarProps) {
                     <h3 className="text-sm font-semibold mb-2 mt-5">Research House</h3>
                     <div className="flex flex-wrap gap-3">
                       {author.map((author: string, index: number) => {
-                        if (index === 0) {
-                          return (
+                        const isFiltered = isAuthorFiltered(author);
+                        return (
+                          <button
+                            key={`author-${author}-${index}`}
+                            onClick={() => handleAuthorClick(author)}
+                            className="cursor-pointer"
+                          >
                             <Badge
                               variant={"outline"}
-                              className="bg-white text-black text-sm py-1.5 flex items-center gap-2"
+                              className={`${
+                                isFiltered ? "bg-white" : "bg-neutral-100"
+                              } text-black text-sm py-1.5 flex items-center gap-2`}
                             >
                               <span>{author}</span>
-                              <Filter className="w-4 h-4" />
+                              {isFiltered && <Filter className="w-4 h-4" />}
                             </Badge>
-                          );
-                        }
-                        return (
-                          <Badge variant={"outline"} className="bg-neutral-100 text-black/90 text-sm py-1.5">
-                            <span>{author}</span>
-                          </Badge>
+                          </button>
                         );
                       })}
                     </div>

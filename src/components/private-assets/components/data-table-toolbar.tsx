@@ -15,9 +15,14 @@ interface DataTableToolbarProps<TData> {
     selectedCategories: string[];
     selectedSectors: string[];
   }) => void;
+  initialFilters?: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  };
 }
 
-export function DataTableToolbar<TData>({ table, onFiltersChange }: DataTableToolbarProps<TData>) {
+export function DataTableToolbar<TData>({ table, onFiltersChange, initialFilters }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
@@ -33,7 +38,7 @@ export function DataTableToolbar<TData>({ table, onFiltersChange }: DataTableToo
           />
         </div>
         <div>
-          <FilterMenu onFiltersChange={onFiltersChange} />
+          <FilterMenu onFiltersChange={onFiltersChange} initialFilters={initialFilters} />
         </div>
         {/* {table.getColumn("status") && (
           <DataTableFacetedFilter

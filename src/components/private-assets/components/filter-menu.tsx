@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChartBarStacked, Check, ChevronDown, CircleUserRound, FileText, Filter, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,18 +14,45 @@ interface FilterMenuProps {
     selectedCategories: string[];
     selectedSectors: string[];
   }) => void;
+  initialFilters?: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  };
 }
 
-export function FilterMenu({ onFiltersChange }: FilterMenuProps) {
+export function FilterMenu({ onFiltersChange, initialFilters }: FilterMenuProps) {
   const [open, setOpen] = useState(false);
-  const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set());
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set());
+  const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set(initialFilters?.selectedAuthors || []));
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set(initialFilters?.selectedCategories || [])
+  );
+  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set(initialFilters?.selectedSectors || []));
 
   // Track applied filters separately from selected filters
-  const [appliedAuthors, setAppliedAuthors] = useState<Set<string>>(new Set());
-  const [appliedCategories, setAppliedCategories] = useState<Set<string>>(new Set());
-  const [appliedSectors, setAppliedSectors] = useState<Set<string>>(new Set());
+  const [appliedAuthors, setAppliedAuthors] = useState<Set<string>>(new Set(initialFilters?.selectedAuthors || []));
+  const [appliedCategories, setAppliedCategories] = useState<Set<string>>(
+    new Set(initialFilters?.selectedCategories || [])
+  );
+  const [appliedSectors, setAppliedSectors] = useState<Set<string>>(new Set(initialFilters?.selectedSectors || []));
+
+  // Update state when initialFilters changes
+  useEffect(() => {
+    if (initialFilters) {
+      if (initialFilters.selectedAuthors) {
+        setSelectedAuthors(new Set(initialFilters.selectedAuthors));
+        setAppliedAuthors(new Set(initialFilters.selectedAuthors));
+      }
+      if (initialFilters.selectedCategories) {
+        setSelectedCategories(new Set(initialFilters.selectedCategories));
+        setAppliedCategories(new Set(initialFilters.selectedCategories));
+      }
+      if (initialFilters.selectedSectors) {
+        setSelectedSectors(new Set(initialFilters.selectedSectors));
+        setAppliedSectors(new Set(initialFilters.selectedSectors));
+      }
+    }
+  }, [initialFilters]);
 
   const { data: authors = [] } = useQuery({
     queryKey: ["authors"],

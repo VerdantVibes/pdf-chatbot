@@ -31,19 +31,49 @@ import { FilesTabs } from "./files-tabs";
 import { ViewMode } from "./view-mode";
 
 const ShareIcon = () => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="19" 
-    height="20" 
-    viewBox="0 0 19 20" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="19"
+    height="20"
+    viewBox="0 0 19 20"
     fill="none"
     className="w-4 h-4 text-neutral-600"
-    >
-    <path d="M15.3016 6.4C16.7927 6.4 18.0016 5.19117 18.0016 3.7C18.0016 2.20883 16.7927 1 15.3016 1C13.8104 1 12.6016 2.20883 12.6016 3.7C12.6016 5.19117 13.8104 6.4 15.3016 6.4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M4.50469 12.6998C5.99586 12.6998 7.20469 11.491 7.20469 9.9998C7.20469 8.50864 5.99586 7.2998 4.50469 7.2998C3.01352 7.2998 1.80469 8.50864 1.80469 9.9998C1.80469 11.491 3.01352 12.6998 4.50469 12.6998Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M15.3016 18.9996C16.7927 18.9996 18.0016 17.7908 18.0016 16.2996C18.0016 14.8084 16.7927 13.5996 15.3016 13.5996C13.8104 13.5996 12.6016 14.8084 12.6016 16.2996C12.6016 17.7908 13.8104 18.9996 15.3016 18.9996Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6.83594 11.3594L12.9829 14.9414" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12.9739 5.05957L6.83594 8.64157" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  >
+    <path
+      d="M15.3016 6.4C16.7927 6.4 18.0016 5.19117 18.0016 3.7C18.0016 2.20883 16.7927 1 15.3016 1C13.8104 1 12.6016 2.20883 12.6016 3.7C12.6016 5.19117 13.8104 6.4 15.3016 6.4Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4.50469 12.6998C5.99586 12.6998 7.20469 11.491 7.20469 9.9998C7.20469 8.50864 5.99586 7.2998 4.50469 7.2998C3.01352 7.2998 1.80469 8.50864 1.80469 9.9998C1.80469 11.491 3.01352 12.6998 4.50469 12.6998Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15.3016 18.9996C16.7927 18.9996 18.0016 17.7908 18.0016 16.2996C18.0016 14.8084 16.7927 13.5996 15.3016 13.5996C13.8104 13.5996 12.6016 14.8084 12.6016 16.2996C12.6016 17.7908 13.8104 18.9996 15.3016 18.9996Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M6.83594 11.3594L12.9829 14.9414"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M12.9739 5.05957L6.83594 8.64157"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -85,6 +115,17 @@ export function DataTable<TData>({
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState<TData | null>(null);
   const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
+
+  // Store applied filters
+  const [appliedFilters, setAppliedFilters] = React.useState<{
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  }>({
+    selectedAuthors: [],
+    selectedCategories: [],
+    selectedSectors: [],
+  });
 
   React.useEffect(() => {
     if (sorting.length > 0 && onSortingChange) {
@@ -155,6 +196,42 @@ export function DataTable<TData>({
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id);
     onSelectionChange(selectedRows);
   }, [rowSelection, table, onSelectionChange]);
+
+  // Handler for filter changes
+  const handleFiltersChange = (filters: {
+    selectedAuthors: string[];
+    selectedCategories: string[];
+    selectedSectors: string[];
+  }) => {
+    setAppliedFilters(filters);
+    if (onFiltersChange) {
+      onFiltersChange(filters);
+    }
+  };
+
+  // Handler for toggling author filter
+  const handleToggleAuthorFilter = (author: string) => {
+    const newSelectedAuthors = [...appliedFilters.selectedAuthors];
+    const authorIndex = newSelectedAuthors.indexOf(author);
+
+    if (authorIndex >= 0) {
+      // Remove the author if it's already in the list
+      newSelectedAuthors.splice(authorIndex, 1);
+    } else {
+      // Add the author if it's not in the list
+      newSelectedAuthors.push(author);
+    }
+
+    const newFilters = {
+      ...appliedFilters,
+      selectedAuthors: newSelectedAuthors,
+    };
+
+    setAppliedFilters(newFilters);
+    if (onFiltersChange) {
+      onFiltersChange(newFilters);
+    }
+  };
 
   const handleStartChat = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows.map((row) => (row.original as any).id);
@@ -267,7 +344,7 @@ export function DataTable<TData>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} onFiltersChange={onFiltersChange} />
+      <DataTableToolbar table={table} onFiltersChange={handleFiltersChange} initialFilters={appliedFilters} />
 
       <div className="flex justify-between items-center py-2 gap-4">
         <FilesTabs onTabChange={handleTabChange} />
@@ -357,7 +434,9 @@ export function DataTable<TData>({
                           key={row.id}
                           className={`border rounded-lg overflow-hidden cursor-pointer ${
                             row.getIsSelected() ? "border-primary ring-1 ring-primary" : "border-neutral-200"
-                          } ${row.getIsExpanded() ? "bg-neutral-50 border-neutral-300 ring-1 ring-neutral-300" : ""} hover:shadow-md transition-all`}
+                          } ${
+                            row.getIsExpanded() ? "bg-neutral-50 border-neutral-300 ring-1 ring-neutral-300" : ""
+                          } hover:shadow-md transition-all`}
                           onClick={(e) => handleRowClick(e, row.id)}
                         >
                           <div className="aspect-[4/3] relative bg-[#FCFBFC]">
@@ -394,7 +473,7 @@ export function DataTable<TData>({
                               />
                             </div>
                             {row.getIsExpanded() && (
-                              <div 
+                              <div
                                 className="absolute bottom-0 left-0 right-0 p-2 flex justify-between items-center bg-white/80 backdrop-blur-sm"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -471,7 +550,13 @@ export function DataTable<TData>({
               exit={{ opacity: 0, x: 20 }}
               transition={transitionConfig}
             >
-              <DocumentSidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} document={selectedDocument} />
+              <DocumentSidebar
+                isOpen={sidebarOpen}
+                onClose={handleCloseSidebar}
+                document={selectedDocument}
+                appliedFilters={appliedFilters}
+                onToggleAuthorFilter={handleToggleAuthorFilter}
+              />
             </motion.div>
           )}
         </AnimatePresence>

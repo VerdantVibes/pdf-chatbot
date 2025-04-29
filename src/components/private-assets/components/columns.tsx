@@ -5,6 +5,10 @@ import { DataTableColumnHeader } from "./data-table-column-header";
 import { FileText, Youtube, Podcast, Radio, File, Archive, Bookmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { movePdfsToFolder } from "@/lib/api/folder";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 type ExtendedColumnDef<T> = ColumnDef<T> & {
   identifier?: string | boolean;
@@ -152,14 +156,66 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
   {
     accessorKey: "action",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
-    cell: () => {
+    cell: ({ row }) => {
+      const queryClient = useQueryClient();
+
+      const moveToCategoryMutation = useMutation({
+        mutationFn: ({ pdfIds, category }: { pdfIds: string[]; category: string }) => {
+          return movePdfsToFolder(pdfIds, category);
+        },
+        onSuccess: (data) => {
+          toast.success(
+            data.message || `Successfully moved ${data.moved_pdf_ids.length} document(s) to '${data.folder_name}'`
+          );
+
+          // Refresh the table data
+          queryClient.invalidateQueries({ queryKey: ["pdfs"] });
+
+          // If there were failures, show a warning
+          if (data.failed_pdf_ids && data.failed_pdf_ids.length > 0) {
+            toast.warning(`Failed to move ${data.failed_pdf_ids.length} document(s)`);
+          }
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.detail || "Failed to move documents to folder");
+        },
+      });
+
+      const handleArchive = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const documentId = (row.original as any).id;
+        const folderName = "Archived";
+
+        moveToCategoryMutation.mutate({ pdfIds: [documentId], category: folderName });
+      };
+
+      const handleBookmark = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const documentId = (row.original as any).id;
+        const folderName = "Tag as";
+
+        moveToCategoryMutation.mutate({ pdfIds: [documentId], category: folderName });
+      };
+
       return (
-        <div className="flex">
-          <Button variant={"ghost"} size={"icon"} className="w-7 h-7 text-neutral-700">
-            <Archive />
+        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            disabled={moveToCategoryMutation.isPending}
+            variant={"ghost"}
+            size={"icon"}
+            className="w-7 h-7 text-neutral-700"
+            onClick={handleArchive}
+          >
+            <Archive className="h-4 w-4" />
           </Button>
-          <Button variant={"ghost"} size={"icon"} className="w-7 h-7 text-neutral-700">
-            <Bookmark />
+          <Button
+            disabled={moveToCategoryMutation.isPending}
+            variant={"ghost"}
+            size={"icon"}
+            className="w-7 h-7 text-neutral-700"
+            onClick={handleBookmark}
+          >
+            <Bookmark className="h-4 w-4" />
           </Button>
         </div>
       );

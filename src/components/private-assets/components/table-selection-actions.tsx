@@ -63,7 +63,7 @@ export function TableSelectionActions({
       if (refetch) {
         refetch();
       } else {
-        queryClient.invalidateQueries({ queryKey: ["documents"] });
+        queryClient.invalidateQueries({ queryKey: ["pdfs"] });
       }
 
       // Reset row selection after refetching data

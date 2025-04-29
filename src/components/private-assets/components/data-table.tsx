@@ -417,7 +417,7 @@ export function DataTable<TData>({
                             data-state={row.getIsSelected() && "selected"}
                             className={`${
                               row.getIsExpanded() ? "bg-neutral-100 font-semibold" : ""
-                            } cursor-pointer transition-colors hover:bg-neutral-50`}
+                            } cursor-pointer transition-colors hover:bg-neutral-50 group`}
                             onClick={(e) => handleRowClick(e, row.id)}
                           >
                             {row.getVisibleCells().map((cell) => (

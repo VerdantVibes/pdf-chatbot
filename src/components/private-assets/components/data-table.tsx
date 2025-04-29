@@ -115,6 +115,8 @@ export function DataTable<TData>({
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState<TData | null>(null);
   const [viewMode, setViewMode] = React.useState<"list" | "grid">("list");
+  const [activeTab, setActiveTab] = React.useState<string>("all-files");
+  const [filteredData, setFilteredData] = React.useState<TData[]>(data);
 
   // Store applied filters
   const [appliedFilters, setAppliedFilters] = React.useState<{
@@ -126,6 +128,25 @@ export function DataTable<TData>({
     selectedCategories: [],
     selectedSectors: [],
   });
+
+  // Update filtered data when data or activeTab changes
+  React.useEffect(() => {
+    if (activeTab === "all-files") {
+      setFilteredData(data);
+    } else if (activeTab === "favorites") {
+      setFilteredData(data.filter((item: any) => item.folder === "Favorites"));
+    } else if (activeTab === "read-later") {
+      setFilteredData(data.filter((item: any) => item.folder === "Read Later"));
+    } else if (activeTab === "discover") {
+      setFilteredData(data.filter((item: any) => item.folder === "Discover"));
+    } else if (activeTab === "shared") {
+      setFilteredData(data.filter((item: any) => item.folder === "Shared"));
+    } else if (activeTab.startsWith("folder-")) {
+      // Extract folder name from tab value (folder-{name})
+      const folderName = activeTab.replace("folder-", "");
+      setFilteredData(data.filter((item: any) => item.folder === folderName));
+    }
+  }, [data, activeTab]);
 
   React.useEffect(() => {
     if (sorting.length > 0 && onSortingChange) {
@@ -146,7 +167,7 @@ export function DataTable<TData>({
   }, []);
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -322,8 +343,8 @@ export function DataTable<TData>({
     }
   };
 
-  const handleTabChange = () => {
-    // You could add additional logic here to filter data based on selected tab
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
   };
 
   const handleViewChange = (view: "list" | "grid") => {

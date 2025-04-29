@@ -43,6 +43,7 @@ export function TableSelectionActions({
   // Use useQuery with enabled: false to subscribe to cache updates without triggering new fetches
   const { data: folders = [] } = useQuery<FolderType[]>({
     queryKey: ["folders"],
+    queryFn: getFolders,
     enabled: false, // Prevent additional fetching, just subscribe to the cache
   });
 

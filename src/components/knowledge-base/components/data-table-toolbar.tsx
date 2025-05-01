@@ -3,7 +3,7 @@ import { Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTableViewOptions } from "@/components/private-assets/components/data-table-view-options";
+import { DataTableViewOptions } from "@/components/knowledge-base/components/data-table-view-options";
 import { FilterMenu } from "./filter-menu";
 
 // import { DataTableFacetedFilter } from "./data-table-faceted-filter";

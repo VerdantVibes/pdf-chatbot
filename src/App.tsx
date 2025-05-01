@@ -4,12 +4,19 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import PrivateAssets from "./pages/PrivateAssets";
+import PrivateAssets from "./pages/KnowledgeBase/PrivateAssets";
 import { Chat } from "./pages/Chat";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { DocumentViewer } from "./pages/DocumentViewerPage";
+import { General } from "./pages/Settings/General";
+import { SettingsLayout } from "./pages/Settings/layout";
+import { Members } from "./pages/Settings/Members";
+import { PlanBilling } from "./pages/Settings/PlanBilling";
+import { Security } from "./pages/Settings/Security";
+import { Profile } from "./pages/Settings/Profile";
+import { KnowledgeBaseLayout } from "./pages/KnowledgeBase/layout";
 
 function App() {
   return (
@@ -43,13 +50,16 @@ function App() {
           />
 
           <Route
-            path="/private-assets"
+            path="/knowledge-base"
             element={
               <ProtectedRoute>
-                <PrivateAssets />
+                <KnowledgeBaseLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index path="general" element={<PrivateAssets />} />
+            <Route index element={<Navigate to="/knowledge-base/general" replace />} />
+          </Route>
 
           <Route
             path="/chat"
@@ -68,6 +78,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="general" element={<General />} />
+            <Route index element={<Navigate to="/settings/general" replace />} />
+            <Route path="members" element={<Members />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="plan-billing" element={<PlanBilling />} />
+            <Route path="security" element={<Security />} />
+          </Route>
 
           <Route path="/" element={<Navigate to="/home" replace />} />
 

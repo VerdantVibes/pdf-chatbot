@@ -32,7 +32,7 @@ export function ChatView({ onPdfChange }: ChatViewProps) {
   useEffect(() => {
     if (!location.state?.faissIndexPath) {
       toast.error("No chat index found");
-      navigate("/private-assets");
+      navigate("/knowledge-base/general");
     }
   }, [location.state, navigate]);
 

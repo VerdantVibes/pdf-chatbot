@@ -2,7 +2,7 @@ import { X, Filter, ThumbsDown, ThumbsUp, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SimplePdfViewer } from "@/components/private-assets/components/pdf-viewer";
+import { SimplePdfViewer } from "@/components/knowledge-base/components/pdf-viewer";
 import pdfIcon from "@/assets/pdficon.svg";
 import { useState } from "react";
 import { Link } from "react-router-dom";

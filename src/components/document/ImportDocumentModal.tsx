@@ -373,7 +373,7 @@ export function ImportDocumentModal({ open, onOpenChange, onFileSelected }: Impo
 
     onOpenChange(false);
     queryClient.invalidateQueries({ queryKey: ["pdfs"] });
-    navigate(`/private-assets?t=${Date.now()}`, { replace: true });
+    navigate(`/knowledge-base/general?t=${Date.now()}`, { replace: true });
   };
 
   const handleClose = () => {

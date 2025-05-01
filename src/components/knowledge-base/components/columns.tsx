@@ -259,7 +259,7 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
                 <Bookmark className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="mr-12">
               {/* Hardcoded options matching files-tabs.tsx */}
               <DropdownMenuItem
                 className="flex items-center gap-2 cursor-pointer"

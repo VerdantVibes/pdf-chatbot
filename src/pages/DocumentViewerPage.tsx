@@ -23,8 +23,8 @@ export function DocumentViewer() {
           isCurrentPage: false,
         },
         {
-          label: "Private Assets",
-          path: "/private-assets",
+          label: "General",
+          path: "/knowledge-base/general",
           isCurrentPage: false,
         },
         {
@@ -42,7 +42,7 @@ export function DocumentViewer() {
 
   if (!documentData) {
     useEffect(() => {
-      navigate("/private-assets", { replace: true });
+      navigate("/knowledge-base/general", { replace: true });
     }, [navigate]);
 
     return (
@@ -51,7 +51,7 @@ export function DocumentViewer() {
           <h2 className="text-lg font-semibold mb-2">Loading document...</h2>
           <p className="text-gray-500">
             If not redirected,{" "}
-            <Button onClick={() => navigate("/private-assets")} variant="link" className="h-auto p-0">
+            <Button onClick={() => navigate("/knowledge-base/general")} variant="link" className="h-auto p-0">
               click here
             </Button>
           </p>

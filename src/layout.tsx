@@ -7,11 +7,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/context/AuthContext";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 import { Link, useLocation } from "react-router-dom";
+import { Separator } from "@radix-ui/react-separator";
+import { Input } from "./components/ui/input";
+import { Search } from "lucide-react";
 
 type BreadcrumbItem = {
   label: string;
@@ -86,11 +89,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar handleLogout={handleLogout} isLoading={isLoading} user={user || undefined} />
         <SidebarInset>
-          <header className="flex sticky top-0 z-10 bg-white border-b-[1.25px] shadow-sm border-neutral-200 min-h-16 px-3 py-4 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              {/* <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" /> */}
-              <Breadcrumb>
+          <header className="flex sticky top-0 z-10 bg-white border-b-[1.25px] shadow-sm border-neutral-200 min-h-16 px-0 py-0 md:px-3 md:py-4 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4 w-full">
+              <div className="md:hidden w-full flex items-center justify-center gap-3">
+                <SidebarTrigger className="p-[1.05rem]" />
+                <div className="w-full relative">
+                  <Input placeholder="Search..." className="pl-8 text-xs placeholder:text-secondary-foreground/50" />
+                  <Search className="h-3.5 w-3.5 absolute left-3 top-[48%] -translate-y-1/2 text-secondary-foreground/50" />
+                </div>
+              </div>
+
+              <Separator orientation="vertical" className="h-4" />
+              <Breadcrumb className="hidden md:flex md:-ml-2">
                 <BreadcrumbList>
                   {displayBreadcrumbs.map((item, index) => (
                     <BreadcrumbItem key={item.path} className="hidden md:flex">
@@ -108,7 +118,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Breadcrumb>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 px-7 py-6 relative">{children}</div>
+          <div className="flex flex-1 flex-col gap-4 px-4 py-2 md:px-7 md:py-6 relative">{children}</div>
         </SidebarInset>
       </SidebarProvider>
     </BreadcrumbContext.Provider>

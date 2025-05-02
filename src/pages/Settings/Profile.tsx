@@ -25,40 +25,42 @@ export function Profile() {
   return (
     <div>
       {!isEditMode ? (
-        <div className="mt-10">
+        <div className="mt-4 md:mt-10">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold">Profile Settings</h2>
-            <Button variant="outline" onClick={handleEditClick}>
+            <Button variant="outline" onClick={handleEditClick} className="hidden md:block">
               Edit Profile Settings
             </Button>
           </div>
 
           <div className="mt-6">
-            <div>
-              <h3 className="text-sm font-medium mb-2">Profile Photo</h3>
-              <div className="w-14 h-14 overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt="Profile"
-                  className="h-10 w-10 object-cover rounded-md"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-start gap-x-52 flex-wrap my-4 text-sm">
-              <div className="mb-4">
-                <h3 className="font-medium mb-1">Your Name</h3>
-                <p className="font-semibold text-secondary-foreground/80">{name}</p>
+            <div className="border rounded-lg shadow-sm px-4 py-6 md:px-0 md:py-0 md:border-none md:shadow-none md:rounded-none">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Profile Photo</h3>
+                <div className="w-14 h-14 overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    alt="Profile"
+                    className="h-10 w-10 object-cover rounded-md"
+                  />
+                </div>
               </div>
 
-              <div className="mb-4">
-                <h3 className="font-medium mb-1">Your Email</h3>
-                <p className="font-semibold text-secondary-foreground/80">{email}</p>
-              </div>
+              <div className="flex items-start gap-x-52 flex-wrap md:my-4 text-sm">
+                <div className="md:mb-4">
+                  <h3 className="font-medium mb-1">Your Name</h3>
+                  <p className="font-semibold text-secondary-foreground/80">{name}</p>
+                </div>
 
-              <div className="mb-4">
-                <h3 className="font-medium mb-1">Your Password</h3>
-                <p className="font-semibold text-secondary-foreground/80">******************</p>
+                <div className="md:mb-4">
+                  <h3 className="font-medium mb-1">Your Email</h3>
+                  <p className="font-semibold text-secondary-foreground/80">{email}</p>
+                </div>
+
+                <div className="md:mb-4">
+                  <h3 className="font-medium md:mb-1">Your Password</h3>
+                  <p className="font-semibold text-secondary-foreground/80">******************</p>
+                </div>
               </div>
             </div>
 

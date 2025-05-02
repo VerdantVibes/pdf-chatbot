@@ -64,7 +64,7 @@ const members: Member[] = [
 export function Members() {
   return (
     <div>
-      <h1 className="text-lg font-bold mb-5 mt-11">Members Settings</h1>
+      <h1 className="text-lg font-bold mb-4 mt-5 md:mb-5 md:mt-11">Members Settings</h1>
 
       <div className="rounded-md border-b">
         <Table>
@@ -82,9 +82,9 @@ export function Members() {
           <TableBody>
             {members.map((member) => (
               <TableRow key={member.id} className="hover:bg-muted/5">
-                <TableCell className="py-3 px-2 font-medium">{member.customer}</TableCell>
-                <TableCell className="py-3 px-2">{member.seats}</TableCell>
-                <TableCell className="py-3 px-2">
+                <TableCell className="py-3 px-2 font-medium text-nowrap">{member.customer}</TableCell>
+                <TableCell className="py-3 px-2 text-nowrap">{member.seats}</TableCell>
+                <TableCell className="py-3 px-2 text-nowrap">
                   <span
                     className={`inline-flex items-center justify-center rounded-md px-2.5 text-xs font-medium ${
                       member.role === "Admin" ? "border bg-white text-black" : "bg-secondary text-black"
@@ -93,7 +93,7 @@ export function Members() {
                     {member.role}
                   </span>
                 </TableCell>
-                <TableCell className="py-3 px-2 text-secondary-foreground/90">{member.date}</TableCell>
+                <TableCell className="py-3 px-2 text-secondary-foreground/90 text-nowrap">{member.date}</TableCell>
                 <TableCell className="py-3 px-2">
                   <Badge className="rounded-md px-3 bg-[#020817] text-white font-thin hover:bg-[#020817]/90">
                     {member.status}

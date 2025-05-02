@@ -2,11 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { useState, useRef } from "react";
+import { useAuth } from "@/lib/context/AuthContext";
 
 export function Profile() {
+  const { user } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [name, setName] = useState("Alexander McQueen");
-  const [email, setEmail] = useState("alexander.mcqueen@gmail.com");
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

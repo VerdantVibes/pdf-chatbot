@@ -47,7 +47,7 @@ export function PdfViewer({ pdfUrl, selectedPdfs, onPdfChange, initialPage = 1, 
   };
 
   return (
-    <div className="relative h-[calc(100vh-129px)] w-full overflow-auto p-4 bg-[#fcfcfb] custom-scroll flex flex-col">
+    <div className="relative h-[calc(100vh-129px)] w-full overflow-auto px-0 py-4 md:p-4 bg-[#fcfcfb] custom-scroll flex flex-col">
       {/* Only show dropdown if not simplified */}
       {!simplified && (
         <div className="sticky top-0 z-10 mb-4 flex justify-end">

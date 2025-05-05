@@ -59,7 +59,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
     <>
       <Tabs defaultValue="all-files" value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-border w-fit overflow-x-auto">
-          <TabsList className="h-9 bg-transparent p-0 w-full flex flex-wrap justify-start">
+          <TabsList className="h-10 md:h-9 bg-transparent p-0 w-full flex md:flex-wrap max-w-[calc(100vw-2rem)] md:max-w-full justify-start">
             <TabsTrigger
               value="all-files"
               className="px-[1.15rem] h-9 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-foreground data-[state=active]:shadow-none data-[state=active]:bg-transparent data-[state=active]:font-medium"
@@ -110,7 +110,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
                 ))}
 
             <button
-              className="flex items-center text-sm font-medium px-[1.15rem] h-9 text-foreground hover:text-foreground/80"
+              className="flex items-center text-nowrap text-sm font-medium px-[1.15rem] h-9 text-foreground hover:text-foreground/80"
               onClick={() => setDialogOpen(true)}
             >
               <Plus className="h-2.5 w-2.5 mr-0.5" />

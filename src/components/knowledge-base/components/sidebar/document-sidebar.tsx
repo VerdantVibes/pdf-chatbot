@@ -1,13 +1,14 @@
-import { X, Filter, ThumbsDown, ThumbsUp, Bot } from "lucide-react";
+import { X, Filter, ThumbsDown, ThumbsUp, Bot, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SimplePdfViewer } from "@/components/knowledge-base/components/pdf-viewer";
 import pdfIcon from "@/assets/pdficon.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTailwindBreakpoint } from "@/hooks/use-tailwind-breakpoint";
 
 interface DocumentSidebarProps {
   isOpen: boolean;
@@ -160,7 +161,7 @@ const DocumentThumbnail = ({ thumbnail, filename }: { thumbnail: string | null; 
       <img
         src={pdfIcon}
         alt="PDF Icon"
-        className="w-[48px] h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+        className="w-[40px] h-[56px] md:w-[48px] md:h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
       />
     );
   }
@@ -169,7 +170,7 @@ const DocumentThumbnail = ({ thumbnail, filename }: { thumbnail: string | null; 
     <img
       src={`data:image/jpeg;base64,${thumbnail}`}
       alt={`${filename} thumbnail`}
-      className="w-[48px] h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+      className="w-[40px] h-[56px] md:w-[48px] md:h-[64px] object-cover shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
     />
   );
 };
@@ -180,6 +181,8 @@ export function DocumentSidebar({
   appliedFilters = { selectedAuthors: [], selectedCategories: [], selectedSectors: [] },
   onToggleAuthorFilter,
 }: DocumentSidebarProps) {
+  const { atLeastMd } = useTailwindBreakpoint();
+
   const formatFileSize = (sizeInBytes?: number) => {
     if (!sizeInBytes) return "N/A";
 
@@ -208,7 +211,7 @@ export function DocumentSidebar({
 
   const { ai_summary, threads = [] } = analysis;
 
-  const [, setCurrentPdfId] = useState<string>(id || "");
+  const [currentPdfId, setCurrentPdfId] = useState<string>(id || "");
   const [currentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("summary");
 
@@ -256,16 +259,59 @@ export function DocumentSidebar({
     ease: "easeInOut",
   };
 
+  // Define all available tabs
+  const allTabs = [
+    { id: "summary", label: "Summary", icon: SummaryIcon },
+    { id: "signals", label: "Signals", icon: SignalsIcon },
+    { id: "threads", label: "Threads", icon: ThreadsIcon },
+    { id: "doc", label: "Doc", icon: DocIcon },
+    { id: "ai", label: "AI", icon: Bot },
+    { id: "info", label: "Info", icon: InfoIcon },
+  ];
+
+  // For mobile view, control which tabs are visible
+  const [visibleTabsStart, setVisibleTabsStart] = useState(0);
+  const maxVisibleTabs = 5;
+
+  // Update visible tabs when active tab changes
+  useEffect(() => {
+    if (!atLeastMd) {
+      const activeTabIndex = allTabs.findIndex((tab) => tab.id === activeTab);
+
+      // If active tab is the 3rd from last or beyond, shift the tabs forward
+      if (activeTabIndex >= visibleTabsStart + maxVisibleTabs - 3) {
+        const newStart = activeTabIndex - (maxVisibleTabs - 3);
+        setVisibleTabsStart(Math.max(0, Math.min(newStart, allTabs.length - maxVisibleTabs)));
+      }
+      // If active tab is the 3rd from start or earlier, shift tabs backward
+      else if (activeTabIndex <= visibleTabsStart + 2) {
+        // Show the first tab when active tab is 3rd from start or earlier
+        // But ensure we don't go below 0
+        const newStart = Math.max(0, activeTabIndex - 2);
+        setVisibleTabsStart(newStart);
+      }
+    } else {
+      // Reset to show all tabs on desktop
+      setVisibleTabsStart(0);
+    }
+  }, [activeTab, atLeastMd]);
+
+  // Get visible tabs based on current state
+  const visibleTabs = !atLeastMd ? allTabs.slice(visibleTabsStart, visibleTabsStart + maxVisibleTabs) : allTabs;
+
+  const showLeftEllipsis = !atLeastMd && visibleTabsStart > 0;
+  const showRightEllipsis = !atLeastMd && visibleTabsStart + maxVisibleTabs < allTabs.length;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={transitionConfig}
-      className="min-h-[630px] max-h-screen bg-white z-10 overflow-y-auto"
+      className="min-h-[630px] md:max-h-screen bg-white z-10 overflow-y-auto"
     >
       <div className="flex relative flex-col h-full">
-        <header className="flex sticky top-0 right-0 z-20 items-center justify-end px-4 py-1 w-full box-border">
+        <header className="hidden md:flex sticky top-0 right-0 z-20 items-center justify-end px-4 py-1 w-full box-border">
           <button onClick={onClose} className="p-1 rounded-sm hover:bg-neutral-200">
             <X className="w-4 h-4 text-neutral-500 font-semibold" />
           </button>
@@ -276,9 +322,9 @@ export function DocumentSidebar({
           className="h-full flex flex-col -mt-2"
           onValueChange={(value) => setActiveTab(value)}
         >
-          <div className="flex items-center w-full mt-2 px-4 -mb-3">
+          <div className="flex items-center w-full mt-6 md:mt-2 px-0 md:px-4 -mb-3 relative">
             <TabsList
-              className="flex w-full justify-start px-1 py-0 space-x-6"
+              className="flex w-full justify-start px-1 py-0 md:space-x-6 overflow-x-hidden"
               style={{
                 borderRadius: "var(--border-radius-lg, 6px)",
                 background: "var(--base-border-primary, #F4F4F5)",
@@ -286,152 +332,70 @@ export function DocumentSidebar({
                 flexShrink: 0,
               }}
             >
-              <TabsTrigger
-                value="summary"
-                className={`px-3 ${
-                  activeTab === "summary"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "summary"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "summary" && <SummaryIcon />}
-                Summary
-              </TabsTrigger>
-              <TabsTrigger
-                value="signals"
-                className={`px-3 ${
-                  activeTab === "signals"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "signals"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "signals" && <SignalsIcon />}
-                Signals
-              </TabsTrigger>
-              <TabsTrigger
-                value="threads"
-                className={`px-3 ${
-                  activeTab === "threads"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "threads"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "threads" && <ThreadsIcon />}
-                Threads
-              </TabsTrigger>
-              <TabsTrigger
-                value="doc"
-                className={`px-3 ${
-                  activeTab === "doc"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "doc"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "doc" && <DocIcon />}
-                Doc
-              </TabsTrigger>
-              <TabsTrigger
-                value="ai"
-                className={`px-3 ${
-                  activeTab === "ai"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "ai"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "ai" && <Bot className="h-4 w-4 mr-0.5 mb-0.5" />}
-                AI
-              </TabsTrigger>
-              <TabsTrigger
-                value="info"
-                className={`px-3 ${
-                  activeTab === "info"
-                    ? "bg-white shadow-md flex justify-center items-center gap-1"
-                    : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
-                }`}
-                style={{
-                  borderRadius: "var(--border-radius-md, 6px)",
-                  boxShadow:
-                    activeTab === "info"
-                      ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                      : "none",
-                  flexShrink: 0,
-                }}
-              >
-                {activeTab === "info" && <InfoIcon />}
-                Info
-              </TabsTrigger>
+              {showLeftEllipsis && (
+                <span className="flex items-center justify-center px-1 opacity-60 text-sm">...</span>
+              )}
+
+              {visibleTabs.map((tab) => {
+                const IconComponent = tab.icon;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={`px-3 ${
+                      activeTab === tab.id
+                        ? "bg-white shadow-md flex justify-center items-center gap-1"
+                        : "data-[state=active]:bg-neutral-100 data-[state=active]:font-semibold"
+                    }`}
+                    style={{
+                      borderRadius: "var(--border-radius-md, 6px)",
+                      boxShadow:
+                        activeTab === tab.id
+                          ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                          : "none",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {activeTab === tab.id &&
+                      (tab.id === "ai" ? <Bot className="h-4 w-4 mr-0.5 mb-0.5" /> : <IconComponent />)}
+                    {tab.label}
+                  </TabsTrigger>
+                );
+              })}
+
+              {showRightEllipsis && (
+                <span className="flex items-center justify-center px-1 opacity-60 text-sm">...</span>
+              )}
             </TabsList>
           </div>
 
-          <div className="h-[calc(100%-40px)] overflow-hidden">
+          <div className="md:h-[calc(100%-40px)] overflow-hidden">
             <ScrollArea className="h-full pt-6 pb-4">
-              <TabsContent value="summary" className="mt-3.5 px-4">
+              <TabsContent value="summary" className="mt-3.5 px-0 md:px-4">
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">Document</h3>
                   <div className="border border-[#E4E4E4] rounded-lg bg-[#FCFBFC]">
-                    <div className="flex items-center gap-2 p-4">
-                      <div className="flex-shrink-0">
-                        <DocumentThumbnail thumbnail={thumbnail} filename={filename || "document.pdf"} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1 max-w-[360px]">
-                            <p className="text-sm text-black font-semibold truncate">
-                              {email_subject || "Untitled Document"}
-                            </p>
-                            <p className="text-xs text-neutral-500 truncate">{filename || "document.pdf"}</p>
-                          </div>
-                          <Link
-                            to={`/document/${id}`}
-                            state={{ document }}
-                            className="flex-shrink-0 flex items-center justify-center px-4 h-9 bg-[#18181B] text-[#FAFAFA] rounded-md shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10),0px_1px_2px_0px_rgba(0,0,0,0.06)] hover:bg-[#27272A] transition-colors whitespace-nowrap"
-                          >
-                            Deep Read
-                          </Link>
+                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 py-4 px-2 md:p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <DocumentThumbnail thumbnail={thumbnail} filename={filename || "document.pdf"} />
+                        </div>
+                        <div className="min-w-0 max-w-60">
+                          <p className="text-sm text-black font-semibold truncate">
+                            {email_subject || "Untitled Document"}
+                          </p>
+                          <p className="text-xs text-neutral-500 truncate">{filename || "document.pdf"}</p>
                         </div>
                       </div>
+                      <Link
+                        to={`/document/${id}`}
+                        state={{ document }}
+                        className="flex-shrink-0 w-auto flex items-center justify-center px-4 h-9 bg-[#18181B] text-[#FAFAFA] rounded-md shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10),0px_1px_2px_0px_rgba(0,0,0,0.06)] hover:bg-[#27272A] transition-colors whitespace-nowrap"
+                      >
+                        Deep Read
+                      </Link>
                     </div>
-                    <div className="space-y-2 text-sm text-neutral-500 mx-4 py-3 border-t border-[#E4E4E4]">
+                    <div className="mt-3 md:mt-0 space-y-2 text-sm text-neutral-500 mx-4 py-3 border-none md:border-t border-[#E4E4E4]">
                       {ai_summary ? <p>{ai_summary}</p> : <p>N/A</p>}
                     </div>
                   </div>
@@ -463,7 +427,7 @@ export function DocumentSidebar({
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold mb-2 mt-8">Added</h3>
+                    <h3 className="text-sm font-semibold mb-2 mt-5 md:mt-8">Added</h3>
                     <div className="w-fit text-nowrap font-medium flex flex-row gap-2 text-sm">
                       <span className="font-semibold">{formattedDate}</span>
                       <span className="text-neutral-500">
@@ -473,7 +437,7 @@ export function DocumentSidebar({
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold mb-2 mt-8">Threads</h3>
+                    <h3 className="text-sm font-semibold mb-2 mt-5 md:mt-8">Threads</h3>
                     <div className="bg-[#CDBEDA] px-2 py-1 rounded-lg w-fit">
                       <p className="text-sm text-black font-medium">{threads.length || 0} Threads</p>
                     </div>
@@ -481,7 +445,7 @@ export function DocumentSidebar({
                 </div>
               </TabsContent>
 
-              <TabsContent value="signals" className="px-4">
+              <TabsContent value="signals" className="md:px-4 mt-5 md:mt-0">
                 <div>
                   <div className="space-y-3.5">
                     <div className="border border-neutral-200 rounded-md p-4 shadow-sm">
@@ -573,7 +537,7 @@ export function DocumentSidebar({
               </TabsContent>
 
               <TabsContent value="threads" className="mt-0">
-                <div className="space-y-4 px-4"></div>
+                <div className="space-y-4 md:px-4"></div>
               </TabsContent>
 
               <TabsContent value="doc" className="-mt-1 h-full p-0">
@@ -587,7 +551,7 @@ export function DocumentSidebar({
                     />
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full px-6">
+                  <div className="flex items-center justify-center h-full md:px-6">
                     <div className="text-center p-8">
                       <div className="bg-orange-100 p-4 rounded-full mx-auto mb-4 w-16 h-16 flex items-center justify-center">
                         <img src={pdfIcon} alt="PDF Icon" className="w-8 h-8" />
@@ -617,8 +581,8 @@ export function DocumentSidebar({
                 <div className="space-y-4 px-4"></div>
               </TabsContent>
 
-              <TabsContent value="info" className="mt-1">
-                <div className="space-y-6 px-4">
+              <TabsContent value="info" className="mt-5 md:mt-1">
+                <div className="space-y-6 md:px-4">
                   <div>
                     <h3 className="text-sm font-semibold mb-2">Paper Name</h3>
                     <p className="text-sm text-neutral-500">{email_subject || "Untitled Document"}</p>

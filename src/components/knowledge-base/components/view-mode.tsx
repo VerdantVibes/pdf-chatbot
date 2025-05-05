@@ -13,7 +13,7 @@ export function ViewMode({ onViewChange }: ViewModeProps) {
   };
 
   return (
-    <Tabs defaultValue="list" onValueChange={handleViewChange} className="w-auto">
+    <Tabs defaultValue="list" onValueChange={handleViewChange} className="w-auto hidden md:block">
       <TabsList className="grid w-auto grid-cols-2 p-1 h-9 bg-gray-100 rounded-lg">
         <TabsTrigger
           value="list"

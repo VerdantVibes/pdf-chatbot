@@ -26,7 +26,7 @@ export function DataTableToolbar<TData>({ table, onFiltersChange, initialFilters
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="hidden md:flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <div className="relative w-[150px] lg:w-[250px]">
           <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />

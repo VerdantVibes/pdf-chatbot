@@ -15,20 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/AuthContext";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FileText, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
-import { Separator } from "@/components/ui/separator";
 import { MicrosoftSignInButton } from "@/components/auth/MicrosoftSignInButton";
 
 const formSchema = z.object({

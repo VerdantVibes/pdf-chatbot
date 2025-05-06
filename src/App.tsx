@@ -17,6 +17,7 @@ import { PlanBilling } from "./pages/Settings/PlanBilling";
 import { Security } from "./pages/Settings/Security";
 import { Profile } from "./pages/Settings/Profile";
 import { KnowledgeBaseLayout } from "./pages/KnowledgeBase/layout";
+import { ForgotPassword } from "./pages/ForgotPassword";
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
             element={
               <AuthRoute>
                 <SignUp />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <AuthRoute>
+                <ForgotPassword />
               </AuthRoute>
             }
           />

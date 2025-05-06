@@ -60,7 +60,7 @@ export function SignIn() {
   return (
     <div className="grid lg:grid-cols-2 min-h-screen relative">
       {/* Logo positioned absolutely at the top */}
-      <div className="absolute top-8 left-8">
+      <div className="absolute top-8 left-8 lg:block hidden">
         <div className="flex items-center justify-center gap-2 rounded-[6px]">
           <img 
             src="/delphis.svg" 
@@ -68,6 +68,20 @@ export function SignIn() {
             className="w-5 h-5" 
           />
           <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans truncate">
+            Delphis AI
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile Logo */}
+      <div className="lg:hidden flex justify-center pt-8 mb-4">
+        <div className="flex items-center gap-2">
+          <img 
+            src="/delphis.svg" 
+            alt="Delphis AI"
+            className="w-5 h-5" 
+          />
+          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans">
             Delphis AI
           </span>
         </div>

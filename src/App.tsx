@@ -34,16 +34,16 @@ function App() {
               </AuthRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/signup"
             element={
               <AuthRoute>
                 <SignUp />
               </AuthRoute>
             }
-          />
+          /> */}
           <Route
-            path="/signup-beta"
+            path="/signup"
             element={
               <AuthRoute>
                 <SignUpBeta />

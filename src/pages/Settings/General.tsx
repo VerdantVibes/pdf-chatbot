@@ -87,7 +87,10 @@ export function General() {
             <div className="space-y-2">
               <h3 className="text-base font-medium">Company Logo</h3>
               <div className="w-32 h-12 flex items-center">
-                <img src={companyLogo || "/slack-logo.png"} alt="Company Logo" className="h-8" />
+                <div className="flex items-center gap-x-1">
+                  <img src={companyLogo || "/slack-1-logo.svg"} alt="Company Logo" className="h-8" />
+                  <span className="text-3xl tracking-tighter font-semibold text-neutral-800">slack</span>
+                </div>
               </div>
             </div>
 

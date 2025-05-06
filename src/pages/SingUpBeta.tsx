@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Plus, Copy, Upload, Trash2, Music, Youtube, Cloud } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Copy, Upload, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const formSchema = z.object({
@@ -40,42 +40,11 @@ const inviteFormSchema = z.object({
   }),
 });
 
-const positions = [
-  "Software Engineer",
-  "Product Manager",
-  "Designer",
-  "Marketing Specialist",
-  "Sales Representative",
-  "Executive",
-  "Student",
-  "Researcher",
-  "Other",
-];
+const positions = ["Option 1", "Option 2"];
 
-const investorTypes = [
-  "Venture Capital",
-  "Angel Investor",
-  "Private Equity",
-  "Corporate Investor",
-  "Family Office",
-  "Sovereign Wealth Fund",
-  "Institutional Investor",
-  "Individual Investor",
-  "Other",
-];
+const investorTypes = ["Option 1", "Option 2"];
 
-const assetClasses = [
-  "Equities",
-  "Fixed Income",
-  "Real Estate",
-  "Commodities",
-  "Cryptocurrencies",
-  "Venture Capital",
-  "Private Equity",
-  "Hedge Funds",
-  "Infrastructure",
-  "Other",
-];
+const assetClasses = ["Option 1", "Option 2"];
 
 const slideContent = [
   {
@@ -115,7 +84,7 @@ interface UploadedFile {
   status: "uploading" | "success";
 }
 
-export function SignUp2() {
+export function SignUpBeta() {
   const [currentPage, setCurrentPage] = useState(0);
   const totalPages = 7;
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
@@ -615,8 +584,8 @@ export function SignUp2() {
                       <div className="grid grid-cols-3 gap-4 pt-4">
                         <Card className="border rounded-xl shadow-md overflow-hidden">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
-                            <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-1.5 mt-3">
-                              <img src="/microsoft-office-teams.png" alt="Microsoft Teams" />
+                            <div className="w-6 h-6 flex items-center justify-center text-blue-600 mb-1.5 mt-3">
+                              <img src="/microsoft-office-teams.svg" alt="Microsoft Teams" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">Microsoft Teams</p>
                             <Button variant="outline" size="sm" className="w-fit">
@@ -627,8 +596,8 @@ export function SignUp2() {
 
                         <Card className="border rounded-xl shadow-md overflow-hidden">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
-                            <div className="w-8 h-8 flex items-center justify-center text-green-600 mb-1.5 mt-3">
-                              <img src="/whatsapp.png" alt="WhatsApp" />
+                            <div className="w-6 h-6 flex items-center justify-center text-green-600 mb-1.5 mt-3">
+                              <img src="/whatsapp.svg" alt="WhatsApp" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">WhatsApp</p>
                             <Button variant="outline" size="sm" className="w-fit">
@@ -639,8 +608,8 @@ export function SignUp2() {
 
                         <Card className="border rounded-xl shadow-md overflow-hidden">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
-                            <div className="w-8 h-8 flex items-center justify-center text-blue-500 mb-1.5 mt-3">
-                              <img src="/telegram.png" alt="Telegram" />
+                            <div className="w-6 h-6 flex items-center justify-center text-blue-500 mb-1.5 mt-3">
+                              <img src="/telegram.svg" alt="Telegram" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">Telegram</p>
                             <Button variant="outline" size="sm" className="w-fit">
@@ -816,7 +785,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/spotify.png" alt="Spotify" />
+                                  <img src="/spotify.svg" alt="Spotify" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Spotify</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -831,7 +800,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/apple-music.png" alt="Apple Music" />
+                                  <img src="/apple-music.svg" alt="Apple Music" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Apple Music</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -846,7 +815,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/youtube.png" alt="Youtube" />
+                                  <img src="/youtube.svg" alt="Youtube" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Youtube</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -865,7 +834,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/google-drive.png" alt="Google Drive" />
+                                  <img src="/google-drive.svg" alt="Google Drive" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Google Drive</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -880,7 +849,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/one-drive.png" alt="OneDrive" />
+                                  <img src="/one-drive.svg" alt="OneDrive" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">OneDrive</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -895,7 +864,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/dropbox.png" alt="Dropbox" />
+                                  <img src="/dropbox.svg" alt="Dropbox" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Dropbox</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -914,7 +883,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/financial-times.png" alt="Financial Times" />
+                                  <img src="/financial-times.svg" alt="Financial Times" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Financial Times</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -929,7 +898,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/bloomberg.png" alt="Bloomberg" />
+                                  <img src="/bloomberg.svg" alt="Bloomberg" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Bloomberg</p>
                                 <p className="text-sm text-neutral-500 mb-3">
@@ -944,7 +913,7 @@ export function SignUp2() {
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
-                                  <img src="/telegraph.png" alt="Telegraph" />
+                                  <img src="/telegraph.svg" alt="Telegraph" className="aspect-square" />
                                 </div>
                                 <p className="text-base font-semibold mb-3">Telegraph</p>
                                 <p className="text-sm text-neutral-500 mb-3">

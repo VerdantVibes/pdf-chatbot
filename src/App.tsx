@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import { SignIn } from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import { SignUp2 } from "./pages/SignUp2";
+import { SignUpBeta } from "./pages/SingUpBeta";
 import PrivateAssets from "./pages/KnowledgeBase/PrivateAssets";
 import { Chat } from "./pages/Chat";
 import Home from "./pages/Home";
@@ -43,10 +43,10 @@ function App() {
             }
           />
           <Route
-            path="/signup-2"
+            path="/signup-beta"
             element={
               <AuthRoute>
-                <SignUp2 />
+                <SignUpBeta />
               </AuthRoute>
             }
           />

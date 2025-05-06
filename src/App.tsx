@@ -18,6 +18,7 @@ import { Security } from "./pages/Settings/Security";
 import { Profile } from "./pages/Settings/Profile";
 import { KnowledgeBaseLayout } from "./pages/KnowledgeBase/layout";
 import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPasswordSuccess } from "./pages/ResetPasswordSuccess";
 
 function App() {
   return (
@@ -45,6 +46,14 @@ function App() {
             element={
               <AuthRoute>
                 <ForgotPassword />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/reset-password-success"
+            element={
+              <AuthRoute>
+                <ResetPasswordSuccess />
               </AuthRoute>
             }
           />

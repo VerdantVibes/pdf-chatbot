@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import { SignIn } from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import { SignUp2 } from "./pages/SignUp2";
 import PrivateAssets from "./pages/KnowledgeBase/PrivateAssets";
 import { Chat } from "./pages/Chat";
 import Home from "./pages/Home";
@@ -38,6 +39,14 @@ function App() {
             element={
               <AuthRoute>
                 <SignUp />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/signup-2"
+            element={
+              <AuthRoute>
+                <SignUp2 />
               </AuthRoute>
             }
           />

@@ -582,8 +582,8 @@ export function SignUpBeta() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 pt-4">
-                        <Card className="border rounded-xl shadow-md overflow-hidden">
+                      <div className="flex md:grid md:grid-cols-3 gap-4 pt-4 overflow-x-auto">
+                        <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
                             <div className="w-6 h-6 flex items-center justify-center text-blue-600 mb-1.5 mt-3">
                               <img src="/microsoft-office-teams.svg" alt="Microsoft Teams" className="aspect-square" />
@@ -595,7 +595,7 @@ export function SignUpBeta() {
                           </CardContent>
                         </Card>
 
-                        <Card className="border rounded-xl shadow-md overflow-hidden">
+                        <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
                             <div className="w-6 h-6 flex items-center justify-center text-green-600 mb-1.5 mt-3">
                               <img src="/whatsapp.svg" alt="WhatsApp" className="aspect-square" />
@@ -607,7 +607,7 @@ export function SignUpBeta() {
                           </CardContent>
                         </Card>
 
-                        <Card className="border rounded-xl shadow-md overflow-hidden">
+                        <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
                             <div className="w-6 h-6 flex items-center justify-center text-blue-500 mb-1.5 mt-3">
                               <img src="/telegram.svg" alt="Telegram" className="aspect-square" />
@@ -791,7 +791,7 @@ export function SignUpBeta() {
 
                       <div className="mt-6">
                         {activeTab === "podcasts" && (
-                          <div className="grid grid-cols-3 items-center gap-5">
+                          <div className="flex md:grid md:grid-cols-3 items-center gap-5 overflow-x-auto">
                             <Card className="border rounded-xl shadow-md overflow-hidden">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">

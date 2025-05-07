@@ -739,6 +739,15 @@ export function SignUpBeta() {
                       <p className="text-neutral-700">This is page {currentPage + 1} of the signup flow</p>
                       <p className="text-sm text-neutral-500 mt-2">Placeholder content for this step</p>
                     </div>
+
+                    <div className="mt-12 max-w-sm w-full">
+                      <Button onClick={nextPage} className="w-full">
+                        Continue with Sign Up
+                      </Button>
+                      <Button variant="ghost" onClick={nextPage} className="w-full text-neutral-500 text-sm mt-2">
+                        Setup Later
+                      </Button>
+                    </div>
                   </div>
                 ) : currentPage === 6 ? (
                   <div className="max-w-4xl mx-auto px-4">

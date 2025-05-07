@@ -582,14 +582,14 @@ export function SignUpBeta() {
                         </div>
                       </div>
 
-                      <div className="flex md:grid md:grid-cols-3 gap-4 pt-4 overflow-x-auto">
+                      <div className="flex md:grid md:grid-cols-3 gap-4 pt-4 overflow-x-auto px-4 md:px-0">
                         <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                           <CardContent className="px-5 pt-1 pb-5 flex flex-col">
                             <div className="w-6 h-6 flex items-center justify-center text-blue-600 mb-1.5 mt-3">
                               <img src="/microsoft-office-teams.svg" alt="Microsoft Teams" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">Microsoft Teams</p>
-                            <Button variant="outline" size="sm" className="w-fit">
+                            <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                               Connect
                             </Button>
                           </CardContent>
@@ -601,7 +601,7 @@ export function SignUpBeta() {
                               <img src="/whatsapp.svg" alt="WhatsApp" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">WhatsApp</p>
-                            <Button variant="outline" size="sm" className="w-fit">
+                            <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                               Connect
                             </Button>
                           </CardContent>
@@ -613,7 +613,7 @@ export function SignUpBeta() {
                               <img src="/telegram.svg" alt="Telegram" className="aspect-square" />
                             </div>
                             <p className="text-sm font-semibold mb-3">Telegram</p>
-                            <Button variant="outline" size="sm" className="w-fit">
+                            <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                               Connect
                             </Button>
                           </CardContent>

@@ -791,8 +791,8 @@ export function SignUpBeta() {
 
                       <div className="mt-6">
                         {activeTab === "podcasts" && (
-                          <div className="flex md:grid md:grid-cols-3 items-center gap-5 overflow-x-auto">
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                          <div className="flex md:grid md:grid-cols-3 items-center gap-5 overflow-x-auto px-4 md:px-0">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/spotify.svg" alt="Spotify" className="aspect-square" />
@@ -801,13 +801,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Spotify to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/apple-music.svg" alt="Apple Music" className="aspect-square" />
@@ -816,13 +816,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Apple Music to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/youtube.svg" alt="Youtube" className="aspect-square" />
@@ -831,7 +831,7 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Youtube to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
@@ -840,8 +840,8 @@ export function SignUpBeta() {
                         )}
 
                         {activeTab === "storage" && (
-                          <div className="grid grid-cols-3 items-center gap-5">
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                          <div className="flex md:grid md:grid-cols-3 items-center gap-5 overflow-x-auto px-4 md:px-0">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/google-drive.svg" alt="Google Drive" className="aspect-square" />
@@ -850,13 +850,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Google Drive to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/one-drive.svg" alt="OneDrive" className="aspect-square" />
@@ -865,13 +865,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect OneDrive to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/dropbox.svg" alt="Dropbox" className="aspect-square" />
@@ -880,7 +880,7 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Dropbox to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
@@ -889,8 +889,8 @@ export function SignUpBeta() {
                         )}
 
                         {activeTab === "news" && (
-                          <div className="grid grid-cols-3 items-center gap-5">
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                          <div className="flex md:grid md:grid-cols-3 items-center gap-5 overflow-x-auto px-4 md:px-0">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/financial-times.svg" alt="Financial Times" className="aspect-square" />
@@ -899,13 +899,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Financial Times to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/bloomberg.svg" alt="Bloomberg" className="aspect-square" />
@@ -914,13 +914,13 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Bloomberg to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
 
-                            <Card className="border rounded-xl shadow-md overflow-hidden">
+                            <Card className="border rounded-xl shadow-md overflow-hidden min-w-[250px] md:min-w-0">
                               <CardContent className="px-5 pt-3 flex flex-col">
                                 <div className="w-8 h-8 flex items-center justify-center text-blue-600 mb-2 mt-3">
                                   <img src="/telegraph.svg" alt="Telegraph" className="aspect-square" />
@@ -929,12 +929,12 @@ export function SignUpBeta() {
                                 <p className="text-sm text-neutral-500 mb-3">
                                   Connect Telegraph to Delphis to integrate data.
                                 </p>
-                                <Button variant="outline" size="sm" className="w-fit">
+                                <Button variant="outline" size="sm" className="w-fit md:w-fit w-full">
                                   Connect
                                 </Button>
                               </CardContent>
                             </Card>
-                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

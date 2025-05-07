@@ -8,11 +8,11 @@ export const getGmailPdfs = async ({
     {
       offset: number;
       limit: number;
-      sortBy: string;
-      sortOrder: string;
-      selectedAuthors: string[];
-      selectedCategories: string[];
-      selectedSectors: string[];
+      sortBy?: string;
+      sortOrder?: string;
+      selectedAuthors?: string[];
+      selectedCategories?: string[];
+      selectedSectors?: string[];
     }
   ];
 }) => {
@@ -29,7 +29,7 @@ export const getGmailPdfs = async ({
           offset: params.offset,
           limit: params.limit,
           sort_by: params.sortBy,
-          sort_order: params.sortOrder.toLocaleUpperCase(),
+          sort_order: params.sortOrder?.toLocaleUpperCase(),
         },
       }
     );

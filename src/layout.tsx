@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { Link, useLocation } from "react-router-dom";
 import { Separator } from "@radix-ui/react-separator";
 import { Input } from "./components/ui/input";
-import { Search } from "lucide-react";
+import { BookOpen, Save, Search } from "lucide-react";
+import { Button } from "./components/ui/button";
 
 type BreadcrumbItem = {
   label: string;
@@ -107,7 +108,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       {item.isCurrentPage ? (
                         <BreadcrumbPage>{item.label}</BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink>
+                        <BreadcrumbLink asChild>
                           <Link to={item.path}>{item.label}</Link>
                         </BreadcrumbLink>
                       )}
@@ -116,6 +117,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   ))}
                 </BreadcrumbList>
               </Breadcrumb>
+              {location.pathname.includes("/document/") && (
+                <div className="hidden md:flex absolute right-4 items-center gap-3 p-0">
+                  <Button variant="outline">
+                    <Save className="w-4 h-4" />
+                    <span>Save as Report</span>
+                  </Button>
+                  <Button variant="outline">
+                    <BookOpen className="w-4 h-4" />
+                    <span>Save to Knowledge Base</span>
+                  </Button>
+                </div>
+              )}
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 px-4 py-2 md:px-7 md:py-6 relative">{children}</div>

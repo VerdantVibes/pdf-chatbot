@@ -21,15 +21,26 @@ import { sendChatMessage, buildChatIndex } from "@/lib/api/chat";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTailwindBreakpoint } from "@/hooks/use-tailwind-breakpoint";
 
 interface DocumentViewerProps {
   pdfUrl: string;
   document: any;
   sidebarOpen?: boolean;
+  pdfs: any[];
+  isPdfsLoading: boolean;
 }
 
 interface IconProps {
   className?: string;
+}
+
+interface Message {
+  role: "assistant" | "user";
+  content: string;
+  timestamp: Date;
 }
 
 const OverviewIcon = ({ className }: IconProps) => (
@@ -238,9 +249,36 @@ const SendIcon = () => (
   </svg>
 );
 
-export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = false }: DocumentViewerProps) {
+const getInitials = (name?: string | null): string => {
+  if (!name) return "AU";
+  const parts = name.split(" ");
+  if (parts.length === 0 || parts[0] === "") return "AU";
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + (parts[parts.length - 1][0] || "")).toUpperCase();
+};
+
+const formatTime = (dateTimeString?: string): string => {
+  if (!dateTimeString) return "";
+  try {
+    const date = new Date(dateTimeString);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    return "";
+  }
+};
+
+export function DocumentViewer({
+  pdfs,
+  isPdfsLoading,
+  pdfUrl,
+  document: documentData,
+  sidebarOpen = false,
+}: DocumentViewerProps) {
   const { analysis = {} } = documentData || {};
   const { ai_summary } = analysis;
+  const { user: authUser } = useAuth();
+  const { atLeastMd, atMostSm } = useTailwindBreakpoint();
 
   const [newNoteContent, setNewNoteContent] = useState("");
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -249,17 +287,72 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
   const [localNotes, setLocalNotes] = useState<NoteResponse[]>([]);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [isMultiSelectActive, _setIsMultiSelectActive] = useState(false);
+  const [isIndexBuilt, setIsIndexBuilt] = useState(false);
+  const [isIndexLoading, setIsIndexLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("detailed");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string>();
+
+  const allTabs = [
+    { id: "detailed", label: "Detailed Summary", icon: DetailedIcon },
+    { id: "overview", label: "Overview Summary", icon: OverviewIcon },
+    { id: "notes", label: "Notes", icon: NotesIcon },
+    { id: "ai-chat", label: "AI Chat", icon: ChatIcon },
+  ];
+
+  const maxVisibleTabs = atMostSm ? 2 : 3;
+  const [visibleTabsStart, setVisibleTabsStart] = useState(0);
+
+  const chatContentRef = useRef<HTMLDivElement>(null);
 
   const { data: serverNotes = [], isLoading: isLoadingNotes, refetch: refetchNotes } = useGetPdfNotes(documentData?.id);
-
   const createNoteMutation = useCreateNote();
   const updateNoteMutation = useUpdateNote();
   const deleteNoteMutation = useDeleteNote();
 
-  const [isIndexBuilt, setIsIndexBuilt] = useState(false);
-  const [isIndexLoading, setIsIndexLoading] = useState(true);
+  const handleTabNavigation = (direction: "prev" | "next") => {
+    if (direction === "prev") {
+      setVisibleTabsStart(Math.max(0, visibleTabsStart - 1));
+    } else {
+      setVisibleTabsStart(Math.min(allTabs.length - maxVisibleTabs, visibleTabsStart + 1));
+    }
+  };
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+
+    const newTabIndex = allTabs.findIndex((tab) => tab.id === tabId);
+
+    if (!atLeastMd && newTabIndex >= 0) {
+      if (newTabIndex < visibleTabsStart || newTabIndex >= visibleTabsStart + maxVisibleTabs) {
+        setVisibleTabsStart(Math.min(newTabIndex, allTabs.length - maxVisibleTabs));
+      }
+    }
+  };
+
+  const visibleTabs = !atLeastMd ? allTabs.slice(visibleTabsStart, visibleTabsStart + maxVisibleTabs) : allTabs;
+
+  const showLeftEllipsis = !atLeastMd && visibleTabsStart > 0;
+  const showRightEllipsis = !atLeastMd && visibleTabsStart + maxVisibleTabs < allTabs.length;
+
+  useEffect(() => {
+    if (documentData?.id) {
+      setLocalNotes([]);
+      setNewNoteContent("");
+      setEditingNoteId(null);
+      setEditNoteContent("");
+      setSelectedNoteIds([]);
+      setMessages([]);
+      setInput("");
+      setIsTyping(false);
+      setCurrentPage(1);
+      setConversationId(undefined);
+    }
+  }, [documentData?.id]);
 
   useEffect(() => {
     if (serverNotes) {
@@ -285,7 +378,6 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
     const buildIndex = async () => {
       if (!documentData?.id) return;
 
-      // Check if index is already built for this document
       const builtIndices = JSON.parse(localStorage.getItem("builtIndices") || "{}");
       if (builtIndices[documentData.id]) {
         setIsIndexBuilt(true);
@@ -302,7 +394,6 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
           setIsIndexBuilt(true);
           documentData.faiss_index_path = response.index_path;
 
-          // Store the built index information
           builtIndices[documentData.id] = response.index_path;
           localStorage.setItem("builtIndices", JSON.stringify(builtIndices));
         } else {
@@ -444,49 +535,47 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
   const handleSubmitEditNote = (noteId: string) => {
     if (!editNoteContent.trim()) return;
 
-    const originalNote = localNotes.find((note) => note.id === noteId);
-    if (!originalNote) return;
+    const noteToUpdate = localNotes.find((note) => note.id === noteId);
+    if (!noteToUpdate) return;
+
+    handleUpdateNote(
+      noteId,
+      {
+        note_content: editNoteContent,
+      },
+      noteToUpdate
+    );
 
     setEditingNoteId(null);
     setEditNoteContent("");
-
-    handleUpdateNote(noteId, { note_content: editNoteContent }, originalNote);
   };
 
   const navigateToHighlight = (note: NoteResponse) => {
-    if (
-      !note.page_number ||
-      !note.position_data ||
-      !note.position_data.rects ||
-      note.position_data.rects.length === 0
-    ) {
-      return;
-    }
+    if (!note.page_number) return;
 
-    const event = new CustomEvent("scrollToHighlight", {
+    setCurrentPage(note.page_number);
+
+    const event = new CustomEvent("scrollToPage", {
       detail: {
         pageNumber: note.page_number,
-        rects: note.position_data.rects,
+        scrollIntoView: true,
       },
     });
     window.document.dispatchEvent(event);
   };
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const handlePageClick = (_pdfId: string, page: number) => {
+    const targetPage = page;
+    setCurrentPage(targetPage);
 
-  // Add AI chat related state
-  interface Message {
-    role: "assistant" | "user";
-    content: string;
-    timestamp: Date;
-  }
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string>();
-  const chatContentRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+    const event = new CustomEvent("scrollToPage", {
+      detail: {
+        pageNumber: targetPage,
+        scrollIntoView: true,
+      },
+    });
+    window.document.dispatchEvent(event);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -537,130 +626,97 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
     }
   };
 
-  const handlePageClick = (_pdfId: string, page: number) => {
-    // Ensure we're using the exact page number from the citation
-    const targetPage = page;
-    setCurrentPage(targetPage);
-
-    // Trigger page navigation in PDF viewer
-    const event = new CustomEvent("scrollToPage", {
-      detail: {
-        pageNumber: targetPage,
-        scrollIntoView: true,
-      },
-    });
-    window.document.dispatchEvent(event);
-  };
-
   return (
-    <div className={`flex h-[calc(100vh-80px)] space-x-4 ${!sidebarOpen ? "mt-4" : ""}`}>
-      <div className="w-1/2 h-[calc(100vh-65px)] relative">
+    <div
+      className={`grid lg:grid-cols-2 lg:h-[calc(100vh-80px)] lg:space-x-4 gap-10 lg:gap-10 ${
+        !sidebarOpen ? "mt-0" : ""
+      }`}
+    >
+      <div className="lg:hidden lg:mt-0 mt-3.5 flex flex-col items-start justify-center -mb-9">
+        <h2 className="text-2xl font-bold tracking-tight">Knowledge Base</h2>
+        <p className="text-secondary-foreground/50">Description subtext will go here</p>
+      </div>
+      <div className="h-[calc(100vh-65px)] relative">
         <PdfViewer
           pdfUrl={pdfUrl}
           notes={localNotes}
           initialPage={currentPage}
           onPageChange={(page) => setCurrentPage(page)}
+          isPdfsLoading={isPdfsLoading}
+          pdfs={pdfs}
         />
       </div>
 
-      <div className="w-1/2 border border-gray-200 h-full bg-white overflow-hidden flex flex-col rounded-md">
+      <div className="lg:border lg:border-gray-200 h-full bg-white overflow-hidden flex flex-col rounded-md">
         <header className="relative flex items-center">
-          <div className="flex items-center w-full mx-2 mt-2">
+          <div className="flex items-center w-full lg:mx-2 mt-2">
             <Tabs
-              defaultValue="overview"
+              defaultValue="detailed"
               className="h-full flex flex-col w-full"
-              onValueChange={(value) => setActiveTab(value)}
+              value={activeTab}
+              onValueChange={handleTabChange}
             >
-              <TabsList
-                className="flex w-full justify-start p-0 space-x-3"
-                style={{
-                  borderRadius: "var(--border-radius-lg, 8px)",
-                  background: "var(--base-border-primary, #F4F4F5)",
-                  height: "var(--height-h-9, 36px)",
-                  flexShrink: 0,
-                }}
-              >
-                <TabsTrigger
-                  value="overview"
-                  className={`px-2 ${
-                    activeTab === "overview"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
+              <div className="flex items-center w-full px-0 md:px-4 mt-0 md:mt-0 mb-0 md:-mb-0 relative">
+                <TabsList
+                  className="flex w-full justify-start px-1 py-0 md:space-x-3 overflow-x-hidden relative"
                   style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "overview"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
+                    borderRadius: "var(--border-radius-lg, 8px)",
+                    background: "var(--base-border-primary, #F4F4F5)",
+                    height: "var(--height-h-9, 36px)",
                     flexShrink: 0,
                   }}
                 >
-                  {activeTab === "overview" && <OverviewIcon />}
-                  Overview Summary
-                </TabsTrigger>
-                <TabsTrigger
-                  value="detailed"
-                  className={`px-2 ${
-                    activeTab === "detailed"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "detailed"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "detailed" && <DetailedIcon />}
-                  Detailed Summary
-                </TabsTrigger>
-                <TabsTrigger
-                  value="notes"
-                  className={`px-2 ${
-                    activeTab === "notes"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "notes"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "notes" && <NotesIcon />}
-                  Notes
-                </TabsTrigger>
-                <TabsTrigger
-                  value="ai-chat"
-                  className={`px-2 ${
-                    activeTab === "ai-chat"
-                      ? "bg-white shadow-md flex justify-center items-center gap-1"
-                      : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
-                  }`}
-                  style={{
-                    borderRadius: "var(--border-radius-md, 6px)",
-                    boxShadow:
-                      activeTab === "ai-chat"
-                        ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                        : "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {activeTab === "ai-chat" && <ChatIcon />}
-                  AI Chat
-                </TabsTrigger>
-              </TabsList>
+                  {showLeftEllipsis && (
+                    <button
+                      onClick={() => handleTabNavigation("prev")}
+                      className="flex items-center justify-center px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 rounded-md h-full"
+                      aria-label="Show previous tabs"
+                    >
+                      ...
+                    </button>
+                  )}
+
+                  {visibleTabs.map((tab) => {
+                    const IconComponent = tab.icon;
+                    return (
+                      <TabsTrigger
+                        key={tab.id}
+                        value={tab.id}
+                        className={`px-2 flex-1 ${
+                          activeTab === tab.id
+                            ? "bg-white shadow-md flex justify-center items-center gap-1"
+                            : "data-[state=active]:bg-gray-100 data-[state=active]:font-semibold"
+                        }`}
+                        style={{
+                          borderRadius: "var(--border-radius-md, 6px)",
+                          boxShadow:
+                            activeTab === tab.id
+                              ? "0px 1px 3px 0px rgba(0, 0, 0, 0.10), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
+                              : "none",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {activeTab === tab.id && <IconComponent className="mr-1" />}
+                        <span className="inline">{tab.label}</span>
+                      </TabsTrigger>
+                    );
+                  })}
+
+                  {showRightEllipsis && (
+                    <button
+                      onClick={() => handleTabNavigation("next")}
+                      className="flex items-center justify-center px-2 py-1 text-sm text-gray-500 hover:bg-gray-200 rounded-md h-full"
+                      aria-label="Show next tabs"
+                    >
+                      ...
+                    </button>
+                  )}
+                </TabsList>
+              </div>
 
               <div className="h-[calc(100vh-130px)] overflow-hidden">
-                <TabsContent value="overview" className="h-full mt-0 data-[state=inactive]:hidden">
-                  <ScrollArea className="h-full px-2 pt-6 pb-4">
+                <TabsContent value="detailed" className="h-full mt-0 data-[state=inactive]:hidden">
+                  <ScrollArea className="h-full px-0 lg:px-2 pt-4 lg:pt-6 pb-4">
                     <div className="space-y-4">
                       <div>
                         <h3 className="text-sm font-semibold mb-2">Summary</h3>
@@ -671,20 +727,19 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                     </div>
                   </ScrollArea>
                 </TabsContent>
-
-                <TabsContent value="detailed" className="h-full mt-0 data-[state=inactive]:hidden">
-                  <ScrollArea className="h-full px-2 pt-6 pb-4">
+                <TabsContent value="overview" className="h-full mt-0 data-[state=inactive]:hidden">
+                  <ScrollArea className="h-full px-0 lg:px-2 pt-4 lg:pt-6 pb-4">
                     <div className="space-y-4">
-                      <p className="text-sm text-gray-600">Detailed summary will be available here.</p>
+                      <p className="text-sm text-gray-600"></p>
                     </div>
                   </ScrollArea>
                 </TabsContent>
 
                 <TabsContent value="notes" className="h-full flex flex-col mt-0 data-[state=inactive]:hidden">
-                  <ScrollArea className="flex-1 px-2 pt-6">
-                    <div className="space-y-4">
+                  <ScrollArea className="flex-1 px-0 lg:px-2 pt-4 lg:pt-6">
+                    <div className="space-y-4 border border-gray-200 rounded-lg px-3 py-4 lg:p-0 lg:border-none lg:rounded-none">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold mb-2">Current Notes</h3>
+                        <h3 className="text-sm font-semibold mb-0 lg:mb-2">Current Notes</h3>
                       </div>
 
                       {isLoadingNotes && localNotes.length === 0 ? (
@@ -696,7 +751,7 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                         localNotes.map((note) => (
                           <Card
                             key={note.id}
-                            className={`p-4 shadow-none border-gray-200 transition-all duration-300 ${
+                            className={`shadow-none border border-gray-200 transition-all duration-300 ease-in-out group ${
                               note.isOptimistic && note.isCreating
                                 ? "opacity-60 bg-blue-50 border-l-4 border-l-blue-400"
                                 : note.isOptimistic && note.isUpdating
@@ -705,27 +760,94 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                 ? "opacity-40 bg-red-50 border-l-4 border-l-red-400"
                                 : note.isOptimistic && note.isError
                                 ? "opacity-70 border-red-200 bg-red-50 border-l-4 border-l-red-500"
-                                : "opacity-100"
-                            } ${note.page_number ? "cursor-pointer hover:bg-gray-50" : ""}`}
-                            onClick={() => note.page_number && navigateToHighlight(note)}
+                                : "opacity-100 border-l-4" // Default state with left border
+                            } ${note.page_number ? "cursor-pointer hover:bg-gray-50" : "hover:bg-slate-50"}`}
+                            style={{
+                              ...(!(
+                                note.isOptimistic &&
+                                (note.isCreating || note.isUpdating || note.isDeleting || note.isError)
+                              ) && { borderLeftColor: note.highlight_color || "transparent" }),
+                            }}
+                            onClick={() => note.page_number && !editingNoteId && navigateToHighlight(note)}
                           >
-                            <div className="flex items-start">
-                              {isMultiSelectActive && !note.isDeleting && (
-                                <div className="mt-1 mr-2">
-                                  <Checkbox
-                                    checked={selectedNoteIds.includes(note.id)}
-                                    onCheckedChange={() => toggleNoteSelection(note.id)}
-                                    disabled={note.isOptimistic}
-                                  />
+                            <div className="p-4 relative">
+                              <div className="flex items-start space-x-3">
+                                <Avatar className="h-8 w-8 flex-shrink-0">
+                                  <AvatarImage src={authUser?.name || undefined} alt={authUser?.name || "User"} />
+                                  <AvatarFallback>{getInitials(authUser?.name)}</AvatarFallback>
+                                </Avatar>
+
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-col items-start">
+                                      <span className="text-sm font-semibold text-gray-800">
+                                        {authUser?.name || "Anonymous User"}
+                                      </span>
+                                      <span className="text-xs font-medium text-gray-500 mt-0.5">
+                                        {formatTime(note.created_at)}
+                                      </span>
+                                    </div>
+                                    {editingNoteId !== note.id &&
+                                      !(
+                                        (note as any).isOptimistic &&
+                                        ((note as any).isCreating || (note as any).isUpdating || (note as any).isError)
+                                      ) && (
+                                        <div className="flex items-center space-x-0.5 transition-opacity">
+                                          {!(note as any).isDeleting && (
+                                            <TooltipProvider delayDuration={300}>
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-7 w-7 text-gray-500 hover:text-gray-700"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      handleStartEditNote(note.id, note.note_content);
+                                                    }}
+                                                  >
+                                                    <Pencil className="h-4 w-4" />
+                                                  </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="top">
+                                                  <p>Edit note</p>
+                                                </TooltipContent>
+                                              </Tooltip>
+                                            </TooltipProvider>
+                                          )}
+                                          <TooltipProvider delayDuration={300}>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  variant="outline"
+                                                  size="icon"
+                                                  className="h-7 w-7 text-gray-500 hover:text-red-500"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteNote(note.id);
+                                                  }}
+                                                  disabled={(note as any).isOptimistic && !(note as any).isDeleting}
+                                                >
+                                                  {(note as any).isDeleting ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                  ) : (
+                                                    <Trash2 className="h-4 w-4" />
+                                                  )}
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="top">
+                                                <p>Delete note</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        </div>
+                                      )}
+                                  </div>
                                 </div>
-                              )}
-                              <div
-                                className="w-4 h-4 rounded mt-0.5 mr-2 flex-shrink-0"
-                                style={{ backgroundColor: note.highlight_color || "" }}
-                              />
-                              <div className="flex-1">
+                              </div>
+                              <div className="mt-3.5">
                                 {note.highlighted_text && (
-                                  <div className="text-sm text-gray-700 font-medium mb-1">{note.highlighted_text}</div>
+                                  <p className="text-sm text-gray-500 mb-2 italic">"{note.highlighted_text}"</p>
                                 )}
                                 {editingNoteId === note.id ? (
                                   <div className="flex flex-col gap-2 mt-2">
@@ -734,70 +856,62 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                                         setEditNoteContent(e.target.value)
                                       }
-                                      className="min-h-[100px] text-sm"
+                                      className="min-h-[80px] text-sm"
                                       placeholder="Edit your note..."
                                       autoFocus
+                                      onClick={(e) => e.stopPropagation()}
                                     />
                                     <div className="flex justify-end gap-2">
-                                      <Button size="sm" variant="outline" onClick={() => setEditingNoteId(null)}>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEditingNoteId(null);
+                                        }}
+                                      >
                                         Cancel
                                       </Button>
                                       <Button
                                         size="sm"
-                                        onClick={() => handleSubmitEditNote(note.id)}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSubmitEditNote(note.id);
+                                        }}
                                         disabled={updateNoteMutation.isPending}
                                       >
+                                        {updateNoteMutation.isPending ? (
+                                          <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                                        ) : null}
                                         Save
                                       </Button>
                                     </div>
                                   </div>
                                 ) : (
                                   <div className="flex items-center">
-                                    <p className="text-sm text-gray-700 break-words">{note.note_content}</p>
-                                    {note.isCreating && (
+                                    <p className="text-sm text-gray-800 break-words whitespace-pre-wrap">
+                                      {note.note_content}
+                                    </p>
+                                    {note.isOptimistic && note.isCreating && (
                                       <div className="flex items-center ml-2">
-                                        <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
+                                        <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
                                       </div>
                                     )}
-                                    {note.isUpdating && (
+                                    {note.isOptimistic && note.isUpdating && (
                                       <div className="flex items-center ml-2">
-                                        <Loader2 className="h-3 w-3 animate-spin text-yellow-400" />
-                                      </div>
-                                    )}
-                                    {note.isDeleting && (
-                                      <div className="flex items-center ml-2">
-                                        <Loader2 className="h-3 w-3 animate-spin text-red-400" />
+                                        <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
                                       </div>
                                     )}
                                   </div>
                                 )}
                               </div>
-                              {editingNoteId !== note.id && !isMultiSelectActive && !note.isDeleting && (
-                                <div className="flex space-x-2 ml-5">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-7 w-7 text-gray-600 hover:text-gray-800"
-                                    onClick={() => handleStartEditNote(note.id, note.note_content)}
-                                    disabled={note.isOptimistic || note.isDeleting}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`h-7 w-7 ${
-                                      note.isDeleting ? "text-red-600" : "text-gray-600 hover:text-gray-800"
-                                    }`}
-                                    onClick={() => handleDeleteNote(note.id)}
-                                    disabled={deletingNoteIds.includes(note.id) || note.isOptimistic || note.isDeleting}
-                                  >
-                                    {deletingNoteIds.includes(note.id) || note.isDeleting ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4" />
-                                    )}
-                                  </Button>
+                              {isMultiSelectActive && !((note as any).isOptimistic || note.isDeleting) && (
+                                <div className="absolute top-3 right-3">
+                                  <Checkbox
+                                    checked={selectedNoteIds.includes(note.id)}
+                                    onCheckedChange={() => toggleNoteSelection(note.id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
                                 </div>
                               )}
                             </div>
@@ -821,7 +935,7 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                     <form onSubmit={handleCreateNote} className="relative">
                       <Input
                         placeholder="Input your note here"
-                        className="pr-10 py-5 focus-visible:ring-0"
+                        className="pr-10 py-5 focus-visible:ring-0 text-sm"
                         value={newNoteContent}
                         onChange={(e) => setNewNoteContent(e.target.value)}
                       />
@@ -842,8 +956,8 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                 </TabsContent>
 
                 <TabsContent value="ai-chat" className="h-full flex flex-col mt-0 data-[state=inactive]:hidden">
-                  <ScrollArea className="flex-1 px-2 pt-6" ref={chatContentRef}>
-                    <div className="space-y-6">
+                  <ScrollArea className="flex-1 lg:px-2 pt-4 lg:pt-6" ref={chatContentRef}>
+                    <div className="space-y-6 border border-gray-200 rounded-lg px-3 py-4 lg:p-0 lg:border-none lg:rounded-none">
                       {isIndexLoading ? (
                         <div className="flex items-center justify-center p-8">
                           <RotateCw className="h-6 w-6 animate-spin" />
@@ -856,29 +970,28 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                         <>
                           {/* Initial AI Assistant Message */}
                           <div className="flex items-start space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-[#E6E8EF] flex items-center justify-center flex-shrink-0">
-                              <span className="text-sm font-medium">AI</span>
+                            <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
+                              <span className="text-sm font-semibold">AI</span>
                             </div>
                             <div className="flex-1">
                               <div
                                 className="font-medium mb-2"
                                 style={{
                                   color: "var(--base-accent-secondary, #18181B)",
-                                  fontFamily: "var(--typography-font-family-font-sans, Inter)",
                                   fontSize: "var(--typography-base-sizes-small-font-size, 14px)",
                                   fontStyle: "normal",
-                                  fontWeight: "var(--font-weight-bold, 700)",
+                                  fontWeight: "var(--font-weight-bold, 500)",
                                   lineHeight: "100%",
                                   alignSelf: "stretch",
                                 }}
                               >
                                 AI Assistant
                               </div>
-                              <div className="flex h-[79px] min-h-[60px] p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm text-gray-600">
+                              <div className="flex min-h-[60px] p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm text-gray-600">
                                 Type a message for me to help you out with reviewing this document, provide valuable
                                 information and things beyond that.
                               </div>
-                              <div className="flex items-center space-x-2 mt-2">
+                              <div className="flex items-center space-x-0 mt-2">
                                 <button className="p-2 hover:bg-gray-100 rounded-md">
                                   <RotateIcon />
                                 </button>
@@ -889,9 +1002,9 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                   <SaveIcon />
                                 </button>
                                 <div className="flex-1" />
-                                <button className="flex items-center space-x-1 text-sm font-medium hover:bg-gray-100 rounded-md px-3 py-2">
+                                <button className="flex items-center space-x-2.5 text-sm font-medium hover:bg-gray-100 rounded-md px-3 py-2">
                                   <DiveDeeperIcon />
-                                  <span>Dive Deeper</span>
+                                  <span className="text-xs font-semibold text-neutral-700">Dive Deeper</span>
                                 </button>
                               </div>
                             </div>
@@ -902,17 +1015,17 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                             <div key={i} className="flex items-start space-x-3">
                               <div
                                 className={`w-8 h-8 rounded-full ${
-                                  message.role === "assistant" ? "bg-[#E6E8EF]" : "bg-[#C2DEC0]"
+                                  message.role === "assistant" ? "bg-green-200" : "bg-black"
                                 } flex items-center justify-center flex-shrink-0`}
                               >
                                 <span
                                   className={`${
-                                    message.role === "assistant" ? "text-sm font-medium" : "text-[9px] font-bold"
+                                    message.role === "assistant"
+                                      ? "text-sm font-semibold"
+                                      : "text-[9px] font-semibold text-white"
                                   }`}
                                   style={{
                                     ...(message.role !== "assistant" && {
-                                      color: "var(--base-accent-secondary, #18181B)",
-                                      fontFamily: "var(--typography-font-family-font-sans, Inter)",
                                       fontStyle: "normal",
                                       lineHeight: "100%",
                                     }),
@@ -926,21 +1039,24 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                                   className="font-medium mb-2"
                                   style={{
                                     color: "var(--base-accent-secondary, #18181B)",
-                                    fontFamily: "var(--typography-font-family-font-sans, Inter)",
                                     fontSize: "var(--typography-base-sizes-small-font-size, 14px)",
                                     fontStyle: "normal",
-                                    fontWeight: "var(--font-weight-bold, 700)",
+                                    fontWeight: "var(--font-weight-bold, 500)",
                                     lineHeight: "100%",
                                     alignSelf: "stretch",
                                   }}
                                 >
-                                  {message.role === "assistant" ? "AI Assistant" : user?.name}
+                                  {message.role === "assistant" ? "AI Assistant" : authUser?.name}
                                 </div>
-                                <div className="flex min-h-[60px] p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm text-gray-600">
+                                <div
+                                  className={`flex p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm ${
+                                    message.role === "assistant" ? "text-gray-600" : "text-neutral-800 font-semibold"
+                                  }`}
+                                >
                                   <MessageContent content={message.content} onPageClick={handlePageClick} />
                                 </div>
                                 {message.role === "assistant" && (
-                                  <div className="flex items-center space-x-2 mt-2">
+                                  <div className="flex items-center space-x-0 mt-2">
                                     <button className="p-2 hover:bg-gray-100 rounded-md">
                                       <RotateIcon />
                                     </button>
@@ -974,7 +1090,7 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                   {isIndexBuilt && (
                     <div className="px-2 py-2 mt-auto">
                       <div
-                        className="border rounded-lg px-5 py-2 flex flex-col"
+                        className="border rounded-lg px-3 py-1 lg:py-0 flex lg:flex-col"
                         style={{
                           borderColor: "var(--color-border-secondary, #D8DADA)",
                           background: "var(--color-background-secondary, #FCFBFC)",
@@ -985,13 +1101,23 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
                           onKeyDown={handleKeyPress}
-                          className="w-full border-0 shadow-none focus-visible:ring-0 bg-transparent text-stone-700 text-sm px-0"
+                          className="hidden lg:block w-full border-0 shadow-none focus-visible:ring-0 bg-transparent text-stone-700 text-sm px-0"
                           placeholder="Ask your question in this field to start chatting with AI..."
                           disabled={isLoading}
                         />
 
+                        <Input
+                          type="text"
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onKeyDown={handleKeyPress}
+                          className="lg:hidden w-full border-0 shadow-none focus-visible:ring-0 bg-transparent text-stone-700 text-sm px-0"
+                          placeholder="Start chatting with AI..."
+                          disabled={isLoading}
+                        />
+
                         {/* Input Controls */}
-                        <div className="flex items-center justify-between mt-4">
+                        <div className="flex gap-3 lg:gap-0 items-center justify-between mt-0">
                           <div className="flex items-center gap-4">
                             <AtSignIcon />
                           </div>
@@ -1000,7 +1126,7 @@ export function DocumentViewer({ pdfUrl, document: documentData, sidebarOpen = f
                             disabled={!input.trim() || isLoading}
                             variant="default"
                             size="icon"
-                            className="h-9 w-9 rounded-md bg-gray-900 text-white"
+                            className="h-7 w-7 lg:h-8 lg:w-8 mb-[0.05rem] lg:mb-2 rounded-md bg-gray-900 text-white"
                           >
                             <SendIcon />
                           </Button>

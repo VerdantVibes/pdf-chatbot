@@ -74,7 +74,7 @@ export function SignIn() {
       </div>
 
       {/* Mobile Logo */}
-      <div className="lg:hidden flex justify-center pt-8 mb-4">
+      <div className="lg:hidden flex justify-center pt-8 mb-8">
         <div className="flex items-center gap-2">
           <img 
             src="/delphis.svg" 
@@ -88,7 +88,7 @@ export function SignIn() {
       </div>
 
       {/* Left Column - Login Form */}
-      <div className="flex items-center justify-center p-8 bg-background">
+      <div className="flex items-center justify-center p-8 bg-background min-h-[calc(100vh-80px)] lg:min-h-0">
         <div className="w-full max-w-[400px] space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">Login to your account</h1>

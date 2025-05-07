@@ -102,3 +102,30 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+body {
+  --sb-track-color: #e4e4e7;
+  --sb-thumb-color: #09090b;
+  --sb-size: 10px;
+}
+
+body::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 5px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 5px;
+}
+
+@supports (scrollbar-color: var(--sb-thumb-color) var(--sb-track-color)) {
+  body {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    scrollbar-width: thin;
+  }
+}

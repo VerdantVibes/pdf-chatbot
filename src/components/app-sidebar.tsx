@@ -1,32 +1,14 @@
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Files,
-  Home,
-  LifeBuoy,
-  MessageSquare,
-  Notebook,
-  Send,
-  Settings2,
-  Zap,
-} from "lucide-react";
+import { BookOpen, Bot, Files, Home, LifeBuoy, MessageSquare, Notebook, Send, Settings2, Zap } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavFavorites } from "@/components/nav-favorites";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 import { User } from "@/lib/context/AuthContext";
 
 const data = {
-  // This is default user data
   user: {
     name: "user",
     email: "user@example.com",
@@ -35,7 +17,7 @@ const data = {
   teams: [
     {
       name: "Delphis",
-      description: "by Delhis",
+      description: "v1.0.1 (Beta)",
     },
   ],
   navMain: [
@@ -62,8 +44,8 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Private Assets",
-          url: "/private-assets",
+          title: "General",
+          url: "/knowledge-base/general",
         },
       ],
     },
@@ -73,8 +55,24 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "Settings",
-          url: "/settings",
+          title: "General",
+          url: "/settings/general",
+        },
+        {
+          title: "Members",
+          url: "/settings/members",
+        },
+        {
+          title: "Profile",
+          url: "/settings/profile",
+        },
+        {
+          title: "Plan & Billing",
+          url: "/settings/plan-billing",
+        },
+        {
+          title: "Security",
+          url: "/settings/security",
         },
       ],
     },

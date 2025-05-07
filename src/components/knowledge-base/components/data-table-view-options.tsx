@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 type ExtendedColumnDef = {
-  identifier?: string;
+  identifier?: string | boolean;
 };
 
 interface DataTableViewOptionsProps<TData> {
@@ -36,14 +36,23 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
           .getAllColumns()
           .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
           .map((column) => {
+            const columnDef = column.columnDef as unknown as ExtendedColumnDef;
+            if (columnDef.identifier === false) {
+              return null;
+            }
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
                 className="capitalize"
                 checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                onSelect={(e) => {
+                  e.preventDefault();
+                }}
+                onCheckedChange={(value) => {
+                  column.toggleVisibility(!!value);
+                }}
               >
-                {(column.columnDef as unknown as ExtendedColumnDef).identifier || column.id}
+                {columnDef.identifier || column.id}
               </DropdownMenuCheckboxItem>
             );
           })}

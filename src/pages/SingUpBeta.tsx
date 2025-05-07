@@ -241,18 +241,6 @@ export function SignUpBeta() {
     <div className={`${currentPage === 6 ? "grid grid-cols-1" : "grid grid-cols-3"} min-h-screen`}>
       {currentPage !== 6 && (
         <div className="bg-[#f2f2f2] col-span-1 flex items-center justify-center">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center justify-center">
-              <div className="w-64 h-64 flex items-center justify-center">
-                <svg width="212" height="212" viewBox="0 0 212 212" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="106" cy="106" r="106" fill="white" />
-                  <circle cx="106" cy="106" r="80" stroke="#E5E5E5" strokeWidth="1" />
-                  <rect x="86" y="86" width="40" height="40" fill="white" />
-                  <path d="M106 86V126M86 106H126" stroke="#E5E5E5" strokeWidth="1" />
-                </svg>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 

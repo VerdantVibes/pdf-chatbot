@@ -761,10 +761,10 @@ export function SignUpBeta() {
 
                     <div className="mt-10">
                       <div className="flex justify-center mb-10">
-                        <div className="bg-gray-100 rounded-lg p-1 inline-flex">
+                        <div className="bg-gray-100 rounded-lg p-1 inline-flex w-full md:w-auto mx-4 md:mx-0">
                           <button
                             onClick={() => setActiveTab("podcasts")}
-                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none ${
                               activeTab === "podcasts" ? "bg-white shadow-sm" : "text-gray-600"
                             }`}
                           >
@@ -772,7 +772,7 @@ export function SignUpBeta() {
                           </button>
                           <button
                             onClick={() => setActiveTab("storage")}
-                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none ${
                               activeTab === "storage" ? "bg-white shadow-sm" : "text-gray-600"
                             }`}
                           >
@@ -780,7 +780,7 @@ export function SignUpBeta() {
                           </button>
                           <button
                             onClick={() => setActiveTab("news")}
-                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-3.5 py-1 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none ${
                               activeTab === "news" ? "bg-white shadow-sm" : "text-gray-600"
                             }`}
                           >

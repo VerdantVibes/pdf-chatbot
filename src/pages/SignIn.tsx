@@ -58,9 +58,23 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-background">
+    <div className="grid lg:grid-cols-2 min-h-screen relative">
+      {/* Logo positioned absolutely at the top */}
+      <div className="absolute top-8 left-8 lg:block hidden">
+        <div className="flex items-center justify-center gap-2 rounded-[6px]">
+          <img 
+            src="/delphis.svg" 
+            alt="Delphis AI"
+            className="w-5 h-5" 
+          />
+          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans truncate">
+            Delphis AI
+          </span>
+        </div>
+      </div>
+
       {/* Mobile Logo */}
-      <div className="lg:hidden flex justify-center pt-8">
+      <div className="lg:hidden flex justify-center pt-8 mb-4">
         <div className="flex items-center gap-2">
           <img 
             src="/delphis.svg" 
@@ -73,23 +87,9 @@ export function SignIn() {
         </div>
       </div>
 
-      {/* Desktop Logo */}
-      <div className="absolute top-8 left-8 hidden lg:flex">
-        <div className="flex items-center gap-2 rounded-[6px]">
-          <img 
-            src="/delphis.svg" 
-            alt="Delphis AI"
-            className="w-5 h-5" 
-          />
-          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans truncate">
-            Delphis AI
-          </span>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] max-w-[400px] mx-auto px-4">
-        <div className="w-full space-y-6">
+      {/* Left Column - Login Form */}
+      <div className="flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-[400px] space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">Login to your account</h1>
             <p className="text-sm text-muted-foreground mt-2">
@@ -185,6 +185,15 @@ export function SignIn() {
               Sign up
             </Link>
           </p>
+        </div>
+      </div>
+
+      {/* Right Column - Grey Section */}
+      <div className="hidden lg:block bg-muted">
+        <div className="h-full w-full flex items-center justify-center p-8">
+          <div className="relative w-full max-w-[600px] aspect-square">
+            {/* You can add an illustration or image here if needed */}
+          </div>
         </div>
       </div>
     </div>

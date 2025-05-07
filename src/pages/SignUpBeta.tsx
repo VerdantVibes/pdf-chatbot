@@ -238,48 +238,65 @@ export function SignUpBeta() {
   };
 
   return (
-    <div className={`${currentPage === 6 ? "grid grid-cols-1" : "grid grid-cols-3"} min-h-screen`}>
+    <div className={`${currentPage === 6 ? "grid grid-cols-1" : "grid md:grid-cols-3 grid-cols-1"} min-h-screen`}>
       {currentPage !== 6 && (
-        <div className="bg-[#f2f2f2] col-span-1 flex items-center justify-center">
+        <div className="bg-[#f2f2f2] col-span-1 hidden md:flex items-center justify-center">
         </div>
       )}
 
       <div
         className={`${
-          currentPage === 6 ? "col-span-1" : "col-span-2"
+          currentPage === 6 ? "col-span-1" : "md:col-span-2 col-span-1"
         } min-h-[inherit] flex items-center justify-center relative`}
       >
         <div className="flex items-center justify-center max-w-sm mx-auto absolute top-5 left-0 right-0">
-          <button
-            onClick={prevPage}
-            disabled={currentPage === 0}
-            className="w-8 h-8 flex items-center justify-center mr-2"
-            aria-label="Previous page"
-          >
-            <ArrowLeft className={`w-5 h-5 ${currentPage === 0 ? "text-neutral-400/75" : "text-black"}`} />
-          </button>
+          {/* Desktop Progress Indicator */}
+          <div className="hidden md:flex items-center justify-center w-full">
+            <button
+              onClick={prevPage}
+              disabled={currentPage === 0}
+              className="w-8 h-8 flex items-center justify-center mr-2"
+              aria-label="Previous page"
+            >
+              <ArrowLeft className={`w-5 h-5 ${currentPage === 0 ? "text-neutral-400/75" : "text-black"}`} />
+            </button>
 
-          <div className="flex items-center space-x-2 mx-1">
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <div
-                key={index}
-                className={`h-[0.2088rem] w-8 ${
-                  index <= currentPage ? "bg-black" : "bg-[#E5E5E5]"
-                } rounded-full transition-all duration-300`}
+            <div className="flex items-center space-x-2 mx-1">
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-[0.2088rem] w-8 ${
+                    index <= currentPage ? "bg-black" : "bg-[#E5E5E5]"
+                  } rounded-full transition-all duration-300`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextPage}
+              disabled={currentPage === totalPages - 1}
+              className="w-8 h-8 flex items-center justify-center ml-2"
+              aria-label="Next page"
+            >
+              <ArrowRight
+                className={`w-5 h-5 ${currentPage === totalPages - 1 ? "text-neutral-400/75" : "text-black"}`}
               />
-            ))}
+            </button>
           </div>
 
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages - 1}
-            className="w-8 h-8 flex items-center justify-center ml-2"
-            aria-label="Next page"
-          >
-            <ArrowRight
-              className={`w-5 h-5 ${currentPage === totalPages - 1 ? "text-neutral-400/75" : "text-black"}`}
-            />
-          </button>
+          {/* Mobile Logo Header */}
+          <div className="md:hidden flex justify-center pt-8 mb-4">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/delphis.svg" 
+                alt="Delphis AI"
+                className="w-5 h-5" 
+              />
+              <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans">
+                Delphis AI
+              </span>
+            </div>
+          </div>
         </div>
         <div className="w-full max-w-4xl absolute top-[52.5%] left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="relative">

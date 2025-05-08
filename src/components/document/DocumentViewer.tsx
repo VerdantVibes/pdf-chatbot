@@ -24,6 +24,8 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTailwindBreakpoint } from "@/hooks/use-tailwind-breakpoint";
+import { useChatWebSocket } from "@/hooks/useChatWebSocket";
+import { ChatMessage as WebSocketChatMessage } from "@/lib/websocket/chatWebSocketService";
 
 interface DocumentViewerProps {
   pdfUrl: string;
@@ -297,6 +299,16 @@ export function DocumentViewer({
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>();
   const processedDocumentRef = useRef<string | null>(null);
+  const [responseStep, setResponseStep] = useState<string | null>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
+
+  const {
+    sendMessage: sendWebSocketMessage,
+    isTyping: isWsTyping,
+    messageProgress,
+    conversationId: wsConversationId,
+    resetConversation,
+  } = useChatWebSocket();
 
   const allTabs = [
     { id: "detailed", label: "Detailed Summary", icon: DetailedIcon },
@@ -352,8 +364,10 @@ export function DocumentViewer({
       setIsTyping(false);
       setCurrentPage(1);
       setConversationId(undefined);
+      resetConversation();
+      processedMessageIds.current.clear();
     }
-  }, [documentData?.id]);
+  }, [documentData?.id, resetConversation]);
 
   useEffect(() => {
     if (serverNotes) {
@@ -379,12 +393,10 @@ export function DocumentViewer({
     const buildIndex = async () => {
       if (!documentData?.id) return;
 
-      // Check if we've already started building this index in the current session
       if (processedDocumentRef.current === documentData.id) {
         return;
       }
 
-      // Mark this document as being processed to prevent duplicate API calls
       processedDocumentRef.current = documentData.id;
 
       const builtIndices = JSON.parse(localStorage.getItem("builtIndices") || "{}");
@@ -418,6 +430,36 @@ export function DocumentViewer({
 
     buildIndex();
   }, [documentData?.id]);
+
+  useEffect(() => {
+    if (isWsTyping !== isTyping) {
+      setIsTyping(isWsTyping);
+    }
+  }, [isWsTyping]);
+
+  useEffect(() => {
+    if (wsConversationId && wsConversationId !== conversationId) {
+      setConversationId(wsConversationId);
+    }
+  }, [wsConversationId]);
+
+  useEffect(() => {
+    if (messageProgress && messageProgress.step) {
+      setResponseStep(messageProgress.step);
+    }
+  }, [messageProgress]);
+
+  useEffect(() => {
+    if (activeTab === "ai-chat" && documentData?.id) {
+      const currentDocId = documentData.id;
+      if (processedDocumentRef.current !== currentDocId) {
+        console.log("Tab changed to AI Chat with new document, ensuring conversation is reset");
+        setConversationId(undefined);
+        resetConversation();
+        processedMessageIds.current.clear();
+      }
+    }
+  }, [activeTab, documentData?.id, resetConversation]);
 
   const handleCreateNote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -611,34 +653,68 @@ export function DocumentViewer({
 
     setInput("");
     setMessages((prev) => [...prev, userMessage]);
-    setIsTyping(true);
     setIsLoading(true);
+    setResponseStep(null);
 
     try {
-      const response = await sendChatMessage({
-        conversation_id: conversationId || "",
+      const currentDocId = documentData.id;
+      const isNewDocument = processedDocumentRef.current !== currentDocId;
+
+      const chatConversationId = isNewDocument ? "" : conversationId || "";
+
+      if (isNewDocument) {
+        console.log("Sending message for new document - starting fresh conversation");
+        processedDocumentRef.current = currentDocId;
+        resetConversation();
+        setConversationId(undefined);
+        processedMessageIds.current.clear();
+      } else {
+        console.log("Continuing conversation with ID:", chatConversationId);
+      }
+
+      const chatMessage: WebSocketChatMessage = {
+        conversation_id: chatConversationId,
         content: input.trim(),
         pdf_ids: [documentData.id],
         faiss_index_path: documentData.faiss_index_path || "",
-      });
-
-      setConversationId(response.conversation_id);
-
-      const cleanContent = response.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: cleanContent,
-        timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      await sendWebSocketMessage(chatMessage, (data) => {
+        if (data.conversation_id && (!conversationId || conversationId !== data.conversation_id)) {
+          console.log("Setting conversation ID:", data.conversation_id);
+          setConversationId(data.conversation_id);
+        }
+
+        if ((data.status === "completed" || data.step === "Completed") && data.message_id) {
+          if (!processedMessageIds.current.has(data.message_id)) {
+            processedMessageIds.current.add(data.message_id);
+
+            let cleanContent = "";
+            if (data.content && data.content.length > 0) {
+              cleanContent = data.content[0].replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+            }
+
+            const assistantMessage: Message = {
+              role: "assistant",
+              content: cleanContent,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, assistantMessage]);
+            setIsLoading(false);
+            setResponseStep(null);
+          }
+        } else if (data.status === "error") {
+          toast.error("Failed to get response from AI assistant");
+          setIsLoading(false);
+          setResponseStep(null);
+        }
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
-    } finally {
-      setIsTyping(false);
       setIsLoading(false);
+      setResponseStep(null);
     }
   };
 
@@ -984,7 +1060,6 @@ export function DocumentViewer({
                         </div>
                       ) : (
                         <>
-                          {/* Initial AI Assistant Message */}
                           <div className="flex items-start space-x-3">
                             <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
                               <span className="text-sm font-semibold">AI</span>
@@ -1026,7 +1101,6 @@ export function DocumentViewer({
                             </div>
                           </div>
 
-                          {/* Chat Messages */}
                           {messages.map((message, i) => (
                             <div key={i} className="flex items-start space-x-3">
                               <div
@@ -1095,7 +1169,14 @@ export function DocumentViewer({
                           {isTyping && (
                             <div className="flex justify-start">
                               <div className="bg-stone-100 rounded-lg px-4 py-2">
-                                <RotateCw className="h-4 w-4 animate-spin" />
+                                {responseStep ? (
+                                  <div className="flex items-center">
+                                    <RotateCw className="h-4 w-4 animate-spin mr-2" />
+                                    <span className="text-xs text-gray-600">{responseStep}</span>
+                                  </div>
+                                ) : (
+                                  <RotateCw className="h-4 w-4 animate-spin" />
+                                )}
                               </div>
                             </div>
                           )}
@@ -1132,7 +1213,6 @@ export function DocumentViewer({
                           disabled={isLoading}
                         />
 
-                        {/* Input Controls */}
                         <div className="flex gap-3 lg:gap-0 items-center justify-between mt-0">
                           <div className="flex items-center gap-4">
                             <AtSignIcon />

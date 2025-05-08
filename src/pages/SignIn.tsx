@@ -3,14 +3,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -62,28 +55,16 @@ export function SignIn() {
       {/* Logo positioned absolutely at the top */}
       <div className="absolute top-8 left-8 lg:block hidden">
         <div className="flex items-center justify-center gap-2 rounded-[6px]">
-          <img 
-            src="/delphis.svg" 
-            alt="Delphis AI"
-            className="w-5 h-5" 
-          />
-          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans truncate">
-            Delphis AI
-          </span>
+          <img src="/delphis.svg" alt="Delphis AI" className="w-5 h-5" />
+          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans truncate">Delphis AI</span>
         </div>
       </div>
 
       {/* Mobile Logo */}
       <div className="lg:hidden flex justify-center pt-8 mb-8">
         <div className="flex items-center gap-2">
-          <img 
-            src="/delphis.svg" 
-            alt="Delphis AI"
-            className="w-5 h-5" 
-          />
-          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans">
-            Delphis AI
-          </span>
+          <img src="/delphis.svg" alt="Delphis AI" className="w-5 h-5" />
+          <span className="text-[14px] leading-none font-semibold text-[#18181B] font-sans">Delphis AI</span>
         </div>
       </div>
 
@@ -92,9 +73,7 @@ export function SignIn() {
         <div className="w-full max-w-[400px] space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold tracking-tight">Login to your account</h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Enter your email below to login to your account
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">Enter your email below to login to your account</p>
           </div>
 
           <Form {...form}>
@@ -106,11 +85,7 @@ export function SignIn() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="name@example.com" 
-                        type="email"
-                        {...field} 
-                      />
+                      <Input placeholder="name@example.com" type="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -124,30 +99,19 @@ export function SignIn() {
                   <FormItem>
                     <div className="flex justify-between items-center">
                       <FormLabel>Password</FormLabel>
-                      <Link 
-                        to="/forgot-password"
-                        className="text-sm text-primary hover:underline"
-                      >
+                      <Link to="/forgot-password" className="text-sm text-primary hover:underline" tabIndex={-1}>
                         Forgot password?
                       </Link>
                     </div>
                     <FormControl>
-                      <Input 
-                        type="password"
-                        placeholder="Enter your password" 
-                        {...field} 
-                      />
+                      <Input type="password" placeholder="Enter your password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loginMutation.isPending}
-              >
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
                 {loginMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -165,9 +129,7 @@ export function SignIn() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
+              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
             </div>
           </div>
 
@@ -178,10 +140,7 @@ export function SignIn() {
 
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-primary hover:underline font-medium"
-            >
+            <Link to="/signup" className="text-primary hover:underline font-medium">
               Sign up
             </Link>
           </p>

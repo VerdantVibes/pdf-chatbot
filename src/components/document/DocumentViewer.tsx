@@ -277,7 +277,7 @@ export function DocumentViewer({
 }: DocumentViewerProps) {
   const { analysis = {} } = documentData || {};
   const { ai_summary } = analysis;
-  const { user: authUser } = useAuth();
+  const { user } = useAuth();
   const { atLeastMd, atMostSm } = useTailwindBreakpoint();
 
   const [newNoteContent, setNewNoteContent] = useState("");
@@ -295,7 +295,8 @@ export function DocumentViewer({
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string>();
+  const [conversationId, setConversationId] = useState<string | undefined>();
+  const processedDocumentRef = useRef<string | null>(null);
 
   const allTabs = [
     { id: "detailed", label: "Detailed Summary", icon: DetailedIcon },
@@ -377,6 +378,14 @@ export function DocumentViewer({
   useEffect(() => {
     const buildIndex = async () => {
       if (!documentData?.id) return;
+
+      // Check if we've already started building this index in the current session
+      if (processedDocumentRef.current === documentData.id) {
+        return;
+      }
+
+      // Mark this document as being processed to prevent duplicate API calls
+      processedDocumentRef.current = documentData.id;
 
       const builtIndices = JSON.parse(localStorage.getItem("builtIndices") || "{}");
       if (builtIndices[documentData.id]) {
@@ -551,14 +560,21 @@ export function DocumentViewer({
   };
 
   const navigateToHighlight = (note: NoteResponse) => {
-    if (!note.page_number) return;
+    if (
+      !note.page_number ||
+      !note.position_data ||
+      !note.position_data.rects ||
+      note.position_data.rects.length === 0
+    ) {
+      return;
+    }
 
     setCurrentPage(note.page_number);
 
-    const event = new CustomEvent("scrollToPage", {
+    const event = new CustomEvent("scrollToHighlight", {
       detail: {
         pageNumber: note.page_number,
-        scrollIntoView: true,
+        rects: note.position_data.rects,
       },
     });
     window.document.dispatchEvent(event);
@@ -628,7 +644,7 @@ export function DocumentViewer({
 
   return (
     <div
-      className={`grid lg:grid-cols-2 lg:h-[calc(100vh-80px)] lg:space-x-4 gap-10 lg:gap-10 ${
+      className={`grid lg:grid-cols-2 lg:h-[calc(100vh-112.5px)] lg:space-x-4 gap-10 lg:gap-2 ${
         !sidebarOpen ? "mt-0" : ""
       }`}
     >
@@ -636,7 +652,7 @@ export function DocumentViewer({
         <h2 className="text-2xl font-bold tracking-tight">Knowledge Base</h2>
         <p className="text-secondary-foreground/50">Description subtext will go here</p>
       </div>
-      <div className="h-[calc(100vh-65px)] relative">
+      <div className="h-[calc(100vh-200px)] lg:h-[calc(100vh-97.5px)] relative">
         <PdfViewer
           pdfUrl={pdfUrl}
           notes={localNotes}
@@ -647,7 +663,7 @@ export function DocumentViewer({
         />
       </div>
 
-      <div className="lg:border lg:border-gray-200 h-full bg-white overflow-hidden flex flex-col rounded-md">
+      <div className="lg:border lg:border-gray-200 h-full overflow-hidden flex flex-col rounded-md">
         <header className="relative flex items-center">
           <div className="flex items-center w-full lg:mx-2 mt-2">
             <Tabs
@@ -714,7 +730,7 @@ export function DocumentViewer({
                 </TabsList>
               </div>
 
-              <div className="h-[calc(100vh-130px)] overflow-hidden">
+              <div className="h-[calc(100vh-350px)] lg:h-[calc(100vh-120px)] overflow-hidden">
                 <TabsContent value="detailed" className="h-full mt-0 data-[state=inactive]:hidden">
                   <ScrollArea className="h-full px-0 lg:px-2 pt-4 lg:pt-6 pb-4">
                     <div className="space-y-4">
@@ -773,15 +789,15 @@ export function DocumentViewer({
                             <div className="p-4 relative">
                               <div className="flex items-start space-x-3">
                                 <Avatar className="h-8 w-8 flex-shrink-0">
-                                  <AvatarImage src={authUser?.name || undefined} alt={authUser?.name || "User"} />
-                                  <AvatarFallback>{getInitials(authUser?.name)}</AvatarFallback>
+                                  <AvatarImage src={user?.name || undefined} alt={user?.name || "User"} />
+                                  <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
                                 </Avatar>
 
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between">
                                     <div className="flex flex-col items-start">
                                       <span className="text-sm font-semibold text-gray-800">
-                                        {authUser?.name || "Anonymous User"}
+                                        {user?.name || "Anonymous User"}
                                       </span>
                                       <span className="text-xs font-medium text-gray-500 mt-0.5">
                                         {formatTime(note.created_at)}
@@ -931,7 +947,7 @@ export function DocumentViewer({
                     </div>
                   </ScrollArea>
 
-                  <div className="px-2 py-4 mt-auto">
+                  <div className="px-2 py-4 sm:py-8 mt-auto">
                     <form onSubmit={handleCreateNote} className="relative">
                       <Input
                         placeholder="Input your note here"
@@ -1046,7 +1062,7 @@ export function DocumentViewer({
                                     alignSelf: "stretch",
                                   }}
                                 >
-                                  {message.role === "assistant" ? "AI Assistant" : authUser?.name}
+                                  {message.role === "assistant" ? "AI Assistant" : user?.name}
                                 </div>
                                 <div
                                   className={`flex p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm ${
@@ -1088,7 +1104,7 @@ export function DocumentViewer({
                     </div>
                   </ScrollArea>
                   {isIndexBuilt && (
-                    <div className="px-2 py-2 mt-auto">
+                    <div className="px-2 py-6 sm:py-8 mt-auto">
                       <div
                         className="border rounded-lg px-3 py-1 lg:py-0 flex lg:flex-col"
                         style={{

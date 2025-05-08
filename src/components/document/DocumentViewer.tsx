@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PdfViewer } from "./PdfViewer";
-import { Pencil, Trash2, Loader2, RotateCw } from "lucide-react";
+import { Pencil, Trash2, Loader2, RotateCw, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -24,8 +24,8 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTailwindBreakpoint } from "@/hooks/use-tailwind-breakpoint";
-import { useChatWebSocket } from "@/hooks/useChatWebSocket";
-import { ChatMessage as WebSocketChatMessage } from "@/lib/websocket/chatWebSocketService";
+import { useChatWebSocket, ChatProgress } from "@/hooks/useChatWebSocket";
+import { ChatMessage as WebSocketChatMessage, CHAT_STEPS } from "@/lib/websocket/chatWebSocketService";
 
 interface DocumentViewerProps {
   pdfUrl: string;
@@ -43,6 +43,8 @@ interface Message {
   role: "assistant" | "user";
   content: string;
   timestamp: Date;
+  isStepProgress?: boolean;
+  stepDetails?: ChatProgress;
 }
 
 const OverviewIcon = ({ className }: IconProps) => (
@@ -295,11 +297,9 @@ export function DocumentViewer({
   const [activeTab, setActiveTab] = useState("detailed");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [currentConversationId, setCurrentConversationId] = useState<string | undefined>();
   const processedDocumentRef = useRef<string | null>(null);
-  const [responseStep, setResponseStep] = useState<string | null>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
 
   const {
@@ -361,9 +361,7 @@ export function DocumentViewer({
       setSelectedNoteIds([]);
       setMessages([]);
       setInput("");
-      setIsTyping(false);
       setCurrentPage(1);
-      setConversationId(undefined);
       resetConversation();
       processedMessageIds.current.clear();
     }
@@ -432,32 +430,52 @@ export function DocumentViewer({
   }, [documentData?.id]);
 
   useEffect(() => {
-    if (isWsTyping !== isTyping) {
-      setIsTyping(isWsTyping);
+    if (wsConversationId && wsConversationId !== currentConversationId) {
+      setCurrentConversationId(wsConversationId);
     }
-  }, [isWsTyping]);
+    if (!wsConversationId && currentConversationId) {
+      setCurrentConversationId(undefined);
+    }
+  }, [wsConversationId, currentConversationId]);
 
   useEffect(() => {
-    if (wsConversationId && wsConversationId !== conversationId) {
-      setConversationId(wsConversationId);
+    if (isWsTyping && messageProgress) {
+      setMessages((prevMessages) => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        if (!lastMessage || lastMessage.role === "user" || !lastMessage.isStepProgress) {
+          return [
+            ...prevMessages,
+            {
+              role: "assistant",
+              content: messageProgress.step,
+              timestamp: new Date(),
+              isStepProgress: true,
+              stepDetails: messageProgress,
+            },
+          ];
+        } else {
+          return prevMessages.map((msg, index) =>
+            index === prevMessages.length - 1
+              ? { ...msg, content: messageProgress.step, stepDetails: messageProgress }
+              : msg
+          );
+        }
+      });
+    } else if (!isWsTyping && messages.some((m) => m.isStepProgress)) {
+      // This condition might need refinement or removal if handleSendMessage covers all cleanup.
+      // For now, it acts as a fallback if isWsTyping stops but no final message came through handleSendMessage.
+      // console.log("isWsTyping is false and a step progress message exists. Consider cleanup.");
     }
-  }, [wsConversationId]);
-
-  useEffect(() => {
-    if (messageProgress && messageProgress.step) {
-      setResponseStep(messageProgress.step);
-    }
-  }, [messageProgress]);
+  }, [isWsTyping, messageProgress, messages]);
 
   useEffect(() => {
     if (activeTab === "ai-chat" && documentData?.id) {
       const currentDocId = documentData.id;
-      if (processedDocumentRef.current !== currentDocId) {
-        console.log("Tab changed to AI Chat with new document, ensuring conversation is reset");
-        setConversationId(undefined);
+      if (processedDocumentRef.current !== null && processedDocumentRef.current !== currentDocId) {
         resetConversation();
         processedMessageIds.current.clear();
       }
+      processedDocumentRef.current = currentDocId;
     }
   }, [activeTab, documentData?.id, resetConversation]);
 
@@ -643,7 +661,7 @@ export function DocumentViewer({
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !documentData?.id) return;
+    if (!input.trim() || /*isWsTyping ||*/ !documentData?.id) return;
 
     const userMessage: Message = {
       role: "user",
@@ -652,25 +670,18 @@ export function DocumentViewer({
     };
 
     setInput("");
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev.filter((m) => !m.isStepProgress), userMessage]);
     setIsLoading(true);
-    setResponseStep(null);
 
     try {
       const currentDocId = documentData.id;
-      const isNewDocument = processedDocumentRef.current !== currentDocId;
-
-      const chatConversationId = isNewDocument ? "" : conversationId || "";
-
-      if (isNewDocument) {
-        console.log("Sending message for new document - starting fresh conversation");
-        processedDocumentRef.current = currentDocId;
+      let chatConversationId = currentConversationId || "";
+      if (processedDocumentRef.current !== currentDocId) {
+        chatConversationId = "";
         resetConversation();
-        setConversationId(undefined);
         processedMessageIds.current.clear();
-      } else {
-        console.log("Continuing conversation with ID:", chatConversationId);
       }
+      processedDocumentRef.current = currentDocId;
 
       const chatMessage: WebSocketChatMessage = {
         conversation_id: chatConversationId,
@@ -680,14 +691,10 @@ export function DocumentViewer({
       };
 
       await sendWebSocketMessage(chatMessage, (data) => {
-        if (data.conversation_id && (!conversationId || conversationId !== data.conversation_id)) {
-          console.log("Setting conversation ID:", data.conversation_id);
-          setConversationId(data.conversation_id);
-        }
-
-        if ((data.status === "completed" || data.step === "Completed") && data.message_id) {
+        if ((data.status === "completed" || data.step === CHAT_STEPS.COMPLETED) && data.message_id) {
           if (!processedMessageIds.current.has(data.message_id)) {
             processedMessageIds.current.add(data.message_id);
+            setIsLoading(false);
 
             let cleanContent = "";
             if (data.content && data.content.length > 0) {
@@ -698,23 +705,21 @@ export function DocumentViewer({
               role: "assistant",
               content: cleanContent,
               timestamp: new Date(),
+              isStepProgress: false,
             };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-            setIsLoading(false);
-            setResponseStep(null);
+            setMessages((prev) => prev.filter((m) => !m.isStepProgress).concat(assistantMessage));
           }
         } else if (data.status === "error") {
-          toast.error("Failed to get response from AI assistant");
           setIsLoading(false);
-          setResponseStep(null);
+          toast.error(data.error || "Failed to get response from AI assistant");
+          setMessages((prev) => prev.filter((m) => !m.isStepProgress));
         }
       });
     } catch (error) {
+      setIsLoading(false);
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
-      setIsLoading(false);
-      setResponseStep(null);
+      setMessages((prev) => prev.filter((m) => !m.isStepProgress));
     }
   };
 
@@ -852,7 +857,7 @@ export function DocumentViewer({
                                 ? "opacity-40 bg-red-50 border-l-4 border-l-red-400"
                                 : note.isOptimistic && note.isError
                                 ? "opacity-70 border-red-200 bg-red-50 border-l-4 border-l-red-500"
-                                : "opacity-100 border-l-4" // Default state with left border
+                                : "opacity-100 border-l-4"
                             } ${note.page_number ? "cursor-pointer hover:bg-gray-50" : "hover:bg-slate-50"}`}
                             style={{
                               ...(!(
@@ -1101,85 +1106,131 @@ export function DocumentViewer({
                             </div>
                           </div>
 
-                          {messages.map((message, i) => (
-                            <div key={i} className="flex items-start space-x-3">
-                              <div
-                                className={`w-8 h-8 rounded-full ${
-                                  message.role === "assistant" ? "bg-green-200" : "bg-black"
-                                } flex items-center justify-center flex-shrink-0`}
-                              >
-                                <span
-                                  className={`${
-                                    message.role === "assistant"
-                                      ? "text-sm font-semibold"
-                                      : "text-[9px] font-semibold text-white"
-                                  }`}
-                                  style={{
-                                    ...(message.role !== "assistant" && {
-                                      fontStyle: "normal",
-                                      lineHeight: "100%",
-                                    }),
-                                  }}
-                                >
-                                  {message.role === "assistant" ? "AI" : "YOU"}
-                                </span>
-                              </div>
-                              <div className="flex-1">
-                                <div
-                                  className="font-medium mb-2"
-                                  style={{
-                                    color: "var(--base-accent-secondary, #18181B)",
-                                    fontSize: "var(--typography-base-sizes-small-font-size, 14px)",
-                                    fontStyle: "normal",
-                                    fontWeight: "var(--font-weight-bold, 500)",
-                                    lineHeight: "100%",
-                                    alignSelf: "stretch",
-                                  }}
-                                >
-                                  {message.role === "assistant" ? "AI Assistant" : user?.name}
-                                </div>
-                                <div
-                                  className={`flex p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm ${
-                                    message.role === "assistant" ? "text-gray-600" : "text-neutral-800 font-semibold"
-                                  }`}
-                                >
-                                  <MessageContent content={message.content} onPageClick={handlePageClick} />
-                                </div>
-                                {message.role === "assistant" && (
-                                  <div className="flex items-center space-x-0 mt-2">
-                                    <button className="p-2 hover:bg-gray-100 rounded-md">
-                                      <RotateIcon />
-                                    </button>
-                                    <button className="p-2 hover:bg-gray-100 rounded-md">
-                                      <PasteIcon />
-                                    </button>
-                                    <button className="p-2 hover:bg-gray-100 rounded-md">
-                                      <SaveIcon />
-                                    </button>
-                                    <div className="flex-1" />
-                                    <button className="flex items-center space-x-1 text-sm font-medium hover:bg-gray-100 rounded-md px-3 py-2">
-                                      <DiveDeeperIcon />
-                                      <span>Dive Deeper</span>
-                                    </button>
+                          {messages.map((message, i) => {
+                            if (message.isStepProgress && message.stepDetails) {
+                              const currentStepKey = message.stepDetails.step as keyof typeof CHAT_STEPS;
+                              const currentStepLabel = CHAT_STEPS[currentStepKey] || message.stepDetails.step;
+                              const stepContent = message.stepDetails.content;
+
+                              const stepsWithContentDisplay: Partial<Record<keyof typeof CHAT_STEPS, string>> = {
+                                [CHAT_STEPS.INITIALIZING]: "Details:",
+                                [CHAT_STEPS.LOADING_FAISS]: "Details:",
+                                [CHAT_STEPS.GENERATING_QUERIES]: "Generated Queries:",
+                                [CHAT_STEPS.SEARCHING_CHUNKS]: "Search Update:",
+                                [CHAT_STEPS.PREPARING_CONTEXT]: "Context Update:",
+                              };
+
+                              const showContentForThisStep =
+                                stepsWithContentDisplay[currentStepKey] && stepContent && stepContent.length > 0;
+
+                              return (
+                                <div key={`step-progress-${i}`} className="flex items-start space-x-3 w-full mb-4">
+                                  <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span className="text-sm font-semibold">AI</span>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                          {isTyping && (
-                            <div className="flex justify-start">
-                              <div className="bg-stone-100 rounded-lg px-4 py-2">
-                                {responseStep ? (
-                                  <div className="flex items-center">
-                                    <RotateCw className="h-4 w-4 animate-spin mr-2" />
-                                    <span className="text-xs text-gray-600">{responseStep}</span>
+                                  <div className="flex-1 bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                                    <div className="flex items-center text-sm font-semibold text-gray-700 mb-2.5">
+                                      <RotateCw className="h-4 w-4 animate-spin mr-3 text-blue-600" />
+                                      {currentStepLabel}
+                                    </div>
+
+                                    {showContentForThisStep && (
+                                      <div className="pl-1 ml-0.5 mb-2.5 text-xs text-gray-600 border-l-2 border-blue-200">
+                                        <p className="pl-3 font-medium text-gray-500 mb-0.5">
+                                          {stepsWithContentDisplay[currentStepKey]}
+                                        </p>
+                                        <div className="pl-3 space-y-0.5">
+                                          {stepContent!.map((item, itemIdx) => (
+                                            <p key={itemIdx} className="truncate text-gray-500">
+                                              - {item}
+                                            </p>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {message.stepDetails.step === CHAT_STEPS.GENERATING_RESPONSE && (
+                                      <div className="mt-1.5 space-y-2.5 w-full">
+                                        <div className="h-2 bg-gray-200 rounded-full w-11/12 animate-pulse"></div>
+                                        <div className="h-2 bg-gray-200 rounded-full w-full animate-pulse"></div>
+                                        <div className="h-2 bg-gray-200 rounded-full w-10/12 animate-pulse"></div>
+                                        <div className="h-2 bg-gray-200 rounded-full w-9/12 animate-pulse"></div>
+                                      </div>
+                                    )}
                                   </div>
-                                ) : (
-                                  <RotateCw className="h-4 w-4 animate-spin" />
-                                )}
-                              </div>
-                            </div>
-                          )}
+                                </div>
+                              );
+                            } else if (!message.isStepProgress) {
+                              return (
+                                <div key={i} className="flex items-start space-x-3">
+                                  <div
+                                    className={`w-8 h-8 rounded-full ${
+                                      message.role === "assistant" ? "bg-green-200" : "bg-black"
+                                    } flex items-center justify-center flex-shrink-0`}
+                                  >
+                                    <span
+                                      className={`${
+                                        message.role === "assistant"
+                                          ? "text-sm font-semibold"
+                                          : "text-[9px] font-semibold text-white"
+                                      }`}
+                                      style={{
+                                        ...(message.role !== "assistant" && {
+                                          fontStyle: "normal",
+                                          lineHeight: "100%",
+                                        }),
+                                      }}
+                                    >
+                                      {message.role === "assistant" ? "AI" : "YOU"}
+                                    </span>
+                                  </div>
+                                  <div className="flex-1">
+                                    <div
+                                      className="font-medium mb-2"
+                                      style={{
+                                        color: "var(--base-accent-secondary, #18181B)",
+                                        fontSize: "var(--typography-base-sizes-small-font-size, 14px)",
+                                        fontStyle: "normal",
+                                        fontWeight: "var(--font-weight-bold, 500)",
+                                        lineHeight: "100%",
+                                        alignSelf: "stretch",
+                                      }}
+                                    >
+                                      {message.role === "assistant" ? "AI Assistant" : user?.name}
+                                    </div>
+                                    <div
+                                      className={`flex p-2 px-3 items-start gap-[10px] flex-shrink-0 self-stretch rounded-md border border-[#E4E4E7] bg-[#FCFBFC] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] text-sm ${
+                                        message.role === "assistant"
+                                          ? "text-gray-600"
+                                          : "text-neutral-800 font-semibold"
+                                      }`}
+                                    >
+                                      <MessageContent content={message.content} onPageClick={handlePageClick} />
+                                    </div>
+                                    {message.role === "assistant" && (
+                                      <div className="flex items-center space-x-0 mt-2">
+                                        <button className="p-2 hover:bg-gray-100 rounded-md">
+                                          <RotateIcon />
+                                        </button>
+                                        <button className="p-2 hover:bg-gray-100 rounded-md">
+                                          <PasteIcon />
+                                        </button>
+                                        <button className="p-2 hover:bg-gray-100 rounded-md">
+                                          <SaveIcon />
+                                        </button>
+                                        <div className="flex-1" />
+                                        <button className="flex items-center space-x-1 text-sm font-medium hover:bg-gray-100 rounded-md px-3 py-2">
+                                          <DiveDeeperIcon />
+                                          <span>Dive Deeper</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
                         </>
                       )}
                     </div>

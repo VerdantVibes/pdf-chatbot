@@ -63,7 +63,7 @@ export function Chat() {
   }
 
   return (
-    <div className="hidden h-full flex-1 flex-col md:flex">
+    <div className="hidden max-h-[calc(100vh-112.5px)] flex-1 flex-col md:flex">
       <div className="flex w-full h-full overflow-hidden border-t border-stone-200">
         {/* File View Opener */}
         {!isFileViewOpen && (

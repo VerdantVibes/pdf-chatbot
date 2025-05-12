@@ -34,9 +34,9 @@ export const MessageContent = ({ content, onPageClick }: MessageContentProps) =>
             )
             .join(" ");
         })
-        // Handle individual page references
+        // Handle individual page references - only if not already wrapped in a sup tag
         .replace(
-          /\[(\d+)\]/g,
+          /(?<!<sup[^>]*>)\[(\d+)\](?!<\/sup>)/g,
           (_, page) =>
             `<sup data-pdf-id="current" data-page="${page}" style="color: #228be6; cursor: pointer; margin: 0 2px;">[${page}]</sup>`
         )

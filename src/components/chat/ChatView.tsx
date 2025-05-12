@@ -36,7 +36,7 @@ const AI_CONFIG = {
     min: 10, // Minimum delay in ms between characters
     max: 10, // Maximum delay in ms for randomness
   },
-  transitionDuration: 5000, // Duration in ms to wait after thinking completes before showing response
+  transitionDuration: 4000, // Duration in ms to wait after thinking completes before showing response
 };
 
 // Animated thinking process component

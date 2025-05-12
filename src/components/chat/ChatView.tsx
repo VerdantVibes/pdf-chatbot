@@ -33,10 +33,10 @@ interface ChatViewProps {
 // AI Config parameters for typing animation
 const AI_CONFIG = {
   thinkingSpeed: {
-    min: 5, // Minimum delay in ms between characters
-    max: 5, // Maximum delay in ms for randomness
+    min: 10, // Minimum delay in ms between characters
+    max: 10, // Maximum delay in ms for randomness
   },
-  transitionDuration: 3000, // Duration in ms to wait after thinking completes before showing response
+  transitionDuration: 5000, // Duration in ms to wait after thinking completes before showing response
 };
 
 // Animated thinking process component

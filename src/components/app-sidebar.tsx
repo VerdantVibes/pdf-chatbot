@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BookOpen, Bot, Files, Home, LifeBuoy, MessageSquare, Notebook, Send, Settings2, Zap } from "lucide-react";
+import { BookOpen, Bot, Home, LifeBuoy, Notebook, Settings2, Zap, FileBarChart2, Database } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavFavorites } from "@/components/nav-favorites";
@@ -28,17 +28,6 @@ const data = {
       isActive: true,
     },
     {
-      title: "Chat",
-      url: "/chat",
-      icon: Bot,
-      items: [
-        {
-          title: "Chat",
-          url: "/chat",
-        },
-      ],
-    },
-    {
       title: "Knowledge Base",
       url: "/knowledge-base",
       icon: BookOpen,
@@ -50,31 +39,20 @@ const data = {
       ],
     },
     {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2,
+      title: "Chat",
+      url: "/chat",
+      icon: Bot,
       items: [
         {
-          title: "General",
-          url: "/settings/general",
-        },
-        {
-          title: "Members",
-          url: "/settings/members",
-        },
-        {
-          title: "Profile",
-          url: "/settings/profile",
-        },
-        {
-          title: "Plan & Billing",
-          url: "/settings/plan-billing",
-        },
-        {
-          title: "Security",
-          url: "/settings/security",
+          title: "Recent Chats",
+          url: "/chat",
         },
       ],
+    },
+    {
+      title: "Reports",
+      url: "/reports",
+      icon: FileBarChart2,
     },
   ],
   favorites: [
@@ -88,34 +66,37 @@ const data = {
       url: "/notes",
       icon: Notebook,
     },
+  ],
+  support: [
     {
-      name: "Files",
-      url: "/files",
-      icon: Files,
-    },
-    {
-      name: "Chats",
-      url: "/chats",
-      icon: MessageSquare,
+      title: "Data Integrations",
+      url: "/integrations",
+      icon: Database,
       items: [
         {
-          title: "Chats",
-          url: "/chats",
+          title: "Podcasts",
+          url: "/integrations/podcasts",
+        },
+        {
+          title: "Storage",
+          url: "/integrations/storage",
+        },
+        {
+          title: "News",
+          url: "/integrations/news",
         },
       ],
     },
-  ],
-  support: [
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: Settings2,
+    },
     {
       title: "Support",
       url: "/support",
       icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "/feedback",
-      icon: Send,
-    },
+    }
   ],
 };
 
@@ -138,7 +119,7 @@ export function AppSidebar({
         <NavMain items={data.navMain} label="Platform" />
         <NavFavorites favorites={data.favorites} />
       </SidebarContent>
-      <NavMain items={data.support} label={false} />
+      <NavMain items={data.support} label="Data Integrations" />
       <SidebarFooter>
         <NavUser
           user={

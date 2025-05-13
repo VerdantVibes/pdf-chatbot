@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ChevronLeft, FileText, Search, MessageSquare } from "lucide-react";
+import { ChevronLeft, FileText, Search, MessageSquare, Send } from "lucide-react";
 import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatItem {
   title: string;
@@ -17,6 +18,7 @@ export function Chat() {
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeInputTab, setActiveInputTab] = useState("chat");
 
   const selectedRows = location.state?.selectedRows || [];
   const selectedFiles = location.state?.selectedFiles || [];
@@ -90,7 +92,7 @@ export function Chat() {
     <div className="hidden h-[calc(100vh-48px)] flex-1 flex-col md:flex">
       <div className="flex w-full h-full overflow-hidden">
         {/* Left Sidebar - Chat List */}
-        <div className="w-[300px] border-r border-stone-200 flex flex-col">
+        <div className="w-[360px] border-r border-stone-200 flex flex-col">
           <div className="p-4 space-y-4">
             <h1 className="text-[#18181B] text-base font-semibold leading-6 overflow-hidden text-ellipsis whitespace-nowrap font-sans">
               Recent Chats
@@ -148,11 +150,54 @@ export function Chat() {
             </div>
           </div>
           <div className="p-4">
-            <div className="max-w-3xl mx-auto">
+            <div className="w-full relative">
               <Input
                 placeholder="Ask your question in this field to start chatting with AI..."
-                className="w-full"
+                className="w-full pr-24"
               />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <Tabs defaultValue="chat" value={activeInputTab} onValueChange={setActiveInputTab} className="w-auto">
+                  <TabsList className="h-auto p-0 bg-transparent border-0 gap-2">
+                    <TabsTrigger 
+                      value="chat" 
+                      className="data-[state=active]:bg-[#F1F1F1] data-[state=inactive]:bg-transparent data-[state=active]:shadow-none border-0 px-2 py-1.5 h-auto rounded-lg hover:bg-[#F1F1F1]/80"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none" className={activeInputTab === "chat" ? "opacity-100" : "opacity-50"}>
+                        <path d="M14.4688 10.3848C14.4688 10.7384 14.3283 11.0775 14.0782 11.3276C13.8282 11.5776 13.489 11.7181 13.1354 11.7181H5.13542L2.46875 14.3848V3.7181C2.46875 3.36448 2.60923 3.02534 2.85927 2.77529C3.10932 2.52524 3.44846 2.38477 3.80208 2.38477H13.1354C13.489 2.38477 13.8282 2.52524 14.0782 2.77529C14.3283 3.02534 14.4688 3.36448 14.4688 3.7181V10.3848Z" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9.13281 5.71777H5.13281" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M11.7995 8.38477H5.13281" stroke="#4E5255" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="command" 
+                      className="data-[state=active]:bg-[#F1F1F1] data-[state=inactive]:bg-transparent data-[state=active]:shadow-none border-0 px-2 py-1.5 h-auto rounded-lg hover:bg-[#F1F1F1]/80"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none" className={activeInputTab === "command" ? "opacity-100" : "opacity-50"}>
+                        <g clipPath="url(#clip0_2658_28809)">
+                          <path d="M8.47135 4.38444V1.71777H5.80469" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M5.79948 12.3848L3.13281 15.0514V5.7181C3.13281 5.36448 3.27329 5.02534 3.52334 4.77529C3.77339 4.52524 4.11252 4.38477 4.46615 4.38477H12.4661C12.8198 4.38477 13.1589 4.52524 13.409 4.77529C13.659 5.02534 13.7995 5.36448 13.7995 5.7181V11.0514C13.7995 11.4051 13.659 11.7442 13.409 11.9942C13.1589 12.2443 12.8198 12.3848 12.4661 12.3848H5.79948Z" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M1.80469 8.38477H3.13802" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M6.46875 7.71777V9.05111" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M10.4688 7.71777V9.05111" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M13.8047 8.38477H15.138" stroke="#BCC0C4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_2658_28809">
+                            <rect width="16" height="16" fill="white" transform="translate(0.46875 0.384766)"/>
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-8 w-8 rounded-md bg-neutral-900 hover:bg-neutral-800"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

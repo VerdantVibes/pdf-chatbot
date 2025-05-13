@@ -90,48 +90,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar handleLogout={handleLogout} isLoading={isLoading} user={user || undefined} />
         <SidebarInset>
-          <header className="flex sticky top-0 z-10 bg-white border-b-[1.25px] shadow-sm border-neutral-200 min-h-16 px-0 py-0 md:px-3 md:py-4 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4 w-full">
-              <div className="md:hidden w-full flex items-center justify-center gap-3">
-                <SidebarTrigger className="p-[1.05rem]" />
-                <div className="w-full relative">
-                  <Input placeholder="Search..." className="pl-8 text-xs placeholder:text-secondary-foreground/50" />
-                  <Search className="h-3.5 w-3.5 absolute left-3 top-[48%] -translate-y-1/2 text-secondary-foreground/50" />
+          {!location.pathname.startsWith('/chat') && (
+            <header className="flex sticky top-0 z-10 bg-white border-b-[1.25px] shadow-sm border-neutral-200 min-h-16 px-0 py-0 md:px-3 md:py-4 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+              <div className="flex items-center gap-2 px-4 w-full">
+                <div className="md:hidden w-full flex items-center justify-center gap-3">
+                  <SidebarTrigger className="p-[1.05rem]" />
+                  <div className="w-full relative">
+                    <Input placeholder="Search..." className="pl-8 text-xs placeholder:text-secondary-foreground/50" />
+                    <Search className="h-3.5 w-3.5 absolute left-3 top-[48%] -translate-y-1/2 text-secondary-foreground/50" />
+                  </div>
                 </div>
-              </div>
 
-              <Separator orientation="vertical" className="h-4" />
-              <Breadcrumb className="hidden md:flex md:-ml-2">
-                <BreadcrumbList>
-                  {displayBreadcrumbs.map((item, index) => (
-                    <BreadcrumbItem key={item.path} className="hidden md:flex">
-                      {item.isCurrentPage ? (
-                        <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink asChild>
-                          <Link to={item.path}>{item.label}</Link>
-                        </BreadcrumbLink>
-                      )}
-                      {index < displayBreadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                    </BreadcrumbItem>
-                  ))}
-                </BreadcrumbList>
-              </Breadcrumb>
-              {location.pathname.includes("/document/") && (
-                <div className="hidden md:flex absolute right-4 items-center gap-3 p-0">
-                  <Button variant="outline">
-                    <Save className="w-4 h-4" />
-                    <span>Save as Report</span>
-                  </Button>
-                  <Button variant="outline">
-                    <BookOpen className="w-4 h-4" />
-                    <span>Save to Knowledge Base</span>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col gap-4 px-4 py-2 md:px-7 md:py-6 relative">{children}</div>
+                <Separator orientation="vertical" className="h-4" />
+                <Breadcrumb className="hidden md:flex md:-ml-2">
+                  <BreadcrumbList>
+                    {displayBreadcrumbs.map((item, index) => (
+                      <BreadcrumbItem key={item.path} className="hidden md:flex">
+                        {item.isCurrentPage ? (
+                          <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink asChild>
+                            <Link to={item.path}>{item.label}</Link>
+                          </BreadcrumbLink>
+                        )}
+                        {index < displayBreadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                      </BreadcrumbItem>
+                    ))}
+                  </BreadcrumbList>
+                </Breadcrumb>
+                {location.pathname.includes("/document/") && (
+                  <div className="hidden md:flex absolute right-4 items-center gap-3 p-0">
+                    <Button variant="outline">
+                      <Save className="w-4 h-4" />
+                      <span>Save as Report</span>
+                    </Button>
+                    <Button variant="outline">
+                      <BookOpen className="w-4 h-4" />
+                      <span>Save to Knowledge Base</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </header>
+          )}
+          <div className={location.pathname.startsWith('/chat') 
+            ? "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow"
+            : "flex flex-1 flex-col gap-4 px-4 py-2 md:px-7 md:py-6 relative"
+          }>
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </BreadcrumbContext.Provider>

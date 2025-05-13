@@ -3,7 +3,6 @@ import { AuthProvider } from "./lib/context/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import { SignIn } from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
 import { SignUpBeta } from "./pages/SignUpBeta";
 import PrivateAssets from "./pages/KnowledgeBase/PrivateAssets";
 import { Chat } from "./pages/Chat";

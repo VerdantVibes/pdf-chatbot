@@ -8,9 +8,6 @@ import {
   Archive,
   Bookmark,
   Folder,
-  Loader2,
-  Tag,
-  ChevronDown,
   Star,
   BookOpen,
   Compass,
@@ -217,14 +214,6 @@ export const getColumns = (): ExtendedColumnDef<Pdf>[] => [
         e.stopPropagation();
         const documentId = (row.original as any).id;
         const folderName = "Archived";
-
-        moveToCategoryMutation.mutate({ pdfIds: [documentId], category: folderName });
-      };
-
-      const handleBookmark = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const documentId = (row.original as any).id;
-        const folderName = "Tag as";
 
         moveToCategoryMutation.mutate({ pdfIds: [documentId], category: folderName });
       };

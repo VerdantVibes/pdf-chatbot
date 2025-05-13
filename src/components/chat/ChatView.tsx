@@ -3,14 +3,11 @@ import { AtSign, BrainCircuit, Crop, MoveRight, RotateCw, Share2 } from "lucide-
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { sendChatMessage } from "@/lib/api/chat";
 import { MessageContent } from "./MessageContent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChatWebSocket, ChatProgress } from "@/hooks/useChatWebSocket";
 import { ChatMessage, CHAT_STEPS } from "@/lib/websocket/chatWebSocketService";
-import { useTailwindBreakpoint } from "@/hooks/use-tailwind-breakpoint";
 
 // Type for internal websocket chat message
 type WebSocketChatMessage = ChatMessage;
@@ -47,7 +44,6 @@ const AnimatedThinkingProcess = ({ thinkContent, onComplete }: { thinkContent: s
   const thinkingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
-  const { atMostSm } = useTailwindBreakpoint();
   const currentIndexRef = useRef(0);
 
   // Add effect for continuous scrolling of the entire chat area
@@ -401,7 +397,6 @@ export function ChatView({ onPdfChange }: ChatViewProps) {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { atMostSm } = useTailwindBreakpoint();
 
   const {
     sendMessage: sendWebSocketMessage,

@@ -1,4 +1,4 @@
-import { X, Filter, ThumbsDown, ThumbsUp, Bot, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Filter, ThumbsDown, ThumbsUp, Bot} from "lucide-react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -211,7 +211,7 @@ export function DocumentSidebar({
 
   const { ai_summary, threads = [] } = analysis;
 
-  const [currentPdfId, setCurrentPdfId] = useState<string>(id || "");
+  const [, setCurrentPdfId] = useState<string>(id || "");
   const [currentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("summary");
 

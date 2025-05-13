@@ -145,11 +145,15 @@ export function Chat() {
               <div className="h-[60px]"></div>
               <div className="grid grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="p-4 border border-stone-200 rounded-lg">
-                    <MessageSquare className="h-5 w-5 mb-2 text-neutral-600" />
-                    <p className="text-sm text-neutral-600">
-                      Please put together for me the Predictions for the Chinese Economy and its upcoming Recession.
-                    </p>
+                  <div key={i} className="p-4 border border-[#E4E4E7] bg-white rounded-md shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-neutral-50 transition-colors cursor-pointer">
+                    <div className="flex flex-col h-full">
+                      <div className="flex items-center gap-2 mb-3">
+                        <MessageSquare className="h-5 w-5 text-[#71717A]" />
+                      </div>
+                      <p className="text-[14px] text-[#71717A] font-normal leading-[20px] font-sans">
+                        Please put together for me the Predictions for the Chinese Economy and its upcoming Recession.
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -33,7 +33,7 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "General",
+          title: "Recent",
           url: "/knowledge-base/general",
         },
       ],

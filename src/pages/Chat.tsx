@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, FileText, Search, MessageSquare, Send } from "lucide-react";
 import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/lib/context/AuthContext";
+import axios from "axios";
 
 interface ChatItem {
   title: string;
@@ -13,12 +15,18 @@ interface ChatItem {
   messages: number;
 }
 
+interface TopicsResponse {
+  topics: string[];
+}
+
 export function Chat() {
   const [isFileViewOpen, setIsFileViewOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [activeInputTab, setActiveInputTab] = useState("chat");
+  const [topics, setTopics] = useState<string[]>([]);
+  const { user } = useAuth();
 
   const selectedRows = location.state?.selectedRows || [];
   const selectedFiles = location.state?.selectedFiles || [];
@@ -31,6 +39,39 @@ export function Chat() {
   }));
 
   const [currentPdfUrl, setCurrentPdfUrl] = useState(pdfUrl!);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchTopics = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await axios.get<TopicsResponse>(
+          `${import.meta.env.VITE_API_URL}/chat/topics`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+            signal: controller.signal
+          }
+        );
+        setTopics(response.data.topics);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled');
+        } else {
+          console.error("Failed to fetch topics:", error);
+        }
+      }
+    };
+
+    fetchTopics();
+
+    return () => {
+      controller.abort();
+    };
+  }, [user]); // Only re-run if user changes
 
   const handlePdfChange = (newPdfId: string, page?: number) => {
     const newPdfUrl = `${import.meta.env.VITE_API_URL}/pdf/${newPdfId}/content`;
@@ -134,7 +175,7 @@ export function Chat() {
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto p-6 pt-16">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <h1 className="text-[#3A3B3F] text-[28px] font-semibold leading-[32px] tracking-[-0.4px] text-center font-sans mb-2">
                 Discover Insights and Chat with AI on Steroids
               </h1>
@@ -143,15 +184,15 @@ export function Chat() {
                 as well as finding answering any of your question.
               </p>
               <div className="h-[60px]"></div>
-              <div className="grid grid-cols-3 gap-4">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="p-4 border border-[#E4E4E7] bg-white rounded-md shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-neutral-50 transition-colors cursor-pointer">
+              <div className="grid grid-cols-3 gap-3 px-4">
+                {topics.map((topic, i) => (
+                  <div key={i} className="p-5 border border-[#E4E4E7] bg-white rounded-md shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-neutral-50 transition-colors cursor-pointer">
                     <div className="flex flex-col h-full">
                       <div className="flex items-center gap-2 mb-3">
                         <MessageSquare className="h-5 w-5 text-[#71717A]" />
                       </div>
                       <p className="text-[14px] text-[#71717A] font-normal leading-[20px] font-sans">
-                        Please put together for me the Predictions for the Chinese Economy and its upcoming Recession.
+                        {topic}
                       </p>
                     </div>
                   </div>

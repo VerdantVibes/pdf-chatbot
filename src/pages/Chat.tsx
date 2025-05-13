@@ -137,6 +137,7 @@ export function Chat() {
                 Ready to assist you with your advanced search queries, deep document research
                 as well as finding answering any of your question.
               </p>
+              <div className="h-[60px]"></div>
               <div className="grid grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="p-4 border border-stone-200 rounded-lg">

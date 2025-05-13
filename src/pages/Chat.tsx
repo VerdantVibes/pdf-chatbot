@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, FileText, Search, MessageSquare, Send } from "lucide-react";
+import { ChevronLeft, FileText, Search, MessageSquare, Send, Loader2 } from "lucide-react";
 import { PdfViewer } from "@/components/chat/PdfViewer";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ export function Chat() {
   const [activeInputTab, setActiveInputTab] = useState("chat");
   const [topics, setTopics] = useState<string[]>([]);
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   const selectedRows = location.state?.selectedRows || [];
   const selectedFiles = location.state?.selectedFiles || [];
@@ -46,6 +47,7 @@ export function Chat() {
     const fetchTopics = async () => {
       if (!user) return;
       
+      setIsLoading(true);
       try {
         const response = await axios.get<TopicsResponse>(
           `${import.meta.env.VITE_API_URL}/chat/topics`,
@@ -63,6 +65,8 @@ export function Chat() {
         } else {
           console.error("Failed to fetch topics:", error);
         }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -174,31 +178,39 @@ export function Chat() {
               New Chat
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto p-6 pt-16">
-            <div className="max-w-5xl mx-auto">
-              <h1 className="text-[#3A3B3F] text-[28px] font-semibold leading-[32px] tracking-[-0.4px] text-center font-sans mb-2">
-                Discover Insights and Chat with AI on Steroids
-              </h1>
-              <p className="text-[#767A7F] text-base font-normal leading-6 text-center font-sans mb-8">
-                Ready to assist you with your advanced search queries, deep document research
-                as well as finding answering any of your question.
-              </p>
-              <div className="h-[60px]"></div>
-              <div className="grid grid-cols-3 gap-3 px-4">
-                {topics.map((topic, i) => (
-                  <div key={i} className="p-5 border border-[#E4E4E7] bg-white rounded-md shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-neutral-50 transition-colors cursor-pointer">
-                    <div className="flex flex-col h-full">
-                      <div className="flex items-center gap-2 mb-3">
-                        <MessageSquare className="h-5 w-5 text-[#71717A]" />
-                      </div>
-                      <p className="text-[14px] text-[#71717A] font-normal leading-[20px] font-sans">
-                        {topic}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-neutral-600" />
               </div>
-            </div>
+            ) : (
+              <div className="p-6 pt-16">
+                <div className="max-w-5xl mx-auto">
+                  <h1 className="text-[#3A3B3F] text-[28px] font-semibold leading-[32px] tracking-[-0.4px] text-center font-sans mb-2">
+                    Discover Insights and Chat with AI on Steroids
+                  </h1>
+                  <p className="text-[#767A7F] text-base font-normal leading-6 text-center font-sans mb-8">
+                    Ready to assist you with your advanced search queries, deep document research
+                    as well as finding answering any of your question.
+                  </p>
+                  <div className="h-[60px]"></div>
+                  <div className="grid grid-cols-3 gap-3 px-4">
+                    {topics.map((topic, i) => (
+                      <div key={i} className="p-5 border border-[#E4E4E7] bg-white rounded-md shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-neutral-50 transition-colors cursor-pointer">
+                        <div className="flex flex-col h-full">
+                          <div className="flex items-center gap-2 mb-3">
+                            <MessageSquare className="h-5 w-5 text-[#71717A]" />
+                          </div>
+                          <p className="text-[14px] text-[#71717A] font-normal leading-[20px] font-sans">
+                            {topic}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <div className="p-4">
             <div className="w-full relative">

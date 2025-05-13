@@ -42,7 +42,7 @@ export function Chat() {
 
   const renderChatList = (chats: ChatItem[], title: string) => (
     <div className="space-y-4">
-      <h2 className="text-sm font-semibold text-neutral-900">{title}</h2>
+      <h2 className="text-[16px] font-semibold text-[#18181B] leading-6 font-sans">{title}</h2>
       <div className="space-y-1">
         {chats.map((chat, index) => (
           <div
@@ -51,13 +51,19 @@ export function Chat() {
           >
             <div className="flex items-start">
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-neutral-900 mb-1">
+                <h3 className="text-[14px] font-bold font-semibold text-[#18181B] leading-none font-sans mb-3">
                   Chat: {chat.title}
                 </h3>
-                <p className="text-sm text-neutral-600 line-clamp-2">{chat.message}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-neutral-500">{chat.date}</span>
-                  <span className="text-xs text-neutral-500">{chat.messages} Messages</span>
+                <p className="text-sm text-neutral-600 line-clamp-2 p-3 rounded-md border border-[#E4E4E7] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] mb-3">
+                  {chat.message}
+                </p>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-[14px] text-[#71717A] font-normal leading-none font-sans">
+                    {chat.date}
+                  </span>
+                  <span className="text-[14px] text-[#3A3B3F] font-medium leading-none font-sans">
+                    {chat.messages} Messages
+                  </span>
                 </div>
               </div>
             </div>
@@ -75,7 +81,6 @@ export function Chat() {
       date: "21 August, 12:42PM",
       messages: 23,
     },
-    // Add more recent chats as needed
   ];
 
   const pinnedChats: ChatItem[] = [

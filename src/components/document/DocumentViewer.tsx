@@ -14,8 +14,7 @@ import {
   Search,
   FileText,
   SparklesIcon,
-  ChevronDown, // Added for expand/collapse
-  ChevronUp, // Added for expand/collapse
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,7 @@ import {
 } from "@/lib/api/pdf-notes";
 import { v4 as uuidv4 } from "uuid";
 import { Textarea } from "@/components/ui/textarea";
-import { sendChatMessage, buildChatIndex } from "@/lib/api/chat";
+import { buildChatIndex } from "@/lib/api/chat";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -307,7 +306,6 @@ const AnimatedThinkingProcess = ({ thinkContent, onComplete }: { thinkContent: s
   const thinkingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<number | null>(null);
-  const { atMostSm } = useTailwindBreakpoint();
   const currentIndexRef = useRef(0);
 
   // Add effect for continuous scrolling of the entire chat area
@@ -677,7 +675,6 @@ export function DocumentViewer({
   const [newNoteContent, setNewNoteContent] = useState("");
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteContent, setEditNoteContent] = useState("");
-  const [deletingNoteIds, _setDeletingNoteIds] = useState<string[]>([]);
   const [localNotes, setLocalNotes] = useState<NoteResponse[]>([]);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [isMultiSelectActive, _setIsMultiSelectActive] = useState(false);
@@ -717,9 +714,6 @@ export function DocumentViewer({
   const createNoteMutation = useCreateNote();
   const updateNoteMutation = useUpdateNote();
   const deleteNoteMutation = useDeleteNote();
-
-  // Add a ref to track when messages are updated, for scrolling
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Add a ref to store the message that will be revealed after thinking
   const messageAfterThinkingRef = useRef<{ id: string; ref: HTMLDivElement | null }>({ id: "", ref: null });

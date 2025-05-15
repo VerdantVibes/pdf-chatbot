@@ -20,6 +20,7 @@ import { KnowledgeBaseLayout } from "./pages/KnowledgeBase/layout";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPasswordSuccess } from "./pages/ResetPasswordSuccess";
 import { Reports } from "@/pages/Reports";
+import { Integrations } from "@/pages/Integrations/Integrations";
 
 function App() {
   return (
@@ -105,6 +106,20 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/integrations"
+            element={
+              <ProtectedRoute>
+                <Integrations />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="podcasts" element={<Integrations />} />
+            <Route path="storage" element={<Integrations />} />
+            <Route path="news" element={<Integrations />} />
+            <Route index element={<Navigate to="/integrations/podcasts" replace />} />
+          </Route>
 
           <Route
             path="/document/:id"

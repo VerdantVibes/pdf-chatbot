@@ -1,0 +1,65 @@
+import { getColumns } from "./components/columns";
+import { DataTable } from "./components/data-table";
+import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
+import { data as notes } from "./data/data";
+
+export function NotesPage() {
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [filters, setFilters] = useState<{
+    selectedFilterA: string[];
+    selectedFilterB: string[];
+    selectedFilterC: string[];
+  }>({
+    selectedFilterA: [],
+    selectedFilterB: [],
+    selectedFilterC: [],
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("selectedRowsChanged", {
+          detail: {
+            selectedRows,
+            items: notes || [],
+          },
+        })
+      );
+    }
+  }, [selectedRows, notes]);
+
+  const handleFiltersChange = (newFilters: {
+    selectedFilterA: string[];
+    selectedFilterB: string[];
+    selectedFilterC: string[];
+  }) => {
+    setFilters(newFilters);
+  };
+
+  return (
+    <div>
+      <div className="flex-1 flex-col space-y-2 lg:space-y-5 py-2 flex">
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col items-start justify-center mb-1">
+            <h2 className="text-2xl font-bold tracking-tight">Notes</h2>
+            <p className="text-secondary-foreground/50">Description subtext will go here</p>
+          </div>
+          <div className="hidden lg:flex gap-3">
+            <Button variant="default">
+              <span className="font-medium px-2">New Note</span>
+            </Button>
+          </div>
+        </div>
+
+        <DataTable
+          data={notes}
+          columns={getColumns()}
+          onSelectionChange={setSelectedRows}
+          onFiltersChange={handleFiltersChange}
+          refetch={undefined}
+        />
+      </div>
+    </div>
+  );
+}

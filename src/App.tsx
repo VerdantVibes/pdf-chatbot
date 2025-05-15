@@ -22,6 +22,7 @@ import { ResetPasswordSuccess } from "./pages/ResetPasswordSuccess";
 import { Reports } from "@/pages/Reports";
 import { Integrations } from "@/pages/Integrations/Integrations";
 import Signals from "./pages/Signals/Signals";
+import Notes from "./pages/Notes/Notes";
 
 function App() {
   return (
@@ -83,6 +84,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <Signals />
+              </ProtectedRoute>
+            }
+          >
+          </Route>
+
+          <Route
+            path="/notes"
+            element={
+              <ProtectedRoute>
+                <Notes />
               </ProtectedRoute>
             }
           >

@@ -1235,7 +1235,7 @@ export function DocumentViewer({
                                         (note as any).isOptimistic &&
                                         ((note as any).isCreating || (note as any).isUpdating || (note as any).isError)
                                       ) && (
-                                        <div className="flex items-center space-x-0.5 transition-opacity">
+                                        <div className="flex items-center space-x-2 transition-opacity">
                                           {!(note as any).isDeleting && (
                                             <TooltipProvider delayDuration={300}>
                                               <Tooltip>

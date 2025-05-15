@@ -253,13 +253,13 @@ export function Chat() {
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
-                <Button
+          <Button
                   variant="default"
                   size="icon"
                   className="h-8 w-8 rounded-md bg-neutral-900 hover:bg-neutral-800"
                 >
                   <Send className="h-4 w-4" />
-                </Button>
+          </Button>
               </div>
             </div>
           </div>

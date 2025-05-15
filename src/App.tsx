@@ -19,6 +19,7 @@ import { Profile } from "./pages/Settings/Profile";
 import { KnowledgeBaseLayout } from "./pages/KnowledgeBase/layout";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPasswordSuccess } from "./pages/ResetPasswordSuccess";
+import { Reports } from "@/pages/Reports";
 
 function App() {
   return (
@@ -97,6 +98,15 @@ function App() {
           />
 
           <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/document/:id"
             element={
               <ProtectedRoute>
@@ -122,6 +132,8 @@ function App() {
           </Route>
 
           <Route path="/" element={<Navigate to="/home" replace />} />
+
+          
 
           <Route path="*" element={<NotFound />} />
         </Routes>

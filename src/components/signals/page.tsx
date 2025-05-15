@@ -39,13 +39,13 @@ export function SignalsPage() {
 
   return (
     <div>
-      <div className="flex-1 flex-col space-y-2 md:space-y-5 py-2 flex">
+      <div className="flex-1 flex-col space-y-2 lg:space-y-5 py-2 flex">
         <div className="flex justify-between items-center">
           <div className="flex flex-col items-start justify-center mb-1">
             <h2 className="text-2xl font-bold tracking-tight">Signals</h2>
             <p className="text-secondary-foreground/50">Description subtext will go here</p>
           </div>
-          <div className="hidden md:flex gap-3">
+          <div className="hidden lg:flex gap-3">
             <Button variant="default">
               <span className="font-medium px-2">New Signal</span>
             </Button>

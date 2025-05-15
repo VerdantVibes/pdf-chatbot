@@ -73,7 +73,7 @@ export function DataTable<TData>({
   isLoading = false,
   refetch,
 }: DataTableProps<TData>) {
-  const { atLeastMd } = useTailwindBreakpoint();
+  const { atLeastLg } = useTailwindBreakpoint();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -155,10 +155,10 @@ export function DataTable<TData>({
   }, [rowSelection, table, onSelectionChange]);
 
   React.useEffect(() => {
-    if (!atLeastMd) {
+    if (!atLeastLg) {
       setViewMode("list");
     }
-  }, [atLeastMd]);
+  }, [atLeastLg]);
 
   const handleFiltersChange = (filters: {
     selectedFilterA: string[];
@@ -205,7 +205,7 @@ export function DataTable<TData>({
         initialFilters={appliedFilters}
       />
 
-      <div className="flex justify-between items-center py-2 gap-4">
+      <div className="hidden lg:flex justify-between items-center py-2 gap-4">
         <FilesTabs onTabChange={handleTabChange} />
       </div>
       <div className="flex space-x-0">
@@ -217,7 +217,7 @@ export function DataTable<TData>({
           transition={transitionConfig}
         >
           <div className="space-y-4">
-            {viewMode === "list" ? (
+            {viewMode === "list" && atLeastLg ? (
               <div className={`rounded-md border ${showSkeleton ? "min-h-[250px]" : "min-h-[0]"}`}>
                 <Table>
                   <TableHeader className="bg-neutral-50">

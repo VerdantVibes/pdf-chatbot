@@ -57,7 +57,7 @@ export function FilesTabs({ onTabChange }: FilesTabsProps) {
     <>
       <Tabs defaultValue="all-files" value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-border w-fit overflow-x-auto">
-          <TabsList className="h-10 md:h-9 bg-transparent p-0 w-full flex md:flex-wrap max-w-[calc(100vw-2rem)] md:max-w-full justify-start">
+          <TabsList className="h-10 lg:h-9 bg-transparent p-0 w-full flex lg:flex-wrap max-w-[calc(100vw-2rem)] lg:max-w-full justify-start">
             <TabsTrigger
               value="all-files"
               className="px-[1.15rem] h-9 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-foreground data-[state=active]:shadow-none data-[state=active]:bg-transparent data-[state=active]:font-medium"

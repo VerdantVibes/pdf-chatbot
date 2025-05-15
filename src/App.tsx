@@ -21,6 +21,7 @@ import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPasswordSuccess } from "./pages/ResetPasswordSuccess";
 import { Reports } from "@/pages/Reports";
 import { Integrations } from "@/pages/Integrations/Integrations";
+import Signals from "./pages/Signals/Signals";
 
 function App() {
   return (
@@ -76,6 +77,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/signals"
+            element={
+              <ProtectedRoute>
+                <Signals />
+              </ProtectedRoute>
+            }
+          >
+          </Route>
 
           <Route
             path="/knowledge-base"
@@ -147,8 +158,6 @@ function App() {
           </Route>
 
           <Route path="/" element={<Navigate to="/home" replace />} />
-
-          
 
           <Route path="*" element={<NotFound />} />
         </Routes>

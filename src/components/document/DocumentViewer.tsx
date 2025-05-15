@@ -9,7 +9,6 @@ import {
   RotateCw,
   CheckCircle,
   MessageCircleDashed,
-  BrainCircuit,
   Database,
   Search,
   FileText,
@@ -288,197 +287,11 @@ const formatTime = (dateTimeString?: string): string => {
   }
 };
 
-// Add configuration parameters at the top of the file
-// These can be adjusted as needed
-const AI_CONFIG = {
-  thinkingSpeed: {
-    min: 5, // Minimum delay in ms between characters (slower)
-    max: 5, // Maximum delay in ms between characters (for randomness)
-  },
-  transitionDuration: 3000, // Duration in ms to wait after thinking completes before showing the response
+const ResponseArrived = ({ onComplete }: { onComplete: () => void }) => {
+  onComplete();
+  return null;
 };
 
-// Modify the AnimatedThinkingProcess component to use the configurable speeds
-const AnimatedThinkingProcess = ({ thinkContent, onComplete }: { thinkContent: string; onComplete: () => void }) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [fadeThinking, setFadeThinking] = useState(false);
-  const [shouldScroll, setShouldScroll] = useState(false);
-  const thinkingRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const scrollIntervalRef = useRef<number | null>(null);
-  const currentIndexRef = useRef(0);
-
-  // Add effect for continuous scrolling of the entire chat area
-  useEffect(() => {
-    // Start continuous scrolling after a short delay
-    if (!fadeThinking) {
-      // Clear any existing interval
-      if (scrollIntervalRef.current) {
-        window.clearInterval(scrollIntervalRef.current);
-      }
-
-      // Create an interval to scroll the entire chat content continuously
-      scrollIntervalRef.current = window.setInterval(() => {
-        // Get the chat content scroll viewport
-        const chatContentElement = document.querySelector("[data-radix-scroll-area-viewport]");
-        if (chatContentElement) {
-          // Scroll the entire chat content to bottom
-          chatContentElement.scrollTop = chatContentElement.scrollHeight;
-        }
-      }, 500); // Set to 0.5s as requested
-    }
-
-    // Clean up interval on fade or unmount
-    return () => {
-      if (scrollIntervalRef.current) {
-        window.clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
-    };
-  }, [fadeThinking]);
-
-  // Add CSS for animation to the document head
-  useEffect(() => {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
-      @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-      .thinking-gradient {
-        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 50%, #EEF2FF 100%);
-        background-size: 200% 200%;
-        animation: gradientShift 3s ease infinite;
-      }
-      .thinking-fade {
-        animation: none;
-      }
-    `;
-    document.head.appendChild(styleElement);
-
-    return () => {
-      document.head.removeChild(styleElement);
-    };
-  }, []);
-
-  // Still keep the internal content scrolling for the thinking content itself
-  useEffect(() => {
-    if (contentRef.current) {
-      // Always scroll the thinking content to the bottom when content changes
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-
-      // Check if we need to start scrolling mode
-      const chatInputArea = document.querySelector(".chat-input-area");
-      if (chatInputArea) {
-        const contentRect = contentRef.current.getBoundingClientRect();
-        const inputRect = chatInputArea.getBoundingClientRect();
-
-        // If thinking content is getting close to the input area or exceeds a reasonable height
-        const contentHeight = contentRef.current.scrollHeight;
-        const visibleHeight = contentRect.height;
-        const isContentOverflowing = contentHeight > visibleHeight + 20; // Add a small buffer
-        const isContentNearInput = inputRect.top - contentRect.bottom < 150;
-
-        if (isContentOverflowing || isContentNearInput) {
-          setShouldScroll(true);
-        }
-      }
-    }
-  }, [displayedText]);
-
-  // Modify the typing effect to use the configurable speed
-  useEffect(() => {
-    const thinking = thinkContent.trim();
-    currentIndexRef.current = 0; // Reset current index for cursor
-    let currentText = "";
-    let timeoutId: number;
-
-    const typeThinking = () => {
-      if (currentIndexRef.current < thinking.length) {
-        currentText += thinking[currentIndexRef.current];
-        setDisplayedText(currentText);
-        currentIndexRef.current++;
-
-        const randomDelay =
-          Math.floor(Math.random() * (AI_CONFIG.thinkingSpeed.max - AI_CONFIG.thinkingSpeed.min + 1)) +
-          AI_CONFIG.thinkingSpeed.min;
-
-        timeoutId = window.setTimeout(typeThinking, randomDelay);
-      } else {
-        // Typing complete. Wait for AI_CONFIG.transitionDuration, then start fade.
-        window.setTimeout(() => {
-          setFadeThinking(true); // Start fade-out CSS animation (lasts 500ms)
-          // After the fade animation duration, call onComplete
-          window.setTimeout(() => {
-            onComplete();
-          }, 500); // This 500ms should match the CSS transition-opacity duration
-        }, AI_CONFIG.transitionDuration);
-      }
-    };
-
-    typeThinking();
-
-    return () => {
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
-  }, [thinkContent, onComplete]);
-
-  // Check if we need to start scrolling
-  useEffect(() => {
-    if (contentRef.current) {
-      // Always scroll the thinking content to the bottom when content changes
-      contentRef.current.scrollTop = contentRef.current.scrollHeight;
-
-      // Check if we need to start scrolling mode
-      const chatInputArea = document.querySelector(".chat-input-area");
-      if (chatInputArea) {
-        const contentRect = contentRef.current.getBoundingClientRect();
-        const inputRect = chatInputArea.getBoundingClientRect();
-
-        // If thinking content is getting close to the input area or exceeds a reasonable height
-        const contentHeight = contentRef.current.scrollHeight;
-        const visibleHeight = contentRect.height;
-        const isContentOverflowing = contentHeight > visibleHeight + 20; // Add a small buffer
-        const isContentNearInput = inputRect.top - contentRect.bottom < 150;
-
-        if (isContentOverflowing || isContentNearInput) {
-          setShouldScroll(true);
-        }
-      }
-    }
-  }, [displayedText]);
-
-  return (
-    <div
-      ref={thinkingRef}
-      // Keep the gradient and other styles, but control opacity with fadeThinking
-      className={`rounded-md p-2 lg:p-3 mb-2 lg:mb-3 transition-opacity duration-500 ease-in-out ${
-        fadeThinking ? "opacity-0" : "opacity-100"
-      } thinking-gradient border border-indigo-200`}
-    >
-      <div className="flex items-center space-x-2 mb-1 lg:mb-2 text-indigo-700">
-        <BrainCircuit className="h-3.5 w-3.5 lg:h-4 lg:w-4 animate-pulse" />
-        <span className="text-xs lg:text-sm font-medium">AI thinking process</span>
-      </div>
-      <div
-        ref={contentRef}
-        className={`text-xs lg:text-sm text-gray-700 font-mono bg-white bg-opacity-80 p-1.5 lg:p-2 rounded border-l-2 border-indigo-300 shadow-inner ${
-          shouldScroll ? "overflow-auto" : "" // Keep dynamic scroll based on content
-        }`}
-        style={{ scrollBehavior: "smooth" }}
-      >
-        {displayedText}
-        {/* Show blinking cursor only while typing and not fading */}
-        {!fadeThinking && currentIndexRef.current > 0 && currentIndexRef.current < thinkContent.trim().length && (
-          <span className="inline-block w-1 lg:w-1.5 h-3.5 lg:h-4 ml-0.5 bg-indigo-400 animate-pulse"></span>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Enhance the ChatStep component to include icons for each step
 const getStepIcon = (step: keyof typeof CHAT_STEPS) => {
   switch (step) {
     case "INITIALIZING":
@@ -498,14 +311,12 @@ const getStepIcon = (step: keyof typeof CHAT_STEPS) => {
   }
 };
 
-// Add step progress styling
 const getStepProgressBarStyle = (currentStepKey: keyof typeof CHAT_STEPS) => {
   const steps = Object.keys(CHAT_STEPS) as Array<keyof typeof CHAT_STEPS>;
   const currentIndex = steps.indexOf(currentStepKey);
-  const total = steps.length - 2; // Exclude COMPLETED and ERROR for progress calculation
-  const progress = Math.max(0, Math.min(100, (currentIndex / Math.max(1, total - 1)) * 100)); // ensure total-1 is not 0
+  const total = steps.length - 2; 
+  const progress = Math.max(0, Math.min(100, (currentIndex / Math.max(1, total - 1)) * 100)); 
 
-  // Define a base color and a slightly lighter version for the gradient
   const baseColor =
     currentStepKey === "GENERATING_RESPONSE"
       ? "#3B82F6"
@@ -519,24 +330,20 @@ const getStepProgressBarStyle = (currentStepKey: keyof typeof CHAT_STEPS) => {
 
   return {
     width: `${progress}%`,
-    // Using a subtle gradient for a more polished look
     backgroundImage: `linear-gradient(to right, ${baseColor}, ${baseColor}E6)`,
-    // Add a very subtle animation to the progress bar fill for a "live" feel
     animation: progress < 100 && progress > 0 ? "progressPulse 2s infinite ease-in-out" : "none",
   };
 };
 
-// Define a new component for rendering individual steps with enhanced UI
 interface StepDisplayProps {
   stepKey: keyof typeof CHAT_STEPS;
   stepLabel: string;
   stepContent: string[] | null;
   isCurrent: boolean;
   isCompleted: boolean;
-  isLast: boolean; // Added isLast
+  isLast: boolean; 
 }
 
-// Modify the StepDisplay component for a premium, modern UI
 const StepDisplay: React.FC<StepDisplayProps> = ({
   stepKey,
   stepLabel,
@@ -550,12 +357,10 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
   const [isExpanded, setIsExpanded] = useState(isCurrent);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Make sure expansion state updates when current step changes
   useEffect(() => {
     setIsExpanded(isCurrent);
   }, [isCurrent]);
 
-  // Determine styles based on step state
   const getBgGradient = () => {
     if (isCompleted) return "bg-gradient-to-r from-emerald-500 to-green-500";
     if (isCurrent) return "bg-gradient-to-r from-blue-500 to-indigo-500";
@@ -569,7 +374,6 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex items-start">
-        {/* Timeline dot with icon */}
         <div className="relative">
           <div
             className={`flex items-center justify-center rounded-full w-5 h-5 ${getBgGradient()} 
@@ -581,13 +385,11 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
               React.cloneElement(Icon, { className: "w-3 h-3 text-white" })
             )}
 
-            {/* Pulsing ring effect for current step */}
             {isCurrent && (
               <span className="absolute w-9 h-9 rounded-full -top-2 -left-2 bg-blue-400 opacity-20 animate-ping" />
             )}
           </div>
 
-          {/* Connecting line */}
           {!isLast && (
             <div
               className={`absolute top-5 left-2.5 w-0.5 -translate-x-1/2 h-full 
@@ -596,9 +398,7 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
           )}
         </div>
 
-        {/* Step content section */}
         <div className="ml-4 flex-1">
-          {/* Step label area - clickable if has content */}
           <div
             onClick={() => hasContent && setIsExpanded(!isExpanded)}
             className={`relative flex items-center py-1 transition-all duration-200 rounded-md px-2
@@ -612,7 +412,6 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
               {stepLabel}
             </h4>
 
-            {/* Expand/collapse button with rotation animation */}
             {hasContent && (
               <button
                 className={`ml-auto p-1 rounded-full transition-all duration-300
@@ -624,7 +423,6 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
               </button>
             )}
 
-            {/* Step status badge */}
             {isCurrent && (
               <div className="absolute -right-1 -top-1 px-1.5 py-0.5 bg-blue-500 rounded-sm text-[9px] text-white font-medium shadow-sm">
                 Current
@@ -632,7 +430,6 @@ const StepDisplay: React.FC<StepDisplayProps> = ({
             )}
           </div>
 
-          {/* Expandable content area with smooth animation */}
           <div
             className={`overflow-hidden transition-all duration-300 ease-in-out
               ${isExpanded ? "max-h-80 opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"}`}
@@ -715,17 +512,13 @@ export function DocumentViewer({
   const updateNoteMutation = useUpdateNote();
   const deleteNoteMutation = useDeleteNote();
 
-  // Add a ref to store the message that will be revealed after thinking
   const messageAfterThinkingRef = useRef<{ id: string; ref: HTMLDivElement | null }>({ id: "", ref: null });
 
-  // Improve the scroll behavior when messages change
   useEffect(() => {
-    // Scroll to bottom with a slight delay to ensure rendering is complete
     const scrollToBottom = () => {
       if (chatContentRef.current) {
         const scrollContainer = chatContentRef.current.querySelector("[data-radix-scroll-area-viewport]");
         if (scrollContainer) {
-          // Force scroll to the very bottom
           setTimeout(() => {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
           }, 50);
@@ -733,10 +526,8 @@ export function DocumentViewer({
       }
     };
 
-    // Scroll whenever messages change
     scrollToBottom();
 
-    // Also scroll whenever user sends a message
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "user") {
       scrollToBottom();
@@ -854,30 +645,23 @@ export function DocumentViewer({
     }
   }, [wsConversationId, currentConversationId]);
 
-  // State for accumulated steps
   const [accumulatedSteps, setAccumulatedSteps] = useState<ChatProgress[]>([]);
 
-  // Modify useEffect for messageProgress
   useEffect(() => {
     if (isWsTyping && messageProgress) {
-      // Use functional update for setAccumulatedSteps to ensure correct state handling
       setAccumulatedSteps((prevSteps) => {
         const existingStepIndex = prevSteps.findIndex((s) => s.step === messageProgress.step);
         let newSteps = [...prevSteps];
 
         if (existingStepIndex !== -1) {
-          // Update existing step, especially its content
           newSteps[existingStepIndex] = {
             ...newSteps[existingStepIndex],
-            content: messageProgress.content || [], // Ensure content is captured, default to empty array
-            // If a step is re-received, it might imply it's current again, or just an update.
-            // For now, just update content. Current status is handled by comparing with message.stepDetails.step.
+            content: messageProgress.content || [], 
           };
         } else if (messageProgress.step !== CHAT_STEPS.COMPLETED && messageProgress.step !== CHAT_STEPS.ERROR) {
-          // Add new step if it doesn't exist and is not a terminal step
           newSteps.push({
             ...messageProgress,
-            content: messageProgress.content || [], // Ensure content is captured, default to empty array
+            content: messageProgress.content || [],
           });
         }
         return newSteps;
@@ -890,14 +674,13 @@ export function DocumentViewer({
             ...prevMessages,
             {
               role: "assistant",
-              content: "", // Content will be derived from accumulatedSteps
+              content: "", 
               timestamp: new Date(),
               isStepProgress: true,
-              stepDetails: messageProgress, // Store the latest current step details
+              stepDetails: messageProgress, 
             },
           ];
         } else {
-          // Update the stepDetails of the existing step progress message
           return prevMessages.map((msg, index) =>
             index === prevMessages.length - 1 ? { ...msg, stepDetails: messageProgress } : msg
           );
@@ -909,18 +692,14 @@ export function DocumentViewer({
         lastMessageDetails &&
         (lastMessageDetails.step === CHAT_STEPS.COMPLETED || lastMessageDetails.step === CHAT_STEPS.ERROR)
       ) {
-        // Clear accumulated steps AFTER the final response/error message has been processed by handleSendMessage
-        // The actual clearing will be handled when a new user message starts a new interaction or document changes.
-        // For now, we just ensure that if the process ends, accumulation stops.
-        // To prevent stale steps, clear when a new query begins (e.g., in handleSendMessage or document change effect)
+        setAccumulatedSteps([]);
       }
     }
-  }, [isWsTyping, messageProgress]); // Removed messages from dependency array to avoid potential loops with setMessages
+  }, [isWsTyping, messageProgress]); 
 
-  // Clear accumulatedSteps when a new user message is sent or document changes
   useEffect(() => {
     setAccumulatedSteps([]);
-  }, [documentData?.id]); // Clears on document change
+  }, [documentData?.id]); 
 
   useEffect(() => {
     if (activeTab === "ai-chat" && documentData?.id) {
@@ -1116,7 +895,7 @@ export function DocumentViewer({
 
   const handleSendMessage = async () => {
     if (!input.trim() || !documentData?.id) return;
-    setAccumulatedSteps([]); // Clear previous steps for a new query
+    setAccumulatedSteps([]); 
 
     const userMessage: Message = {
       role: "user",
@@ -1128,7 +907,6 @@ export function DocumentViewer({
     setMessages((prev) => [...prev.filter((m) => !m.isStepProgress), userMessage]);
     setIsLoading(true);
 
-    // Scroll to the bottom after sending message
     setTimeout(() => {
       if (chatContentRef.current) {
         const scrollContainer = chatContentRef.current.querySelector("[data-radix-scroll-area-viewport]");
@@ -1161,7 +939,6 @@ export function DocumentViewer({
             processedMessageIds.current.add(data.message_id);
             setIsLoading(false);
 
-            // Extract the thinking part and the actual content separately
             let thinkContent = "";
             let actualContent = "";
 
@@ -1171,12 +948,10 @@ export function DocumentViewer({
               actualContent = data.content[0].replace(/<think>[\s\S]*?<\/think>/, "").trim();
             }
 
-            // If there's thinking content, show the animation first
             if (thinkContent) {
               const animationId = data.message_id;
               setAnimatingMessageIds((prev) => new Set(prev).add(animationId));
 
-              // Create a temporary message with just the thinking content
               const thinkingMessage: Message = {
                 role: "assistant",
                 content: thinkContent,
@@ -1184,12 +959,11 @@ export function DocumentViewer({
                 isStepProgress: false,
                 isThinking: true,
                 animationId: animationId,
-                finalContent: actualContent, // Store the final content to display after animation
+                finalContent: actualContent, 
               };
 
               setMessages((prev) => prev.filter((m) => !m.isStepProgress).concat(thinkingMessage));
             } else {
-              // If no thinking content, just display the regular message immediately
               const assistantMessage: Message = {
                 role: "assistant",
                 content: actualContent,
@@ -1213,7 +987,6 @@ export function DocumentViewer({
     }
   };
 
-  // Modify the handleAnimationComplete function to precisely scroll to the AI Assistant badge
   const handleAnimationComplete = (animationId: string) => {
     setAnimatingMessageIds((prev) => {
       const updated = new Set(prev);
@@ -1221,11 +994,9 @@ export function DocumentViewer({
       return updated;
     });
 
-    // Replace the thinking message with the final content
     setMessages((prev) => {
       return prev.map((message) => {
         if (message.animationId === animationId && message.isThinking && message.finalContent) {
-          // Store the message ID that will be revealed
           messageAfterThinkingRef.current.id = message.animationId;
 
           return {
@@ -1240,58 +1011,45 @@ export function DocumentViewer({
       });
     });
 
-    // After the fade animation completes, scroll to show the AI Assistant badge
     setTimeout(() => {
-      // Wait for the DOM to fully update
       requestAnimationFrame(() => {
-        // Get the ScrollArea viewport to contain the scrolling
         const scrollViewport = document.querySelector("[data-radix-scroll-area-viewport]");
         if (!scrollViewport) return;
 
-        // Find the message container first (the one with the ai-response-message class)
         const latestMessageContainer = document.querySelector(
           `.ai-response-message[data-message-id="${messageAfterThinkingRef.current.id}"]`
         );
         let targetElement;
 
         if (!latestMessageContainer) {
-          // If we can't find by ID, try to find the last one
           const assistantMessages = document.querySelectorAll(".ai-response-message");
           if (assistantMessages.length > 0) {
             const lastMessage = assistantMessages[assistantMessages.length - 1];
 
-            // Try to find the badge element specifically
             const badgeElement = lastMessage.querySelector(".ai-assistant-badge");
             targetElement = badgeElement || lastMessage;
           }
         } else {
-          // If we found the specific message, look for its badge
           const badgeElement = latestMessageContainer.querySelector(".ai-assistant-badge");
           targetElement = badgeElement || latestMessageContainer;
         }
 
-        // If we found a target element, calculate its position and scroll within the viewport
         if (targetElement) {
-          // Get the positions relative to the scroll container
           const viewportRect = scrollViewport.getBoundingClientRect();
           const targetRect = targetElement.getBoundingClientRect();
 
-          // Calculate the new scroll position - offset from the current scroll position
-          // by the difference between the target's top and the viewport's top, minus a small offset
-          const offset = 15; // Small offset to position the element properly
+          const offset = 15; 
           const newScrollTop = scrollViewport.scrollTop + (targetRect.top - viewportRect.top) - offset;
 
-          // Use smooth scrolling
           scrollViewport.scrollTo({
             top: newScrollTop,
             behavior: "smooth",
           });
         }
       });
-    }, 950); // Increased delay to ensure complete render
+    }, 950); 
   };
 
-  // Add the shimmer animation to the document head
   useEffect(() => {
     const styleElement = document.createElement("style");
     styleElement.textContent = `
@@ -1333,7 +1091,7 @@ export function DocumentViewer({
       </div>
 
       <div className="lg:border lg:border-gray-200 h-full overflow-hidden flex flex-col rounded-md">
-        <header className="relative flex items-center sticky top-0 bg-white z-10">
+        <header className="flex items-center sticky top-0 bg-white z-10">
           <div className="flex items-center w-full lg:mx-2 mt-2">
             <Tabs
               defaultValue="detailed"
@@ -1699,7 +1457,6 @@ export function DocumentViewer({
                               const currentStepDetail = message.stepDetails;
                               const currentStepKey = currentStepDetail.step as keyof typeof CHAT_STEPS;
 
-                              // If it's a step progress message, display all accumulated steps + current
                               return (
                                 <div
                                   key={`step-progress-container-${i}`}
@@ -1723,7 +1480,6 @@ export function DocumentViewer({
                                       AI Assistant
                                     </div>
                                     <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 space-y-0">
-                                      {/* Thinner Progress Bar */}
                                       <div className="w-full h-1 bg-gray-100 rounded-full mb-2 overflow-hidden">
                                         <div
                                           className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-500 ease-out"
@@ -1731,35 +1487,29 @@ export function DocumentViewer({
                                         ></div>
                                       </div>
 
-                                      {/* Progressive compact step display */}
                                       <div className="space-y-0">
                                         {accumulatedSteps.map((step, idx) => {
                                           const stepKey = step.step as keyof typeof CHAT_STEPS;
                                           const isCurrent = step.step === currentStepDetail.step;
 
-                                          // Get current step's position in CHAT_STEPS order
                                           const CHAT_STEP_VALUES = Object.values(CHAT_STEPS);
                                           const currentGlobalStepIndex = CHAT_STEP_VALUES.indexOf(
                                             currentStepDetail.step
                                           );
                                           const thisStepGlobalIndex = CHAT_STEP_VALUES.indexOf(step.step);
 
-                                          // Only show steps up to and including the current step
-                                          // This creates the progressive display effect
                                           if (thisStepGlobalIndex > currentGlobalStepIndex) {
-                                            return null; // Skip steps that are beyond the current step
+                                            return null; 
                                           }
 
-                                          // Determine if step is completed
                                           let isCompleted = thisStepGlobalIndex < currentGlobalStepIndex;
                                           if (
                                             currentStepDetail.step === CHAT_STEPS.COMPLETED ||
                                             currentStepDetail.step === CHAT_STEPS.ERROR
                                           ) {
-                                            isCompleted = true; // All accumulated steps are considered completed if the process is done.
+                                            isCompleted = true; 
                                           }
 
-                                          // Ensure current step is not marked as completed unless the whole process is done.
                                           if (
                                             isCurrent &&
                                             currentStepDetail.step !== CHAT_STEPS.COMPLETED &&
@@ -1768,7 +1518,6 @@ export function DocumentViewer({
                                             isCompleted = false;
                                           }
 
-                                          // Find if this is the last visible step in our progressive display
                                           const isLast = thisStepGlobalIndex === currentGlobalStepIndex;
 
                                           return (
@@ -1785,7 +1534,6 @@ export function DocumentViewer({
                                         })}
                                       </div>
 
-                                      {/* Special UI for Generating Response (if it's the only/current thing) */}
                                       {currentStepKey === CHAT_STEPS.GENERATING_RESPONSE &&
                                         accumulatedSteps.length <= 1 && (
                                           <div className="flex items-start space-x-3 py-2">
@@ -1823,7 +1571,6 @@ export function DocumentViewer({
                                   }`}
                                   data-message-id={message.animationId || ""}
                                   ref={(el) => {
-                                    // If this is the message we just revealed after thinking completed
                                     if (
                                       el &&
                                       (message.animationId === messageAfterThinkingRef.current.id ||
@@ -1884,8 +1631,7 @@ export function DocumentViewer({
                                       animatingMessageIds.has(message.animationId) ? (
                                         <>
                                           <div className="w-full">
-                                            <AnimatedThinkingProcess
-                                              thinkContent={message.content}
+                                            <ResponseArrived
                                               onComplete={() => handleAnimationComplete(message.animationId as string)}
                                             />
                                           </div>
